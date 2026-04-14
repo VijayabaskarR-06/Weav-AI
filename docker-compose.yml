@@ -1,0 +1,60 @@
+version: '3.9'
+
+services:
+  # ── MySQL Database ──────────────────────────────────────
+  mysql:
+    image: mysql:8.0
+    container_name: weavai_mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: weavai_root_2024
+      MYSQL_DATABASE: weavai
+      MYSQL_USER: weavai_user
+      MYSQL_PASSWORD: weavai_pass_2024
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./backend/schema.sql:/docker-entrypoint-initdb.d/schema.sql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ── FastAPI Backend ─────────────────────────────────────
+  api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: weavai_api
+    restart: always
+    ports:
+      - "8000:8000"
+    environment:
+      DB_HOST: mysql
+      DB_USER: weavai_user
+      DB_PASSWORD: weavai_pass_2024
+      DB_NAME: weavai
+      JWT_SECRET: weav-ai-super-secret-jwt-key-change-in-production-2024
+      JWT_EXPIRY_HOURS: "72"
+    depends_on:
+      mysql:
+        condition: service_healthy
+    volumes:
+      - ./backend:/app
+
+  # ── phpMyAdmin (Database GUI) ───────────────────────────
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: weavai_phpmyadmin
+    restart: always
+    ports:
+      - "8080:80"
+    environment:
+      PMA_HOST: mysql
+      PMA_USER: root
+      PMA_PASSWORD: weavai_root_2024
+
+volumes:
+  mysql_data:
