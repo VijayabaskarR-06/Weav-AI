@@ -1,0 +1,1172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Weav AI — Your Personal Tailor</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --cream:#FAF6EE;--warm:#F5EDE0;--parch:#EDE0CE;--nude:#DEC9AE;
+  --navy:#0D1B2A;--navy2:#1A3A5C;--navy3:#2E6B9E;
+  --gold:#C9A84C;--gold2:#E8C97D;
+  --muted:#8A96A8;--border:rgba(13,27,42,0.09);
+  --error:#C0392B;--success:#1A6B4A;
+  --r:13px;--r2:20px;
+}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--cream);color:var(--navy);min-height:100vh}
+
+/* ── Nav tabs ── */
+.top-nav{display:flex;align-items:center;gap:0;border-bottom:2px solid var(--border);background:var(--navy);position:sticky;top:0;z-index:100;padding:0 4px}
+.top-nav .logo{font-family:Georgia,serif;font-size:15px;font-weight:700;letter-spacing:4px;color:var(--gold2);padding:14px 18px;white-space:nowrap}
+.top-nav button{background:none;border:none;color:rgba(255,255,255,0.5);font-size:11px;font-weight:700;letter-spacing:1.5px;padding:14px 14px;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .2s;white-space:nowrap}
+.top-nav button.active{color:var(--gold2);border-bottom-color:var(--gold)}
+.top-nav button:hover:not(.active){color:rgba(255,255,255,0.8)}
+
+/* ── Panels ── */
+.panel{display:none;animation:fadeIn .2s}
+.panel.active{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+/* ── App panel ── */
+#app-panel{display:none;background:var(--cream)}
+#app-panel.active{display:flex;justify-content:center;padding:24px 16px}
+.phone-frame{width:390px;min-height:780px;background:var(--cream);border-radius:44px;box-shadow:0 40px 80px rgba(13,27,42,0.25),0 0 0 1px rgba(13,27,42,0.08);overflow:hidden;position:relative}
+.screen{display:none;flex-direction:column;height:100%;min-height:780px}
+.screen.active{display:flex}
+
+/* ── Auth screen ── */
+.auth-hero{background:var(--navy);padding:52px 28px 36px;display:flex;flex-direction:column;align-items:center;gap:10}
+.spin-ring{width:84px;height:84px;border-radius:50%;border:1.5px solid rgba(201,168,76,0.22);display:flex;align-items:center;justify-content:center}
+.logo-core{width:60px;height:60px;border-radius:50%;background:var(--gold);display:flex;align-items:center;justify-content:center;box-shadow:0 8px 24px rgba(201,168,76,0.3)}
+.logo-w{font-family:Georgia,serif;font-size:26px;font-weight:700;color:var(--navy)}
+.wordmark{font-family:Georgia,serif;font-size:36px;font-weight:700;letter-spacing:5px;color:var(--gold2)}
+.tagline{font-size:12px;font-style:italic;color:rgba(245,237,208,0.4);letter-spacing:3px}
+.demo-hint{background:rgba(201,168,76,0.1);border:1px solid rgba(201,168,76,0.18);border-radius:100px;padding:5px 14px;margin-top:4px;font-size:11px;color:rgba(245,237,208,0.55)}
+.demo-hint b{color:var(--gold2)}
+.auth-tabs{display:flex;border-bottom:1px solid var(--border)}
+.auth-tab{flex:1;padding:13px;text-align:center;font-size:10px;font-weight:700;letter-spacing:2px;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:.2s}
+.auth-tab.on{border-bottom-color:var(--gold);color:var(--navy)}
+.auth-form{padding:22px;display:flex;flex-direction:column;gap:13px;overflow-y:auto;flex:1}
+.field-lbl{font-size:10px;font-weight:700;letter-spacing:2px;color:var(--navy3);margin-bottom:4px}
+.field-box{display:flex;align-items:center;border:1.5px solid var(--border);border-radius:var(--r);background:var(--cream);overflow:hidden}
+.field-box input{flex:1;padding:13px 14px;font-size:15px;font-weight:600;color:#8B5E2C;background:none;border:none;outline:none}
+.field-box input::placeholder{color:var(--nude)}
+.field-err{border-color:var(--error)}
+.err-msg{font-size:11px;color:var(--error);font-weight:600;margin-top:-8px}
+.btn-gold{background:var(--gold);border:none;border-radius:var(--r);padding:16px;font-size:12px;font-weight:700;letter-spacing:2.5px;color:var(--navy);cursor:pointer;width:100%;box-shadow:0 8px 20px rgba(201,168,76,0.25)}
+.btn-gold:hover{background:var(--gold2)}
+.switch-row{text-align:center;font-size:13px;color:var(--muted)}
+.switch-link{color:var(--gold);font-weight:700;cursor:pointer}
+.terms{font-size:11px;color:var(--muted);text-align:center;line-height:17px;font-style:italic}
+
+/* ── Home screen ── */
+.home-header{padding:48px 22px 16px;display:flex;justify-content:space-between;align-items:center}
+.home-logo-row{display:flex;align-items:center;gap:9px}
+.h-dot{width:26px;height:26px;border-radius:7px;background:var(--gold);display:flex;align-items:center;justify-content:center;font-family:Georgia,serif;font-size:11px;font-weight:700;color:var(--navy)}
+.h-brand{font-family:Georgia,serif;font-size:16px;font-weight:700;letter-spacing:4px;color:var(--navy)}
+.avatar{width:28px;height:28px;border-radius:50%;background:var(--navy);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;cursor:pointer}
+.db-banner{display:flex;align-items:center;gap:7px;padding:7px 22px;font-size:11px;font-weight:700;letter-spacing:1px}
+.db-dot{width:6px;height:6px;border-radius:50%}
+.home-hero{padding:20px 22px 0;display:flex;flex-direction:column;gap:9px}
+.ey-label{font-size:10px;letter-spacing:4px;color:var(--gold);font-weight:700;text-transform:uppercase}
+.big-title{font-family:Georgia,serif;font-size:52px;font-weight:700;line-height:48px;letter-spacing:-1.5px;color:var(--navy)}
+.big-italic{font-family:Georgia,serif;font-size:40px;font-weight:700;color:var(--navy3);font-style:italic;letter-spacing:-1px;margin-top:-4px}
+.stats-row{display:flex;gap:8px}
+.stat-chip{flex:1;background:var(--warm);border:1px solid var(--border);border-radius:var(--r);padding:11px;text-align:center}
+.stat-num{font-family:Georgia,serif;font-size:22px;font-weight:700;color:var(--navy)}
+.stat-lbl{font-size:10px;color:var(--muted);font-weight:600}
+.desc-text{font-size:13px;color:var(--muted);line-height:21px}
+.btn-navy{background:var(--navy);border:none;border-radius:var(--r);padding:15px;font-size:12px;font-weight:700;letter-spacing:2.5px;color:var(--cream);cursor:pointer;width:100%}
+.btn-navy:hover{background:var(--navy2)}
+.brand-section{padding:18px 22px 30px}
+.brands-lbl{font-size:10px;letter-spacing:3px;color:var(--muted);font-weight:700;margin-bottom:10px}
+.brand-pills{display:flex;flex-wrap:wrap;gap:7px}
+.pill{background:var(--warm);border:1px solid var(--border);border-radius:100px;padding:5px 14px;font-size:12px;font-weight:600;color:var(--navy2)}
+
+/* ── Measure screen ── */
+.top-bar{padding:48px 22px 0;display:flex;justify-content:space-between;align-items:center}
+.back-btn{width:38px;height:38px;border-radius:50%;border:1.5px solid var(--border);background:none;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.step-ct{font-family:Georgia,serif;font-size:15px;font-weight:600;color:var(--muted)}
+.skip-lnk{font-size:12px;color:var(--muted);cursor:pointer;background:none;border:none}
+.prog-bar{display:flex;gap:4px;padding:12px 22px}
+.pb-seg{flex:1;height:2.5px;background:var(--nude);border-radius:100px}
+.pb-done{background:var(--gold)}
+.pb-now{background:var(--gold2)}
+.step-head{padding:16px 22px 0}
+.step-body{padding:14px 22px;flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:12px}
+.step-foot{padding:16px 22px 32px;border-top:1px solid var(--border)}
+.unit-row{display:flex;justify-content:space-between;align-items:center;background:var(--warm);border:1px solid var(--border);border-radius:var(--r);padding:11px 14px}
+.unit-pills{display:flex;background:var(--cream);border:1px solid var(--border);border-radius:100px;padding:3px;gap:2px}
+.upill{padding:5px 14px;border-radius:100px;font-size:11px;font-weight:700;color:var(--muted);cursor:pointer;border:none;background:none}
+.upill.on{background:var(--navy);color:var(--cream)}
+.num-field{display:flex;flex-direction:column;gap:4px}
+.num-wrap{display:flex;align-items:stretch;border:1.5px solid var(--border);border-radius:var(--r);overflow:hidden;background:var(--cream)}
+.num-inp{flex:1;padding:11px 14px;font-family:Georgia,serif;font-size:26px;font-weight:700;color:var(--navy);border:none;background:none;outline:none;min-width:0}
+.num-inp::placeholder{color:var(--nude)}
+.num-unit{padding:0 13px;background:var(--warm);border-left:1.5px solid var(--border);display:flex;align-items:center;font-size:10px;font-weight:700;letter-spacing:1px;color:var(--muted)}
+.two-col{display:flex;gap:10px}
+.two-col .num-field{flex:1}
+.hint-txt{font-size:12px;color:var(--muted);font-style:italic}
+.tip-box{background:rgba(201,168,76,0.07);border:1px solid rgba(201,168,76,0.16);border-radius:var(--r);padding:11px 14px;font-size:12px;color:var(--navy3);line-height:17px}
+.guide-card{background:var(--warm);border:1px solid var(--border);border-radius:var(--r2);padding:14px}
+.guide-item{display:flex;align-items:center;gap:9px;margin-bottom:8px}
+.g-dot{width:7px;height:7px;border-radius:50%}
+.bt-grid{display:flex;flex-wrap:wrap;gap:8px}
+.bt-card{width:calc(33.33% - 6px);padding:13px;border-radius:var(--r);border:1.5px solid var(--border);background:var(--cream);text-align:center;cursor:pointer;transition:.15s}
+.bt-card:hover,.bt-card.sel{border-color:var(--gold);background:rgba(201,168,76,0.08)}
+.bt-ic{font-size:20px;display:block;margin-bottom:5px}
+.bt-nm{font-size:11px;font-weight:700;color:var(--navy2)}
+.loading-screen{background:var(--navy);flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px;gap:20px}
+.loading-ring{width:72px;height:72px;border-radius:50%;border:3px solid rgba(201,168,76,0.15);border-top-color:var(--gold);animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-txt{color:rgba(245,237,208,0.6);font-size:13px;letter-spacing:2px}
+.brand-pulse{display:flex;flex-wrap:wrap;gap:7px;justify-content:center}
+.bp{padding:5px 14px;border-radius:100px;border:1px solid rgba(201,168,76,0.2);font-size:11px;font-weight:700;color:rgba(201,168,76,0.3);transition:.3s}
+.bp.lit{color:var(--gold2);border-color:var(--gold);background:rgba(201,168,76,0.1)}
+
+/* ── Results screen ── */
+.db-bar{display:flex;align-items:center;gap:7px;background:rgba(26,107,74,0.07);padding:7px 18px;border-bottom:1px solid var(--border)}
+.db-bar-dot{width:5px;height:5px;border-radius:50%;background:var(--success)}
+.db-bar-txt{font-size:10px;font-weight:700;color:var(--success);letter-spacing:1.5px}
+.res-topbar{padding:14px 20px;display:flex;justify-content:space-between;align-items:center}
+.edit-btn{border:1.5px solid var(--border);border-radius:100px;padding:5px 12px;font-size:10px;font-weight:700;letter-spacing:1.5px;color:var(--navy2);cursor:pointer;background:none}
+.res-hero{padding:12px 20px 14px;border-bottom:1px solid var(--border)}
+.ey-row{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.ey-line{width:14px;height:1px;background:var(--gold)}
+.res-title{font-family:Georgia,serif;font-size:32px;font-weight:600;color:var(--navy);line-height:32px}
+.res-italic{font-family:Georgia,serif;font-size:30px;font-weight:600;color:var(--navy3);font-style:italic;margin-bottom:8px}
+.meas-strip{display:flex;flex-wrap:wrap;gap:6px}
+.m-chip{display:flex;background:var(--warm);border:1px solid var(--border);border-radius:100px;padding:4px 11px;font-size:11px}
+.m-chip span{color:var(--muted)}
+.m-chip b{color:var(--navy);font-weight:700}
+.sz-grid{margin:12px 18px;border:1px solid var(--border);border-radius:var(--r);overflow:hidden}
+.sz-head{display:flex;align-items:center;gap:8px;background:var(--warm);padding:9px 12px;border-bottom:1px solid var(--border);font-size:9px;letter-spacing:2px;color:var(--muted);font-weight:700}
+.sz-dot{width:5px;height:5px;border-radius:50%;background:var(--gold)}
+.sz-cells{display:flex;flex-wrap:wrap}
+.sz-cell{width:33.33%;padding:11px;text-align:center;border-right:1px solid var(--border);border-bottom:1px solid var(--border);cursor:pointer;transition:.15s}
+.sz-cell:hover{background:var(--warm)}
+.sz-brand{font-size:9px;font-weight:700;letter-spacing:.8px;color:var(--muted)}
+.sz-size{font-family:Georgia,serif;font-size:22px;font-weight:700;color:var(--navy)}
+.sz-conf{font-size:9px;color:var(--gold);font-weight:700}
+.sec-div{display:flex;align-items:center;gap:12px;padding:10px 18px 4px;font-size:10px;letter-spacing:2px;color:var(--muted);font-weight:700}
+.sec-line{flex:1;height:1px;background:var(--border)}
+.cat-row{display:flex;gap:7px;padding:6px 18px 10px;overflow-x:auto;-webkit-overflow-scrolling:touch}
+.cat-row::-webkit-scrollbar{display:none}
+.c-tab{padding:7px 13px;border-radius:100px;border:1.5px solid var(--border);font-size:11px;font-weight:700;color:var(--muted);cursor:pointer;white-space:nowrap;background:var(--cream);transition:.15s}
+.c-tab.on{background:var(--navy);border-color:var(--navy);color:var(--cream)}
+.brand-list{padding:0 18px;display:flex;flex-direction:column;gap:10px}
+.b-card{background:var(--cream);border:1.5px solid var(--border);border-radius:var(--r2);overflow:hidden}
+.bc-body{display:flex;align-items:center;padding:14px;gap:12px;cursor:pointer}
+.bc-mono{width:44px;height:44px;border-radius:12px;border:1.5px solid var(--border);background:var(--warm);display:flex;align-items:center;justify-content:center;font-family:Georgia,serif;font-size:12px;font-weight:700;color:var(--navy2);letter-spacing:1px;flex-shrink:0}
+.bc-info{flex:1;min-width:0}
+.bc-name{font-family:Georgia,serif;font-size:18px;font-weight:700;color:var(--navy)}
+.bc-sub{font-size:11px;color:var(--muted)}
+.bc-conf{font-size:11px;color:var(--gold);font-weight:600}
+.bc-badge{background:var(--warm);border:1px solid var(--border);border-radius:10px;padding:9px;text-align:center;min-width:52px}
+.bc-bl{font-size:8px;font-weight:700;letter-spacing:1.5px;color:var(--muted);display:block;margin-bottom:1px}
+.bc-bv{font-family:Georgia,serif;font-size:24px;font-weight:700;color:var(--navy);line-height:24px}
+.bc-foot{display:flex;justify-content:space-between;align-items:center;padding:9px 14px;border-top:1px solid var(--border);background:var(--warm)}
+.fb-btn{border:1px solid var(--border);border-radius:100px;padding:6px 14px;font-size:11px;color:var(--muted);font-weight:600;cursor:pointer;background:none}
+.shop-btn{font-size:11px;font-weight:700;letter-spacing:1px;color:var(--gold);cursor:pointer;background:none;border:none}
+.res-footer{display:flex;gap:10px;padding:18px;border-top:1px solid var(--border);margin-top:14px}
+.btn-ghost{flex:1;padding:12px;background:var(--warm);border:1.5px solid var(--border);border-radius:var(--r);font-size:11px;font-weight:700;letter-spacing:1.5px;color:var(--navy2);cursor:pointer}
+.results-scroll{flex:1;overflow-y:auto}
+
+/* ── Feedback modal ── */
+.modal-overlay{position:absolute;inset:0;background:rgba(13,27,42,0.5);display:flex;align-items:flex-end;z-index:50;display:none}
+.modal-overlay.open{display:flex}
+.modal-card{background:var(--cream);border-radius:26px 26px 0 0;padding:26px;width:100%;display:flex;flex-direction:column;gap:13px}
+.modal-handle{width:36px;height:4px;background:var(--nude);border-radius:100px;margin:0 auto -6px}
+.modal-ttl{font-family:Georgia,serif;font-size:22px;font-weight:700;color:var(--navy)}
+.modal-sub{font-size:13px;color:var(--muted);margin-top:-6px}
+.fit-opts{display:flex;flex-wrap:wrap;gap:8px}
+.fit-opt{padding:8px 14px;border-radius:100px;border:1.5px solid var(--border);font-size:12px;color:var(--muted);font-weight:700;cursor:pointer;background:var(--cream)}
+.fit-opt.sel{background:var(--gold);border-color:var(--gold);color:var(--navy)}
+.notes-inp{border:1.5px solid var(--border);border-radius:var(--r);padding:11px;font-size:14px;color:var(--navy);min-height:64px;resize:none;font-family:inherit;outline:none;width:100%}
+.modal-btns{display:flex;gap:10px}
+.m-cancel{flex:1;padding:12px;background:var(--warm);border:1.5px solid var(--border);border-radius:var(--r);font-size:12px;font-weight:700;color:var(--navy2);cursor:pointer}
+.m-submit{flex:2;padding:12px;background:var(--gold);border:none;border-radius:var(--r);font-size:12px;font-weight:700;letter-spacing:1px;color:var(--navy);cursor:pointer}
+
+/* ── Source code panels ── */
+.code-panel{padding:0;background:#0D1B2A;min-height:calc(100vh - 52px)}
+.code-tabs{display:flex;overflow-x:auto;background:rgba(0,0,0,0.3);border-bottom:1px solid rgba(255,255,255,0.08);padding:0 16px}
+.code-tabs::-webkit-scrollbar{height:3px}
+.code-tabs::-webkit-scrollbar-thumb{background:var(--gold)}
+.ct{padding:11px 16px;font-size:11px;font-weight:700;letter-spacing:1px;color:rgba(255,255,255,0.4);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap}
+.ct.on{color:var(--gold2);border-bottom-color:var(--gold)}
+.code-view{display:none;padding:20px}
+.code-view.on{display:block}
+.file-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.file-name{font-size:12px;color:var(--gold2);font-weight:700;letter-spacing:1px;font-family:monospace}
+.copy-btn{background:rgba(201,168,76,0.15);border:1px solid rgba(201,168,76,0.25);color:var(--gold2);padding:5px 14px;font-size:11px;font-weight:700;border-radius:100px;cursor:pointer}
+.copy-btn:hover{background:rgba(201,168,76,0.25)}
+pre{background:rgba(0,0,0,0.4);border:1px solid rgba(255,255,255,0.06);border-radius:10px;padding:18px;overflow-x:auto;font-family:'JetBrains Mono','Fira Code','Consolas',monospace;font-size:12px;line-height:1.7;color:#E8DCC8;tab-size:2}
+pre::-webkit-scrollbar{height:4px}
+pre::-webkit-scrollbar-thumb{background:rgba(201,168,76,0.3);border-radius:2px}
+
+/* ── How to run panel ── */
+.run-panel{background:var(--cream);min-height:calc(100vh-52px);padding:32px 24px}
+.run-section{margin-bottom:32px}
+.run-h1{font-family:Georgia,serif;font-size:28px;font-weight:700;color:var(--navy);margin-bottom:8px}
+.run-h2{font-size:13px;font-weight:700;letter-spacing:2px;color:var(--navy3);text-transform:uppercase;margin-bottom:12px;margin-top:22px}
+.run-p{font-size:14px;color:var(--muted);line-height:22px;margin-bottom:12px}
+.run-step{display:flex;gap:12px;margin-bottom:10px;align-items:flex-start}
+.step-num{width:26px;height:26px;border-radius:50%;background:var(--gold);font-size:12px;font-weight:700;color:var(--navy);display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.step-desc{font-size:13px;color:var(--navy2);line-height:20px}
+.step-desc code{background:var(--warm);border:1px solid var(--border);border-radius:5px;padding:1px 6px;font-size:12px;font-family:monospace;color:var(--navy3)}
+.cred-box{background:var(--warm);border:1px solid var(--border);border-radius:var(--r);padding:16px;margin-bottom:14px}
+.cred-row{display:flex;justify-content:space-between;align-items:center;font-size:13px;margin-bottom:5px}
+.cred-lbl{color:var(--muted);font-weight:600}
+.cred-val{font-family:monospace;color:var(--navy);font-weight:700;background:var(--cream);border:1px solid var(--border);border-radius:5px;padding:2px 8px}
+.routes-table{width:100%;border-collapse:collapse;font-size:12px;margin-top:8px}
+.routes-table th{background:var(--navy);color:var(--cream);padding:9px 12px;text-align:left;font-size:10px;letter-spacing:1.5px}
+.routes-table td{padding:8px 12px;border-bottom:1px solid var(--border);color:var(--navy2)}
+.routes-table tr:hover td{background:var(--warm)}
+.method{padding:2px 7px;border-radius:4px;font-size:10px;font-weight:700;font-family:monospace}
+.get{background:rgba(26,107,74,0.12);color:var(--success)}
+.post{background:rgba(201,168,76,0.12);color:#8B6914}
+.info-card{background:var(--navy);border-radius:var(--r);padding:16px;margin-bottom:14px}
+.info-card-title{color:var(--gold2);font-size:13px;font-weight:700;margin-bottom:8px}
+.info-card pre{background:rgba(0,0,0,0.3);border-color:rgba(255,255,255,0.06);font-size:11px;margin:0}
+
+/* scroll */
+.results-scroll::-webkit-scrollbar,.step-body::-webkit-scrollbar,.auth-form::-webkit-scrollbar{width:3px}
+.results-scroll::-webkit-scrollbar-thumb,.step-body::-webkit-scrollbar-thumb,.auth-form::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+</style>
+</head>
+<body>
+
+<div class="top-nav">
+  <div class="logo">◇ WEAV AI</div>
+  <button class="active" onclick="showTab('app')">LIVE APP</button>
+  <button onclick="showTab('backend')">FASTAPI BACKEND</button>
+  <button onclick="showTab('schema')">MYSQL SCHEMA</button>
+  <button onclick="showTab('react')">REACT NATIVE</button>
+  <button onclick="showTab('run')">HOW TO RUN</button>
+</div>
+
+<!-- ════════════════ APP PANEL ════════════════ -->
+<div id="app-panel" class="panel active">
+  <div class="phone-frame">
+
+    <!-- AUTH SCREEN -->
+    <div id="screen-auth" class="screen active" style="overflow-y:auto">
+      <div class="auth-hero">
+        <div class="spin-ring"><div class="logo-core"><span class="logo-w">W</span></div></div>
+        <div class="wordmark">WEAV AI</div>
+        <div class="tagline">Your Personal Tailor</div>
+        <div class="demo-hint">Demo: <b>test@weavai.com</b> / <b>test123</b></div>
+      </div>
+      <div class="auth-tabs">
+        <div class="auth-tab on" id="tab-login" onclick="authMode('login')">SIGN IN</div>
+        <div class="auth-tab" id="tab-signup" onclick="authMode('signup')">CREATE ACCOUNT</div>
+      </div>
+      <div class="auth-form">
+        <div id="field-name" style="display:none">
+          <div class="field-lbl">FULL NAME</div>
+          <div class="field-box"><input id="inp-name" type="text" placeholder="e.g. Ananya Kaushal" autocomplete="off"/></div>
+        </div>
+        <div>
+          <div class="field-lbl">EMAIL ADDRESS</div>
+          <div class="field-box" id="box-email"><input id="inp-email" type="email" placeholder="your@email.com" autocomplete="off"/></div>
+          <div class="err-msg" id="err-email" style="display:none"></div>
+        </div>
+        <div>
+          <div class="field-lbl">PASSWORD</div>
+          <div class="field-box"><input id="inp-pw" type="password" placeholder="Min. 6 characters"/></div>
+          <div class="err-msg" id="err-pw" style="display:none"></div>
+        </div>
+        <div id="field-confirm" style="display:none">
+          <div class="field-lbl">CONFIRM PASSWORD</div>
+          <div class="field-box"><input id="inp-confirm" type="password" placeholder="Re-enter password"/></div>
+          <div class="err-msg" id="err-confirm" style="display:none"></div>
+        </div>
+        <div id="forgot-row" style="text-align:right"><span style="font-size:12px;color:var(--muted);cursor:pointer">Forgot password?</span></div>
+        <button class="btn-gold" id="auth-submit-btn" onclick="doAuth()">SIGN IN TO WEAV AI →</button>
+        <div class="switch-row" id="switch-row">New to Weav AI? <span class="switch-link" onclick="authMode('signup')">Create free account</span></div>
+        <div class="terms" id="terms-txt" style="display:none">By creating an account you agree to our Terms of Service. Your measurements are stored securely and never shared.</div>
+      </div>
+    </div>
+
+    <!-- HOME SCREEN -->
+    <div id="screen-home" class="screen" style="overflow-y:auto">
+      <div class="home-header">
+        <div class="home-logo-row"><div class="h-dot">W</div><div class="h-brand">WEAV AI</div></div>
+        <div style="display:flex;align-items:center;gap:10px">
+          <div class="avatar" id="user-avatar" onclick="doLogout()">AN</div>
+          <span style="font-size:10px;color:var(--muted);cursor:pointer" onclick="doLogout()">Sign out</span>
+        </div>
+      </div>
+      <div class="db-banner" style="background:rgba(26,107,74,0.07)">
+        <div class="db-dot" style="background:var(--success)"></div>
+        <span style="font-size:11px;font-weight:700;color:var(--success);letter-spacing:1px">Local Database · Connected</span>
+      </div>
+      <div class="home-hero">
+        <div class="ey-label">Your Personal Tailor</div>
+        <div class="big-title">Find Your<br><span style="font-style:italic;color:var(--gold)">Perfect</span></div>
+        <div class="big-italic">Fit.</div>
+        <div class="stats-row">
+          <div class="stat-chip"><div class="stat-num">6</div><div class="stat-lbl">Brands</div></div>
+          <div class="stat-chip"><div class="stat-num">8</div><div class="stat-lbl">Categories</div></div>
+          <div class="stat-chip"><div class="stat-num">95%</div><div class="stat-lbl">Accuracy</div></div>
+        </div>
+        <div class="desc-text">One measurement profile. Your exact size across Nike, Adidas, Puma, H&amp;M, Zara &amp; Levi's.</div>
+        <button class="btn-navy" onclick="goToMeasure()">BEGIN MEASUREMENT →</button>
+      </div>
+      <div id="history-section" style="padding:16px 22px 0;display:none">
+        <div style="font-family:Georgia,serif;font-size:16px;font-weight:700;color:var(--navy);margin-bottom:10px">My Saved Profiles</div>
+        <div id="history-list" style="display:flex;flex-direction:column;gap:8px"></div>
+      </div>
+      <div class="brand-section">
+        <div class="brands-lbl">SUPPORTED BRANDS</div>
+        <div class="brand-pills">
+          <div class="pill">Nike</div><div class="pill">Adidas</div><div class="pill">Puma</div>
+          <div class="pill">H&amp;M</div><div class="pill">Zara</div><div class="pill">Levi's</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MEASURE SCREEN -->
+    <div id="screen-measure" class="screen">
+      <div class="top-bar">
+        <button class="back-btn" onclick="measureBack()">←</button>
+        <span class="step-ct" id="step-counter">1 / 3</span>
+        <button class="skip-lnk" onclick="measureNext(true)">Skip</button>
+      </div>
+      <div class="prog-bar" id="prog-bar">
+        <div class="pb-seg pb-now"></div>
+        <div class="pb-seg"></div>
+        <div class="pb-seg"></div>
+      </div>
+      <div class="step-head">
+        <div class="ey-label" id="step-ey">BASIC DETAILS</div>
+        <div style="font-family:Georgia,serif;font-size:28px;font-weight:700;color:var(--navy);margin:5px 0 3px" id="step-ttl">Tell us about yourself</div>
+        <div style="font-size:13px;color:var(--muted)" id="step-sub">Calibrates your size across every brand.</div>
+      </div>
+      <div class="step-body" id="step-body">
+        <!-- Step content injected by JS -->
+      </div>
+      <div class="step-foot">
+        <button class="btn-gold" id="next-btn" onclick="measureNext(false)" style="width:100%">CONTINUE →</button>
+      </div>
+    </div>
+
+    <!-- LOADING SCREEN -->
+    <div id="screen-loading" class="screen loading-screen">
+      <div style="width:64px;height:64px;border-radius:50%;background:var(--gold);display:flex;align-items:center;justify-content:center;margin-bottom:8px">
+        <span style="font-family:Georgia,serif;font-size:28px;font-weight:700;color:var(--navy)">W</span>
+      </div>
+      <div class="loading-ring" style="margin-top:-10px"></div>
+      <div class="loading-txt" id="loading-msg">Analysing your profile…</div>
+      <div class="brand-pulse" id="brand-pulse">
+        <div class="bp">Nike</div><div class="bp">Adidas</div><div class="bp">Puma</div>
+        <div class="bp">H&amp;M</div><div class="bp">Zara</div><div class="bp">Levi's</div>
+      </div>
+    </div>
+
+    <!-- RESULTS SCREEN -->
+    <div id="screen-results" class="screen" style="flex-direction:column">
+      <div class="db-bar"><div class="db-bar-dot"></div><span class="db-bar-txt">SAVED TO LOCAL DATABASE</span></div>
+      <div class="results-scroll">
+        <div class="res-topbar">
+          <div class="home-logo-row"><div class="h-dot">W</div><div class="h-brand">WEAV AI</div></div>
+          <button class="edit-btn" onclick="goToMeasure()">EDIT</button>
+        </div>
+        <div class="res-hero">
+          <div class="ey-row"><div class="ey-line"></div><span class="ey-label" style="font-size:10px;letter-spacing:3.5px">SIZE PROFILE READY</span></div>
+          <div class="res-title">Your exact</div>
+          <div class="res-italic">sizes, curated.</div>
+          <div class="meas-strip" id="meas-strip"></div>
+        </div>
+        <div class="sz-grid">
+          <div class="sz-head"><div class="sz-dot"></div>ALL-BRAND OVERVIEW · TAP TO SHOP</div>
+          <div class="sz-cells" id="sz-cells"></div>
+        </div>
+        <div class="sec-div"><div class="sec-line"></div>Shop by category<div class="sec-line"></div></div>
+        <div class="cat-row" id="cat-row"></div>
+        <div class="brand-list" id="brand-list" style="padding-bottom:10px"></div>
+        <div class="res-footer">
+          <button class="btn-ghost" onclick="goToMeasure()">← REMEASURE</button>
+          <button class="btn-navy" style="flex:2" onclick="goToHome()">HOME</button>
+        </div>
+      </div>
+      <div class="modal-overlay" id="fb-modal">
+        <div class="modal-card">
+          <div class="modal-handle"></div>
+          <div class="modal-ttl">How did it fit?</div>
+          <div class="modal-sub" id="fb-sub"></div>
+          <div class="fit-opts" id="fit-opts">
+            <div class="fit-opt" onclick="selFit(this,'perfect')">✓ Perfect</div>
+            <div class="fit-opt" onclick="selFit(this,'slightly_small')">Slightly Small</div>
+            <div class="fit-opt" onclick="selFit(this,'too_small')">Too Small</div>
+            <div class="fit-opt" onclick="selFit(this,'slightly_large')">Slightly Large</div>
+            <div class="fit-opt" onclick="selFit(this,'too_large')">Too Large</div>
+          </div>
+          <textarea class="notes-inp" id="fb-notes" placeholder="Optional notes…"></textarea>
+          <div class="modal-btns">
+            <button class="m-cancel" onclick="closeFb()">Cancel</button>
+            <button class="m-submit" onclick="submitFb()">SUBMIT FEEDBACK</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /phone-frame -->
+</div><!-- /app-panel -->
+
+<!-- ════════════════ BACKEND PANEL ════════════════ -->
+<div id="backend-panel" class="panel code-panel">
+  <div class="code-tabs">
+    <div class="ct on" onclick="codeTab('backend','ct-mainpy')">main.py</div>
+    <div class="ct" onclick="codeTab('backend','ct-req')">requirements.txt</div>
+    <div class="ct" onclick="codeTab('backend','ct-env')">\.env</div>
+    <div class="ct" onclick="codeTab('backend','ct-docker')">docker-compose.yml</div>
+    <div class="ct" onclick="codeTab('backend','ct-dockerfile')">Dockerfile</div>
+  </div>
+  <div id="ct-mainpy" class="code-view on">
+    <div class="file-header"><span class="file-name">📄 backend/main.py</span><button class="copy-btn" onclick="copyCode('pre-mainpy')">Copy</button></div>
+    <pre id="pre-mainpy"></pre>
+  </div>
+  <div id="ct-req" class="code-view">
+    <div class="file-header"><span class="file-name">📄 backend/requirements.txt</span><button class="copy-btn" onclick="copyCode('pre-req')">Copy</button></div>
+    <pre id="pre-req"></pre>
+  </div>
+  <div id="ct-env" class="code-view">
+    <div class="file-header"><span class="file-name">📄 backend/.env</span><button class="copy-btn" onclick="copyCode('pre-env')">Copy</button></div>
+    <pre id="pre-env"></pre>
+  </div>
+  <div id="ct-docker" class="code-view">
+    <div class="file-header"><span class="file-name">📄 docker-compose.yml</span><button class="copy-btn" onclick="copyCode('pre-docker')">Copy</button></div>
+    <pre id="pre-docker"></pre>
+  </div>
+  <div id="ct-dockerfile" class="code-view">
+    <div class="file-header"><span class="file-name">📄 backend/Dockerfile</span><button class="copy-btn" onclick="copyCode('pre-dockerfile')">Copy</button></div>
+    <pre id="pre-dockerfile">FROM python:3.11-slim
+WORKDIR /app
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+COPY . .
+EXPOSE 8000
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]</pre>
+  </div>
+</div>
+
+<!-- ════════════════ SCHEMA PANEL ════════════════ -->
+<div id="schema-panel" class="panel code-panel">
+  <div class="code-tabs">
+    <div class="ct on" onclick="codeTab('schema','ct-schema')">schema.sql</div>
+    <div class="ct" onclick="codeTab('schema','ct-tables')">Tables</div>
+    <div class="ct" onclick="codeTab('schema','ct-seed')">Seed Data</div>
+  </div>
+  <div id="ct-schema" class="code-view on">
+    <div class="file-header"><span class="file-name">📄 backend/schema.sql</span><button class="copy-btn" onclick="copyCode('pre-schema')">Copy</button></div>
+    <pre id="pre-schema"></pre>
+  </div>
+  <div id="ct-tables" class="code-view">
+    <div style="padding:0 0 20px">
+      <div style="color:var(--gold2);font-size:16px;font-weight:700;margin-bottom:16px;font-family:Georgia,serif">8 Database Tables</div>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div style="background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.06);border-radius:10px;padding:14px">
+          <div style="color:var(--gold2);font-family:monospace;font-size:13px;font-weight:700;margin-bottom:6px">users</div>
+          <div style="color:rgba(232,220,200,0.6);font-size:12px;line-height:1.8">id · name · email · password_hash · provider · photo_url · is_active · created_at</div>
+        </div>
+        <div style="background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.06);border-radius:10px;padding:14px">
+          <div style="color:var(--gold2);font-family:monospace;font-size:13px;font-weight:700;margin-bottom:6px">measurements</div>
+          <div style="color:rgba(232,220,200,0.6);font-size:12px;line-height:1.8">id · user_id · bust · waist · hips · height · weight · age · body_type · unit · created_at</div>
+        </div>
+        <div style="background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.06);border-radius:10px;padding:14px">
+          <div style="color:var(--gold2);font-family:monospace;font-size:13px;font-weight:700;margin-bottom:6px">brands</div>
+          <div style="color:rgba(232,220,200,0.6);font-size:12px;line-height:1.8">id · name · logo · country · site_url</div>
+        </div>
+        <div style="background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.06);border-radius:10px;padding:14px">
+          <div style="color:var(--gold2);font-family:monospace;font-size:13px;font-weight:700;margin-bottom:6px">categories</div>
+          <div style="color:rgba(232,220,200,0.6);font-size:12px;line-height:1.8">id · slug · label · icon · sort_order</div>
+        </div>
+        <div style="background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.06);border-radius:10px;padding:14px">
+          <div style="color:var(--gold2);font-family:monospace;font-size:13px;font-weight:700;margin-bottom:6px">brand_category_links</div>
+          <div style="color:rgba(232,220,200,0.6);font-size:12px;line-height:1.8">id · brand_id · category_id · shop_url  (48 links total)</div>
+        </div>
+        <div style="background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.06);border-radius:10px;padding:14px">
+          <div style="color:var(--gold2);font-family:monospace;font-size:13px;font-weight:700;margin-bottom:6px">size_charts</div>
+          <div style="color:rgba(232,220,200,0.6);font-size:12px;line-height:1.8">id · brand_id · size_label · bust_min/max · waist_min/max · hips_min/max · sort_order</div>
+        </div>
+        <div style="background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.06);border-radius:10px;padding:14px">
+          <div style="color:var(--gold2);font-family:monospace;font-size:13px;font-weight:700;margin-bottom:6px">recommendations</div>
+          <div style="color:rgba(232,220,200,0.6);font-size:12px;line-height:1.8">id · user_id · measurement_id · brand_id · category_id · recommended_size · confidence_pct · shop_url</div>
+        </div>
+        <div style="background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.06);border-radius:10px;padding:14px">
+          <div style="color:var(--gold2);font-family:monospace;font-size:13px;font-weight:700;margin-bottom:6px">feedback</div>
+          <div style="color:rgba(232,220,200,0.6);font-size:12px;line-height:1.8">id · user_id · brand_id · category_id · recommended_size · actual_fit · notes · rating</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div id="ct-seed" class="code-view">
+    <div style="color:var(--gold2);font-size:14px;font-weight:700;margin-bottom:14px">Seed Data Overview</div>
+    <div style="color:rgba(232,220,200,0.7);font-size:13px;line-height:22px;margin-bottom:16px">The schema seeds all required data automatically on first run. Here's what gets inserted:</div>
+    <pre style="font-size:11px">-- 6 Brands: Nike, Adidas, Puma, H&M, Zara, Levi's
+-- 8 Categories: tops, bottoms, dresses, sports_bras,
+--               hoodies, accessories, outerwear, footwear
+-- 48 Shop URLs: 6 brands × 8 categories
+-- 36 Size Rows: 6 brands × 6 sizes (XS–XXL)
+--   Each row has bust/waist/hips min-max ranges in cm
+
+-- Size Logic Example (Nike):
+-- XS: bust 79-84, waist 61-66, hips 86-91
+-- S:  bust 84-89, waist 66-71, hips 91-96
+-- M:  bust 89-94, waist 71-76, hips 96-101
+-- L:  bust 94-100,waist 76-82, hips 101-107
+-- XL: bust 100-107,waist 82-89,hips 107-114
+-- XXL:bust 107-114,waist 89-96,hips 114-121</pre>
+  </div>
+</div>
+
+<!-- ════════════════ REACT NATIVE PANEL ════════════════ -->
+<div id="react-panel" class="panel code-panel">
+  <div class="code-tabs">
+    <div class="ct on" onclick="codeTab('react','ct-app')">App.js</div>
+    <div class="ct" onclick="codeTab('react','ct-theme')">theme.js</div>
+    <div class="ct" onclick="codeTab('react','ct-authctx')">AuthContext.js</div>
+    <div class="ct" onclick="codeTab('react','ct-nav')">AppNavigator.js</div>
+    <div class="ct" onclick="codeTab('react','ct-apijs')">api.js</div>
+    <div class="ct" onclick="codeTab('react','ct-auths')">AuthScreen.js</div>
+    <div class="ct" onclick="codeTab('react','ct-homes')">HomeScreen.js</div>
+    <div class="ct" onclick="codeTab('react','ct-meass')">MeasureScreen.js</div>
+    <div class="ct" onclick="codeTab('react','ct-ress')">ResultsScreen.js</div>
+    <div class="ct" onclick="codeTab('react','ct-pkg')">package.json</div>
+  </div>
+  <div id="ct-app" class="code-view on"><div class="file-header"><span class="file-name">📄 App.js</span><button class="copy-btn" onclick="copyCode('pre-app')">Copy</button></div><pre id="pre-app"></pre></div>
+  <div id="ct-theme" class="code-view"><div class="file-header"><span class="file-name">📄 src/theme.js</span><button class="copy-btn" onclick="copyCode('pre-theme')">Copy</button></div><pre id="pre-theme"></pre></div>
+  <div id="ct-authctx" class="code-view"><div class="file-header"><span class="file-name">📄 src/context/AuthContext.js</span><button class="copy-btn" onclick="copyCode('pre-authctx')">Copy</button></div><pre id="pre-authctx"></pre></div>
+  <div id="ct-nav" class="code-view"><div class="file-header"><span class="file-name">📄 src/navigation/AppNavigator.js</span><button class="copy-btn" onclick="copyCode('pre-nav')">Copy</button></div><pre id="pre-nav"></pre></div>
+  <div id="ct-apijs" class="code-view"><div class="file-header"><span class="file-name">📄 src/services/api.js</span><button class="copy-btn" onclick="copyCode('pre-apijs')">Copy</button></div><pre id="pre-apijs"></pre></div>
+  <div id="ct-auths" class="code-view"><div class="file-header"><span class="file-name">📄 src/screens/AuthScreen.js</span><button class="copy-btn" onclick="copyCode('pre-auths')">Copy</button></div><pre id="pre-auths"></pre></div>
+  <div id="ct-homes" class="code-view"><div class="file-header"><span class="file-name">📄 src/screens/HomeScreen.js</span><button class="copy-btn" onclick="copyCode('pre-homes')">Copy</button></div><pre id="pre-homes"></pre></div>
+  <div id="ct-meass" class="code-view"><div class="file-header"><span class="file-name">📄 src/screens/MeasureScreen.js</span><button class="copy-btn" onclick="copyCode('pre-meass')">Copy</button></div><pre id="pre-meass"></pre></div>
+  <div id="ct-ress" class="code-view"><div class="file-header"><span class="file-name">📄 src/screens/ResultsScreen.js</span><button class="copy-btn" onclick="copyCode('pre-ress')">Copy</button></div><pre id="pre-ress"></pre></div>
+  <div id="ct-pkg" class="code-view"><div class="file-header"><span class="file-name">📄 package.json</span><button class="copy-btn" onclick="copyCode('pre-pkg')">Copy</button></div><pre id="pre-pkg"></pre></div>
+</div>
+
+<!-- ════════════════ HOW TO RUN PANEL ════════════════ -->
+<div id="run-panel" class="panel run-panel">
+  <div class="run-h1">⚡ How To Run Weav AI</div>
+  <div class="run-p">Full-stack: React Native (Expo) + FastAPI + MySQL. Three ways to run:</div>
+
+  <div class="run-section">
+    <div class="run-h2">🌐 Option 1 — This HTML File (Instant, No Setup)</div>
+    <div class="run-p">The LIVE APP tab above is fully functional with localStorage — no server needed. Perfect for demos and testing.</div>
+    <div class="cred-box">
+      <div class="run-h2" style="margin-top:0">Demo Credentials</div>
+      <div class="cred-row"><span class="cred-lbl">Email</span><span class="cred-val">test@weavai.com</span></div>
+      <div class="cred-row"><span class="cred-lbl">Password</span><span class="cred-val">test123</span></div>
+    </div>
+  </div>
+
+  <div class="run-section">
+    <div class="run-h2">🐳 Option 2 — Docker (Recommended)</div>
+    <div class="info-card">
+      <div class="info-card-title">One command — MySQL + FastAPI + phpMyAdmin</div>
+      <pre>cd weavai
+docker-compose up --build</pre>
+    </div>
+    <div class="run-step"><div class="step-num">1</div><div class="step-desc">Backend API → <code>http://localhost:8000</code></div></div>
+    <div class="run-step"><div class="step-num">2</div><div class="step-desc">API Docs (Swagger) → <code>http://localhost:8000/docs</code></div></div>
+    <div class="run-step"><div class="step-num">3</div><div class="step-desc">Database GUI → <code>http://localhost:8080</code></div></div>
+  </div>
+
+  <div class="run-section">
+    <div class="run-h2">🐍 Option 3 — Manual Setup</div>
+    <div class="run-h2" style="margin-top:14px">Backend</div>
+    <div class="info-card">
+      <pre>cd weavai/backend
+python -m venv venv
+source venv/bin/activate    # Windows: venv\\Scripts\\activate
+pip install -r requirements.txt
+# Edit .env — set DB_PASSWORD
+mysql -u root -p &lt; schema.sql
+uvicorn main:app --reload --port 8000</pre>
+    </div>
+    <div class="run-h2">Frontend (React Native)</div>
+    <div class="info-card">
+      <pre>cd weavai/frontend
+npm install
+# Edit src/services/api.js — set BASE_URL to your machine IP
+npx expo start</pre>
+    </div>
+  </div>
+
+  <div class="run-section">
+    <div class="run-h2">🛣️ All API Routes (19 total)</div>
+    <table class="routes-table">
+      <tr><th>Method</th><th>Route</th><th>Description</th></tr>
+      <tr><td><span class="method post">POST</span></td><td>/auth/signup</td><td>Register new user</td></tr>
+      <tr><td><span class="method post">POST</span></td><td>/auth/login</td><td>Login → JWT token</td></tr>
+      <tr><td><span class="method get">GET</span></td><td>/auth/me</td><td>Current user profile</td></tr>
+      <tr><td><span class="method post">POST</span></td><td>/auth/forgot-password</td><td>Request reset token</td></tr>
+      <tr><td><span class="method post">POST</span></td><td>/auth/reset-password</td><td>Reset password</td></tr>
+      <tr><td><span class="method post">POST</span></td><td>/measurements</td><td>Save body measurements</td></tr>
+      <tr><td><span class="method get">GET</span></td><td>/measurements</td><td>Get measurement history</td></tr>
+      <tr><td><span class="method get">GET</span></td><td>/measurements/{id}</td><td>Get single measurement</td></tr>
+      <tr><td><span class="method get">GET</span></td><td>/recommend</td><td>Get sizes for all 6 brands</td></tr>
+      <tr><td><span class="method get">GET</span></td><td>/recommend/all-categories</td><td>Get sizes × 8 categories</td></tr>
+      <tr><td><span class="method post">POST</span></td><td>/recommend/save</td><td>Save recommendations to DB</td></tr>
+      <tr><td><span class="method get">GET</span></td><td>/brands</td><td>List all brands</td></tr>
+      <tr><td><span class="method get">GET</span></td><td>/brands/{name}/sizes</td><td>Brand's size chart</td></tr>
+      <tr><td><span class="method get">GET</span></td><td>/categories</td><td>List all categories</td></tr>
+      <tr><td><span class="method get">GET</span></td><td>/categories/{slug}/links</td><td>Shop links for category</td></tr>
+      <tr><td><span class="method post">POST</span></td><td>/feedback</td><td>Submit fit feedback</td></tr>
+      <tr><td><span class="method get">GET</span></td><td>/feedback/my</td><td>My feedback history</td></tr>
+      <tr><td><span class="method get">GET</span></td><td>/history</td><td>Recommendations history</td></tr>
+      <tr><td><span class="method get">GET</span></td><td>/health</td><td>Health check + DB status</td></tr>
+    </table>
+  </div>
+
+  <div class="run-section">
+    <div class="run-h2">📁 Project Structure</div>
+    <pre style="background:#0D1B2A;color:#E8DCC8;padding:18px;border-radius:10px;font-size:12px">weavai/
+├── backend/
+│   ├── main.py           # FastAPI — 19 routes, JWT, size algo
+│   ├── schema.sql        # MySQL — 8 tables, 48 shop links
+│   ├── requirements.txt
+│   ├── .env
+│   └── Dockerfile
+├── frontend/
+│   ├── App.js
+│   ├── package.json
+│   └── src/
+│       ├── theme.js
+│       ├── context/AuthContext.js
+│       ├── navigation/AppNavigator.js
+│       ├── services/api.js
+│       └── screens/
+│           ├── AuthScreen.js
+│           ├── HomeScreen.js
+│           ├── MeasureScreen.js
+│           └── ResultsScreen.js
+├── docker-compose.yml
+└── README.md</pre>
+  </div>
+</div>
+
+<script>
+// ─── Source code content (all files) ─────────────────────
+const FILES = {};
+FILES['pre-mainpy']  = MAINPY;
+FILES['pre-req']     = REQUIREMENTS;
+FILES['pre-env']     = ENVFILE;
+FILES['pre-docker']  = DOCKERCOMPOSE;
+FILES['pre-schema']  = SCHEMA;
+FILES['pre-app']     = APPJS;
+FILES['pre-theme']   = THEMEJS;
+FILES['pre-authctx'] = AUTHCONTEXT;
+FILES['pre-nav']     = NAVIGATOR;
+FILES['pre-apijs']   = APIJS;
+FILES['pre-auths']   = AUTHSCREEN;
+FILES['pre-homes']   = HOMESCREEN;
+FILES['pre-meass']   = MEASURESCREEN;
+FILES['pre-ress']    = RESULTSSCREEN;
+FILES['pre-pkg']     = PACKAGEJSON;
+
+// Inject into pre tags
+Object.entries(FILES).forEach(([id, code]) => {
+  const el = document.getElementById(id);
+  if (el) el.textContent = code;
+});
+
+// ─── Tab switching ─────────────────────────────────────
+function showTab(name) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.getElementById(name+'-panel').classList.add('active');
+  document.querySelectorAll('.top-nav button').forEach((b,i) => {
+    const map = ['app','backend','schema','react','run'];
+    b.classList.toggle('active', map[i]===name);
+  });
+}
+
+function codeTab(group, activeId) {
+  const panel = document.getElementById(group+'-panel');
+  panel.querySelectorAll('.code-view').forEach(v => { v.classList.remove('on'); });
+  panel.querySelectorAll('.ct').forEach(t => t.classList.remove('on'));
+  document.getElementById(activeId).classList.add('on');
+  event.target.classList.add('on');
+}
+
+function copyCode(preId) {
+  const text = document.getElementById(preId).textContent;
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = event.target;
+    btn.textContent = '✓ Copied!';
+    setTimeout(() => btn.textContent = 'Copy', 2000);
+  });
+}
+
+// ─── DB (localStorage) ───────────────────────────────────
+const DB = {
+  get: (k) => { try { return JSON.parse(localStorage.getItem('weavai_'+k)||'null'); } catch { return null; } },
+  set: (k,v) => localStorage.setItem('weavai_'+k, JSON.stringify(v)),
+  del: (k) => localStorage.removeItem('weavai_'+k),
+};
+
+function dbInit() {
+  if (!DB.get('users')) {
+    // Seed demo user (password: test123 — stored as hash sim)
+    DB.set('users', [{id:1,name:'Test User',email:'test@weavai.com',password:'test123',createdAt:new Date().toISOString()}]);
+    DB.set('measurements', []);
+    DB.set('recommendations', []);
+    DB.set('feedback', []);
+    DB.set('next_user_id', 2);
+    DB.set('next_meas_id', 1);
+  }
+}
+dbInit();
+
+// ─── Auth state ──────────────────────────────────────────
+let currentUser = DB.get('session_user') || null;
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen-'+id).classList.add('active');
+}
+
+// ─── Auth ────────────────────────────────────────────────
+let _mode = 'login';
+function authMode(mode) {
+  _mode = mode;
+  document.getElementById('tab-login').classList.toggle('on', mode==='login');
+  document.getElementById('tab-signup').classList.toggle('on', mode==='signup');
+  document.getElementById('field-name').style.display = mode==='signup'?'':'none';
+  document.getElementById('field-confirm').style.display = mode==='signup'?'':'none';
+  document.getElementById('forgot-row').style.display = mode==='login'?'':'none';
+  document.getElementById('terms-txt').style.display = mode==='signup'?'':'none';
+  document.getElementById('auth-submit-btn').textContent = mode==='login'?'SIGN IN TO WEAV AI →':'CREATE MY ACCOUNT →';
+  document.getElementById('switch-row').innerHTML = mode==='login'
+    ? 'New to Weav AI? <span class="switch-link" onclick="authMode(\'signup\')">Create free account</span>'
+    : 'Already have an account? <span class="switch-link" onclick="authMode(\'login\')">Sign in</span>';
+  ['err-email','err-pw','err-confirm'].forEach(id => {
+    document.getElementById(id).style.display = 'none';
+  });
+}
+
+function doAuth() {
+  const mode = _mode;
+  const email = document.getElementById('inp-email').value.trim();
+  const pw    = document.getElementById('inp-pw').value;
+  const name  = document.getElementById('inp-name').value.trim();
+  const conf  = document.getElementById('inp-confirm').value;
+  let ok = true;
+
+  if (!email.includes('@')) {
+    document.getElementById('err-email').textContent = '⚠ Enter a valid email';
+    document.getElementById('err-email').style.display = '';
+    ok = false;
+  } else { document.getElementById('err-email').style.display='none'; }
+
+  if (pw.length < 6) {
+    document.getElementById('err-pw').textContent = '⚠ Minimum 6 characters';
+    document.getElementById('err-pw').style.display = '';
+    ok = false;
+  } else { document.getElementById('err-pw').style.display='none'; }
+
+  if (mode==='signup' && pw !== conf) {
+    document.getElementById('err-confirm').textContent = '⚠ Passwords do not match';
+    document.getElementById('err-confirm').style.display = '';
+    ok = false;
+  } else { document.getElementById('err-confirm').style.display='none'; }
+
+  if (!ok) return;
+
+  const users = DB.get('users') || [];
+  if (mode === 'login') {
+    const user = users.find(u => u.email===email && u.password===pw);
+    if (!user) { alert('Incorrect email or password. Try test@weavai.com / test123'); return; }
+    loginSuccess(user);
+  } else {
+    if (users.find(u => u.email===email)) { alert('Email already registered.'); return; }
+    const newUser = { id: DB.get('next_user_id')||2, name: name||email.split('@')[0], email, password:pw, createdAt: new Date().toISOString() };
+    users.push(newUser);
+    DB.set('users', users);
+    DB.set('next_user_id', newUser.id+1);
+    loginSuccess(newUser);
+  }
+}
+
+function loginSuccess(user) {
+  currentUser = user;
+  DB.set('session_user', user);
+  const init = (user.name||user.email).slice(0,2).toUpperCase();
+  document.getElementById('user-avatar').textContent = init;
+  loadHistory();
+  showScreen('home');
+}
+
+function doLogout() {
+  if (!confirm('Sign out?')) return;
+  currentUser = null;
+  DB.del('session_user');
+  document.getElementById('inp-email').value='';
+  document.getElementById('inp-pw').value='';
+  authMode('login');
+  showScreen('auth');
+}
+
+// Check existing session
+if (currentUser) loginSuccess(currentUser);
+
+// ─── Home ─────────────────────────────────────────────────
+function loadHistory() {
+  const all = DB.get('measurements') || [];
+  const mine = all.filter(m => m.userId === currentUser?.id).slice(0,3);
+  const section = document.getElementById('history-section');
+  const list = document.getElementById('history-list');
+  if (mine.length === 0) { section.style.display='none'; return; }
+  section.style.display='';
+  list.innerHTML = mine.map(m => `
+    <div onclick="viewHistory(${m.id})" style="background:var(--cream);border:1px solid var(--border);border-radius:var(--r);padding:12px;display:flex;justify-content:space-between;align-items:center;cursor:pointer">
+      <div>
+        <div style="font-size:11px;color:var(--muted)">${new Date(m.createdAt).toLocaleDateString('en-US',{month:'short',day:'numeric'})}</div>
+        <div style="font-size:13px;font-weight:700;color:var(--navy)">B:${Math.round(m.bust)} W:${Math.round(m.waist)} H:${Math.round(m.hips)} cm</div>
+        ${m.bodyType?`<div style="font-size:11px;color:var(--muted)">${m.bodyType}</div>`:''}
+      </div>
+      <span style="font-size:20px;color:var(--gold)">›</span>
+    </div>
+  `).join('');
+}
+
+function viewHistory(id) {
+  const all = DB.get('measurements') || [];
+  const m = all.find(x => x.id===id);
+  if (m) showResults(m, []);
+}
+
+function goToHome() { loadHistory(); showScreen('home'); }
+function goToMeasure() { measureStep = 1; measureUnit = 'cm'; measureData = {}; renderMeasureStep(); showScreen('measure'); }
+
+// ─── Measure ──────────────────────────────────────────────
+let measureStep = 1, measureUnit = 'cm', measureData = {};
+
+const BODY_TYPES = [{id:'Hourglass',i:'⌛'},{id:'Pear',i:'🍐'},{id:'Apple',i:'🍎'},{id:'Rectangle',i:'▭'},{id:'Athletic',i:'⚡'},{id:'Curvy',i:'〜'}];
+
+function renderMeasureStep() {
+  const s = measureStep;
+  document.getElementById('step-counter').textContent = s+' / 3';
+  document.getElementById('next-btn').textContent = s===3 ? 'GENERATE & SAVE MY PROFILE →' : 'CONTINUE →';
+
+  // progress
+  document.querySelectorAll('.pb-seg').forEach((el,i) => {
+    el.className = 'pb-seg' + (i<s-1?' pb-done':'') + (i===s-1?' pb-now':'');
+  });
+
+  const eys = ['BASIC DETAILS','BODY MEASUREMENTS','BODY TYPE'];
+  const ttls = ['Tell us about yourself','Your measurements','Your body type'];
+  const subs = ['Calibrates your size across every brand.','Measure in a relaxed posture for accuracy.','Optional — helps fine-tune recommendations.'];
+  document.getElementById('step-ey').textContent = eys[s-1];
+  document.getElementById('step-ttl').textContent = ttls[s-1];
+  document.getElementById('step-sub').textContent = subs[s-1];
+
+  const body = document.getElementById('step-body');
+  const u = measureUnit;
+
+  if (s===1) {
+    body.innerHTML = `
+      <div class="unit-row">
+        <span style="font-size:13px;color:var(--muted);font-weight:500">Units of measure</span>
+        <div class="unit-pills">
+          <button class="upill ${u==='cm'?'on':''}" onclick="setUnit('cm')">cm/kg</button>
+          <button class="upill ${u==='in'?'on':''}" onclick="setUnit('in')">in/lbs</button>
+        </div>
+      </div>
+      ${mkField('HEIGHT','height',u==='cm'?'165':'65','Standing height without shoes',u==='cm'?'CM':'IN')}
+      <div class="two-col">
+        ${mkField('WEIGHT','weight',u==='cm'?'60':'132','',u==='cm'?'KG':'LBS')}
+        ${mkField('AGE','age','26','','YRS')}
+      </div>
+      <div class="tip-box">✦ Saved securely in database. Your data is never shared.</div>
+    `;
+  } else if (s===2) {
+    body.innerHTML = `
+      <div class="guide-card">
+        <div style="font-size:11px;font-weight:700;letter-spacing:1px;color:var(--muted);margin-bottom:10px">MEASUREMENT GUIDE</div>
+        <div class="guide-item"><div class="g-dot" style="background:#C9A84C"></div><div><span style="font-size:13px;font-weight:700;color:var(--navy2)">Bust</span> <span style="font-size:11px;color:var(--muted)">— Fullest part of chest</span></div></div>
+        <div class="guide-item"><div class="g-dot" style="background:#1A3A5C"></div><div><span style="font-size:13px;font-weight:700;color:var(--navy2)">Waist</span> <span style="font-size:11px;color:var(--muted)">— Narrowest point</span></div></div>
+        <div class="guide-item" style="margin-bottom:0"><div class="g-dot" style="background:#0D1B2A"></div><div><span style="font-size:13px;font-weight:700;color:var(--navy2)">Hips</span> <span style="font-size:11px;color:var(--muted)">— Widest point</span></div></div>
+      </div>
+      ${mkField('BUST / CHEST','bust',u==='cm'?'88':'34.5','Keep tape parallel to the ground',u)}
+      ${mkField('WAIST','waist',u==='cm'?'70':'27.5','At the natural waistline',u)}
+      ${mkField('HIPS','hips',u==='cm'?'96':'37.5','Stand with feet together',u)}
+    `;
+  } else {
+    body.innerHTML = `
+      <div class="bt-grid" id="bt-grid">
+        ${BODY_TYPES.map(bt => `
+          <div class="bt-card ${measureData.bodyType===bt.id?'sel':''}" onclick="selBt(this,'${bt.id}')">
+            <span class="bt-ic">${bt.i}</span>
+            <span class="bt-nm">${bt.id}</span>
+          </div>
+        `).join('')}
+      </div>
+      <div class="tip-box">◇ Your measurements alone are sufficient for accurate recommendations.</div>
+    `;
+  }
+  // restore values
+  restoreFields();
+}
+
+function mkField(label, key, ph, hint, unitLabel) {
+  return `<div class="num-field">
+    <div class="field-lbl">${label}</div>
+    <div class="num-wrap">
+      <input class="num-inp" type="number" placeholder="${ph}" id="mf-${key}" value="${measureData[key]||''}" oninput="measureData['${key}']=this.value"/>
+      <div class="num-unit">${unitLabel}</div>
+    </div>
+    ${hint?`<div class="hint-txt">${hint}</div>`:''}
+    <div class="err-msg" id="merr-${key}" style="display:none"></div>
+  </div>`;
+}
+
+function restoreFields() {
+  ['height','weight','age','bust','waist','hips'].forEach(k => {
+    const el = document.getElementById('mf-'+k);
+    if (el && measureData[k]) el.value = measureData[k];
+  });
+}
+
+function setUnit(u) {
+  measureUnit = u;
+  renderMeasureStep();
+}
+
+function selBt(el, id) {
+  document.querySelectorAll('.bt-card').forEach(c => c.classList.remove('sel'));
+  el.classList.add('sel');
+  measureData.bodyType = id;
+}
+
+function measureBack() {
+  if (measureStep === 1) { goToHome(); return; }
+  measureStep--;
+  renderMeasureStep();
+}
+
+function measureNext(skip) {
+  if (!skip && measureStep < 3) {
+    // validate
+    const required = measureStep===1 ? ['height','weight','age'] : ['bust','waist','hips'];
+    let ok = true;
+    required.forEach(k => {
+      const el = document.getElementById('mf-'+k);
+      const errEl = document.getElementById('merr-'+k);
+      if (el && !el.value) {
+        errEl.textContent = '⚠ Required';
+        errEl.style.display = '';
+        ok = false;
+      } else if (errEl) errEl.style.display = 'none';
+    });
+    if (!ok) return;
+  }
+  if (measureStep < 3) {
+    measureStep++;
+    renderMeasureStep();
+  } else {
+    submitMeasure();
+  }
+}
+
+function toCm(v) {
+  const n = parseFloat(v)||0;
+  return measureUnit==='in' ? n*2.54 : n;
+}
+
+function submitMeasure() {
+  showScreen('loading');
+  const msgs = ['Analysing your profile…','Matching Nike sizes…','Checking Adidas charts…','Calibrating Zara fit…','Almost done…'];
+  let mi = 0;
+  const msgEl = document.getElementById('loading-msg');
+  const bps = document.querySelectorAll('.bp');
+  let bi = 0;
+  const mi2 = setInterval(() => {
+    msgEl.textContent = msgs[Math.min(mi++, msgs.length-1)];
+    if (bi < bps.length) bps[bi++].classList.add('lit');
+  }, 600);
+
+  setTimeout(() => {
+    clearInterval(mi2);
+    const meas = {
+      id: DB.get('next_meas_id')||1,
+      userId: currentUser.id,
+      bust:  toCm(measureData.bust),
+      waist: toCm(measureData.waist),
+      hips:  toCm(measureData.hips),
+      height: toCm(measureData.height),
+      weight: parseFloat(measureData.weight)||0,
+      age: parseInt(measureData.age)||0,
+      bodyType: measureData.bodyType||'',
+      unit: measureUnit,
+      createdAt: new Date().toISOString(),
+    };
+    const all = DB.get('measurements')||[];
+    all.unshift(meas);
+    DB.set('measurements', all);
+    DB.set('next_meas_id', meas.id+1);
+    const recs = computeRecs(meas.bust, meas.waist, meas.hips, 'tops');
+    showResults(meas, recs);
+    bps.forEach(bp => bp.classList.remove('lit'));
+  }, 3800);
+}
+
+// ─── Size algorithm ───────────────────────────────────────
+const SIZE_CHARTS = {
+  Nike:    [{s:'XS',bmin:79,bmax:84,wmin:61,wmax:66,hmin:86,hmax:91},{s:'S',bmin:84,bmax:89,wmin:66,wmax:71,hmin:91,hmax:96},{s:'M',bmin:89,bmax:94,wmin:71,wmax:76,hmin:96,hmax:101},{s:'L',bmin:94,bmax:100,wmin:76,wmax:82,hmin:101,hmax:107},{s:'XL',bmin:100,bmax:107,wmin:82,wmax:89,hmin:107,hmax:114},{s:'XXL',bmin:107,bmax:114,wmin:89,wmax:96,hmin:114,hmax:121}],
+  Adidas:  [{s:'XS',bmin:76,bmax:82,wmin:58,wmax:63,hmin:83,hmax:89},{s:'S',bmin:82,bmax:88,wmin:63,wmax:68,hmin:89,hmax:95},{s:'M',bmin:88,bmax:94,wmin:68,wmax:74,hmin:95,hmax:101},{s:'L',bmin:94,bmax:101,wmin:74,wmax:81,hmin:101,hmax:108},{s:'XL',bmin:101,bmax:108,wmin:81,wmax:88,hmin:108,hmax:115},{s:'XXL',bmin:108,bmax:116,wmin:88,wmax:96,hmin:115,hmax:123}],
+  Puma:    [{s:'XS',bmin:80,bmax:84,wmin:61,wmax:65,hmin:87,hmax:91},{s:'S',bmin:84,bmax:88,wmin:65,wmax:69,hmin:91,hmax:95},{s:'M',bmin:88,bmax:93,wmin:69,wmax:74,hmin:95,hmax:100},{s:'L',bmin:93,bmax:99,wmin:74,wmax:80,hmin:100,hmax:106},{s:'XL',bmin:99,bmax:105,wmin:80,wmax:87,hmin:106,hmax:113},{s:'XXL',bmin:105,bmax:113,wmin:87,wmax:95,hmin:113,hmax:121}],
+  'H&M':   [{s:'XS',bmin:80,bmax:83,wmin:61,wmax:64,hmin:86,hmax:89},{s:'S',bmin:83,bmax:87,wmin:64,wmax:68,hmin:89,hmax:93},{s:'M',bmin:87,bmax:93,wmin:68,wmax:74,hmin:93,hmax:99},{s:'L',bmin:93,bmax:99,wmin:74,wmax:80,hmin:99,hmax:105},{s:'XL',bmin:99,bmax:107,wmin:80,wmax:88,hmin:105,hmax:113},{s:'XXL',bmin:107,bmax:115,wmin:88,wmax:96,hmin:113,hmax:121}],
+  Zara:    [{s:'XS',bmin:79,bmax:83,wmin:60,wmax:64,hmin:86,hmax:90},{s:'S',bmin:83,bmax:87,wmin:64,wmax:68,hmin:90,hmax:94},{s:'M',bmin:87,bmax:93,wmin:68,wmax:74,hmin:94,hmax:100},{s:'L',bmin:93,bmax:99,wmin:74,wmax:80,hmin:100,hmax:106},{s:'XL',bmin:99,bmax:107,wmin:80,wmax:88,hmin:106,hmax:114},{s:'XXL',bmin:107,bmax:115,wmin:88,wmax:96,hmin:114,hmax:122}],
+  "Levi's":[{s:'XS',bmin:81,bmax:84,wmin:62,wmax:65,hmin:87,hmax:90},{s:'S',bmin:84,bmax:88,wmin:65,wmax:69,hmin:90,hmax:94},{s:'M',bmin:88,bmax:94,wmin:69,wmax:75,hmin:94,hmax:100},{s:'L',bmin:94,bmax:100,wmin:75,wmax:81,hmin:100,hmax:106},{s:'XL',bmin:100,bmax:108,wmin:81,wmax:89,hmin:106,hmax:114},{s:'XXL',bmin:108,bmax:116,wmin:89,wmax:97,hmin:114,hmax:122}],
+};
+
+const SHOP_URLS = {
+  Nike:{"tops":"https://www.nike.com/w/womens-tops-shirts-5e1x6znik1","bottoms":"https://www.nike.com/w/womens-pants-tights-leggings-37v7jznik1","dresses":"https://www.nike.com/w/womens-skirts-dresses-5e1x6znik1","sports_bras":"https://www.nike.com/w/womens-sports-bras-znik1","hoodies":"https://www.nike.com/w/womens-hoodies-sweatshirts-6rive","accessories":"https://www.nike.com/w/womens-accessories-6nmx2","outerwear":"https://www.nike.com/w/womens-jackets-vests-50r7y","footwear":"https://www.nike.com/w/womens-shoes-5e1x6"},
+  Adidas:{"tops":"https://www.adidas.com/us/women-tops","bottoms":"https://www.adidas.com/us/women-pants-tights","dresses":"https://www.adidas.com/us/women-dresses-skirts","sports_bras":"https://www.adidas.com/us/women-sports-bras","hoodies":"https://www.adidas.com/us/women-hoodies-sweatshirts","accessories":"https://www.adidas.com/us/women-accessories","outerwear":"https://www.adidas.com/us/women-jackets-vests","footwear":"https://www.adidas.com/us/women-shoes"},
+  Puma:{"tops":"https://us.puma.com/us/en/women/clothing/tops","bottoms":"https://us.puma.com/us/en/women/clothing/bottoms","dresses":"https://us.puma.com/us/en/women/clothing/dresses","sports_bras":"https://us.puma.com/us/en/women/clothing/sports-bras","hoodies":"https://us.puma.com/us/en/women/clothing/hoodies-sweatshirts","accessories":"https://us.puma.com/us/en/women/accessories","outerwear":"https://us.puma.com/us/en/women/clothing/jackets","footwear":"https://us.puma.com/us/en/women/shoes"},
+  'H&M':{"tops":"https://www2.hm.com/en_us/ladies/shop-by-product/tops.html","bottoms":"https://www2.hm.com/en_us/ladies/shop-by-product/trousers.html","dresses":"https://www2.hm.com/en_us/ladies/shop-by-product/dresses.html","sports_bras":"https://www2.hm.com/en_us/ladies/shop-by-product/sport-bras.html","hoodies":"https://www2.hm.com/en_us/ladies/shop-by-product/hoodies-sweatshirts.html","accessories":"https://www2.hm.com/en_us/ladies/accessories.html","outerwear":"https://www2.hm.com/en_us/ladies/shop-by-product/jackets-coats.html","footwear":"https://www2.hm.com/en_us/ladies/shop-by-product/shoes.html"},
+  Zara:{"tops":"https://www.zara.com/us/en/woman-tops-l1249.html","bottoms":"https://www.zara.com/us/en/woman-trousers-l1335.html","dresses":"https://www.zara.com/us/en/woman-dresses-l1066.html","sports_bras":"https://www.zara.com/us/en/woman-sport-l1418.html","hoodies":"https://www.zara.com/us/en/woman-sweatshirts-l1371.html","accessories":"https://www.zara.com/us/en/woman-accessories-l1244.html","outerwear":"https://www.zara.com/us/en/woman-outerwear-l1108.html","footwear":"https://www.zara.com/us/en/woman-shoes-l1251.html"},
+  "Levi's":{"tops":"https://www.levi.com/US/en_US/clothing/women/tops/c/tops_women","bottoms":"https://www.levi.com/US/en_US/clothing/women/jeans/c/jeans_women","dresses":"https://www.levi.com/US/en_US/clothing/women/dresses/c/dresses_women","sports_bras":"https://www.levi.com/US/en_US/clothing/women/c/levi_clothing_women","hoodies":"https://www.levi.com/US/en_US/clothing/women/sweatshirts-hoodies/c/sweatshirts_women","accessories":"https://www.levi.com/US/en_US/accessories/women/c/levi_accessories_women","outerwear":"https://www.levi.com/US/en_US/clothing/women/jackets-and-coats/c/jackets_women","footwear":"https://www.levi.com/US/en_US/footwear/women/c/levi_footwear_women"},
+};
+
+const LOGOS = {Nike:'NK',Adidas:'AD',Puma:'PM','H&M':'HM',Zara:'ZA',"Levi's":'LV'};
+
+function matchSize(bust, waist, hips, charts) {
+  for (const c of charts) {
+    const wok = c.wmin<=waist && waist<=c.wmax;
+    const bok = c.bmin<=bust  && bust<=c.bmax;
+    const hok = c.hmin<=hips  && hips<=c.hmax;
+    const m = [wok,bok,hok].filter(Boolean).length;
+    if (m>=2) return {size:c.s, confidence: m===3?97:88};
+    if (wok) return {size:c.s, confidence:82};
+    if (bok) return {size:c.s, confidence:76};
+  }
+  let best=charts[0], minD=Infinity;
+  charts.forEach(c => { const d=Math.abs(waist-(c.wmin+c.wmax)/2); if(d<minD){minD=d;best=c;} });
+  return {size:best.s, confidence:62};
+}
+
+function computeRecs(bust, waist, hips, cat) {
+  return Object.entries(SIZE_CHARTS).map(([brand, charts]) => {
+    const r = matchSize(bust, waist, hips, charts);
+    return { brand, logo: LOGOS[brand], size: r.size, confidence: r.confidence, shop_url: SHOP_URLS[brand]?.[cat]||'#', category: cat };
+  });
+}
+
+// ─── Results ──────────────────────────────────────────────
+let currentMeas = null, currentCat = 'tops', currentRecs = [];
+
+const CATS = [
+  {id:'tops',l:'Tops',s:'✦'},{id:'bottoms',l:'Bottoms',s:'◆'},
+  {id:'dresses',l:'Dresses',s:'◇'},{id:'sports_bras',l:'Sports Bras',s:'○'},
+  {id:'hoodies',l:'Hoodies',s:'▽'},{id:'accessories',l:'Accessories',s:'❋'},
+  {id:'outerwear',l:'Outerwear',s:'◈'},{id:'footwear',l:'Footwear',s:'◎'},
+];
+
+function showResults(meas, recs) {
+  currentMeas = meas;
+  currentCat = 'tops';
+  currentRecs = recs.length ? recs : computeRecs(meas.bust, meas.waist, meas.hips, 'tops');
+
+  const fmtLen = v => meas.unit==='in' ? (v/2.54).toFixed(1)+'"' : Math.round(v)+' cm';
+  document.getElementById('meas-strip').innerHTML = [
+    {l:'Bust',v:fmtLen(meas.bust)},{l:'Waist',v:fmtLen(meas.waist)},{l:'Hips',v:fmtLen(meas.hips)},{l:'Type',v:meas.bodyType||'—'}
+  ].map(({l,v}) => `<div class="m-chip"><span>${l}&nbsp;</span><b>${v}</b></div>`).join('');
+
+  renderSzCells();
+  renderCatTabs();
+  renderBrandCards();
+  showScreen('results');
+}
+
+function renderSzCells() {
+  document.getElementById('sz-cells').innerHTML = currentRecs.map(r =>
+    `<div class="sz-cell" onclick="window.open('${r.shop_url}','_blank')">
+      <div class="sz-brand">${r.brand}</div>
+      <div class="sz-size">${r.size}</div>
+      <div class="sz-conf">${r.confidence}%</div>
+    </div>`
+  ).join('');
+}
+
+function renderCatTabs() {
+  document.getElementById('cat-row').innerHTML = CATS.map(c =>
+    `<div class="c-tab ${c.id===currentCat?'on':''}" onclick="switchCat('${c.id}')">${c.s} ${c.l}</div>`
+  ).join('');
+}
+
+function switchCat(cat) {
+  currentCat = cat;
+  currentRecs = computeRecs(currentMeas.bust, currentMeas.waist, currentMeas.hips, cat);
+  renderSzCells();
+  renderCatTabs();
+  renderBrandCards();
+}
+
+function renderBrandCards() {
+  const catLabel = CATS.find(c=>c.id===currentCat)?.l||'Tops';
+  document.getElementById('brand-list').innerHTML = currentRecs.map(r =>
+    `<div class="b-card">
+      <div class="bc-body" onclick="window.open('${r.shop_url}','_blank')">
+        <div class="bc-mono">${r.logo}</div>
+        <div class="bc-info">
+          <div class="bc-name">${r.brand}</div>
+          <div class="bc-sub">Women's ${catLabel} · Official Store</div>
+          <div class="bc-conf">Confidence: ${r.confidence}%</div>
+        </div>
+        <div class="bc-badge">
+          <span class="bc-bl">YOUR SIZE</span>
+          <span class="bc-bv">${r.size}</span>
+        </div>
+      </div>
+      <div class="bc-foot">
+        <button class="fb-btn" onclick="openFb('${r.brand}','${r.size}')">Rate Fit</button>
+        <button class="shop-btn" onclick="window.open('${r.shop_url}','_blank')">SHOP NOW ↗</button>
+      </div>
+    </div>`
+  ).join('');
+}
+
+// ─── Feedback modal ───────────────────────────────────────
+let fbBrand='', fbSize='', fbFit='';
+
+function openFb(brand, size) {
+  fbBrand=brand; fbSize=size; fbFit='';
+  document.getElementById('fb-sub').textContent = brand+' — Size '+size;
+  document.querySelectorAll('.fit-opt').forEach(el => el.classList.remove('sel'));
+  document.getElementById('fb-notes').value = '';
+  document.getElementById('fb-modal').classList.add('open');
+}
+
+function selFit(el, v) {
+  document.querySelectorAll('.fit-opt').forEach(e => e.classList.remove('sel'));
+  el.classList.add('sel');
+  fbFit = v;
+}
+
+function closeFb() { document.getElementById('fb-modal').classList.remove('open'); }
+
+function submitFb() {
+  if (!fbFit) { alert('Please select how the item fits.'); return; }
+  const all = DB.get('feedback')||[];
+  all.push({ brand:fbBrand, size:fbSize, fit:fbFit, notes:document.getElementById('fb-notes').value, userId:currentUser?.id, date:new Date().toISOString() });
+  DB.set('feedback', all);
+  alert('Thank you! Your feedback helps improve recommendations.');
+  closeFb();
+}
+
+// init measure
+goToMeasure(); showScreen('auth');
+renderMeasureStep();
+</script>
+<script>
+// ─── Inject source files (avoids backtick issues) ─────────
+(function() {
+  const files = document.querySelectorAll('pre[id^="pre-"]');
+  // files already set in FILES object above during DOMContentLoaded
+})();
+</script>

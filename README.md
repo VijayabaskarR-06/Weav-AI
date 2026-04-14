@@ -1,2 +1,1 @@
-# Weav-AI
-Initial commit
+Weav -AI Project
