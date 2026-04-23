@@ -1,0 +1,2859 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"/>
+<title>Weav AI — Your Personal Tailor</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,600&family=Jost:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --gold:#C9A84C;--gold2:#E8C97D;--gold3:#A8842A;
+  --gold-dim:rgba(201,168,76,0.12);--gold-glow:rgba(201,168,76,0.30);
+  --cream:#FAF6EE;--warm:#F5EDE0;--parch:#EDE0CE;
+  --nude:#DEC9AE;--tan:#C2A07A;
+  --navy:#0D1B2A;--navy2:#1A3A5C;--navy3:#2E6B9E;
+  --muted:#8A96A8;--muted2:rgba(13,27,42,0.50);
+  --bd:rgba(13,27,42,0.09);--bd2:rgba(201,168,76,0.28);
+  --bd3:rgba(13,27,42,0.14);
+  --sh:0 2px 16px rgba(13,27,42,0.07);
+  --sh2:0 8px 36px rgba(13,27,42,0.13);
+  --sh3:0 20px 60px rgba(13,27,42,0.18);
+  --r:13px;--r2:20px;--r3:28px;
+  --err:#C0392B;--ok:#1A6B4A;
+}
+html,body{height:100%;background:var(--parch);font-family:'Jost',sans-serif;color:var(--navy);overflow:hidden;-webkit-font-smoothing:antialiased}
+
+
+.app{width:100vw;height:100vh;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}
+.bg-scene{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+.bg-orb{position:absolute;border-radius:50%;filter:blur(90px)}
+.bg-orb-1{width:520px;height:520px;background:rgba(46,107,158,0.09);top:-15%;left:-12%;animation:bgDrift 14s ease-in-out infinite alternate}
+.bg-orb-2{width:440px;height:440px;background:rgba(201,168,76,0.08);bottom:0;right:-12%;animation:bgDrift 11s ease-in-out infinite alternate-reverse}
+.bg-orb-3{width:320px;height:320px;background:rgba(220,200,180,0.12);top:38%;left:32%;animation:bgDrift 17s ease-in-out infinite alternate}
+@keyframes bgDrift{0%{transform:translate(0,0) scale(1)}100%{transform:translate(28px,22px) scale(1.08)}}
+.bg-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(13,27,42,0.024) 1px,transparent 1px),linear-gradient(90deg,rgba(13,27,42,0.024) 1px,transparent 1px);background-size:56px 56px}
+
+
+.phone{width:390px;height:844px;background:var(--cream);border-radius:52px;border:1.5px solid rgba(13,27,42,0.10);position:relative;overflow:hidden;box-shadow:0 0 0 1.5px rgba(255,255,255,0.65),var(--sh3),0 0 80px rgba(46,107,158,0.07)}
+.notch{position:absolute;top:0;left:50%;transform:translateX(-50%);width:124px;height:34px;background:var(--navy);z-index:200;border-radius:0 0 22px 22px}
+
+
+.screen{position:absolute;inset:0;display:flex;flex-direction:column;overflow:hidden;opacity:0;pointer-events:none;transition:opacity .42s cubic-bezier(.4,0,.2,1),transform .42s cubic-bezier(.4,0,.2,1);transform:translateY(14px)}
+.screen.active{opacity:1;pointer-events:all;transform:translateY(0)}
+.screen.out{opacity:0;transform:translateY(-14px);pointer-events:none}
+
+
+.logo-mark-lg svg,.logo-mark-sm svg,.logo-mark-xs svg{display:block}
+
+
+#s-auth{background:var(--cream)}
+
+
+.auth-hero{
+  background:linear-gradient(168deg,#071118 0%,#0D1B2A 45%,#142840 75%,#0D1B2A 100%);
+  padding:56px 32px 38px;
+  position:relative;overflow:hidden;flex-shrink:0;
+}
+.ah-glow{position:absolute;inset:0;background:radial-gradient(ellipse at 50% -5%,rgba(201,168,76,0.22) 0%,transparent 62%);pointer-events:none}
+.ah-ring{position:absolute;border-radius:50%;border:1px solid rgba(201,168,76,0.06);pointer-events:none}
+.ah-ring-1{width:340px;height:340px;top:-130px;right:-80px}
+.ah-ring-2{width:220px;height:220px;bottom:-80px;left:-60px}
+.ah-ring-3{width:420px;height:420px;top:-50px;left:50%;transform:translateX(-50%);border-color:rgba(46,107,158,0.05)}
+.ah-separator{position:absolute;bottom:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(201,168,76,0.18),transparent)}
+
+
+.auth-logo-wrap{display:flex;flex-direction:column;align-items:center;gap:14px;position:relative;z-index:1}
+.auth-spin-ring{width:90px;height:90px;border-radius:50%;border:1.5px solid rgba(201,168,76,0.20);position:relative;display:flex;align-items:center;justify-content:center;animation:spinCW 24s linear infinite;flex-shrink:0}
+.auth-spin-ring::before{content:'';position:absolute;inset:6px;border-radius:50%;border:1px dashed rgba(201,168,76,0.08)}
+@keyframes spinCW{to{transform:rotate(360deg)}}
+.auth-logo-core{position:absolute;width:68px;height:68px;display:flex;align-items:center;justify-content:center;animation:spinCCW 24s linear infinite;filter:drop-shadow(0 0 12px rgba(201,168,76,0.40))}
+@keyframes spinCCW{to{transform:rotate(-360deg)}}
+.auth-wordmark{font-family:'Cormorant Garamond',serif;font-size:42px;font-weight:700;letter-spacing:5px;text-transform:uppercase;background:linear-gradient(135deg,#E8C97D 0%,#C9A84C 55%,#F2E4B8 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1}
+.auth-tagline{font-family:'Cormorant Garamond',serif;font-size:13px;font-weight:300;font-style:italic;color:rgba(245,237,208,0.46);letter-spacing:3px}
+
+
+
+
+.auth-tabs{display:flex;border-bottom:1px solid var(--bd);background:var(--cream);flex-shrink:0;position:relative}
+.a-tab{flex:1;padding:14px;font-family:'Jost',sans-serif;font-size:12px;font-weight:700;letter-spacing:2px;text-transform:uppercase;border:none;background:none;cursor:pointer;color:var(--muted);transition:color .2s}
+.a-tab.on{color:var(--navy)}
+.a-tab-line{position:absolute;bottom:0;height:1.5px;background:linear-gradient(90deg,var(--gold),var(--gold2));transition:left .3s cubic-bezier(.4,0,.2,1),width .3s cubic-bezier(.4,0,.2,1)}
+
+
+.auth-form{flex:1;overflow-y:auto;padding:20px 26px 16px;display:flex;flex-direction:column;scrollbar-width:none}
+.auth-form::-webkit-scrollbar{display:none}
+
+
+.g-btn{width:100%;padding:14px;margin-bottom:16px;background:var(--warm);border:1.5px solid var(--bd);border-radius:var(--r);font-family:'Jost',sans-serif;font-size:13px;font-weight:600;color:var(--navy2);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;transition:all .22s;position:relative;overflow:hidden}
+.g-btn::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(201,168,76,0.04),transparent);opacity:0;transition:opacity .2s}
+.g-btn:hover{border-color:var(--bd2);background:var(--parch);box-shadow:var(--sh)}
+.g-btn:hover::before{opacity:1}
+.g-btn:disabled{opacity:.6;cursor:not-allowed}
+
+.div-row{display:flex;align-items:center;gap:12px;margin-bottom:16px}
+.div-ln{flex:1;height:1px;background:var(--bd)}
+.div-tx{font-size:11px;color:var(--muted);letter-spacing:2px;font-weight:600;white-space:nowrap}
+
+
+.fld{margin-bottom:14px}
+.fld-lb{font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--navy3);margin-bottom:6px;display:block;transition:color .2s}
+.fld:focus-within .fld-lb{color:var(--gold)}
+.fld-bx{position:relative;border:1.5px solid var(--bd);border-radius:var(--r);background:var(--cream);overflow:hidden;transition:border-color .22s,box-shadow .22s,background .22s}
+.fld-bx::after{content:'';position:absolute;bottom:0;left:0;right:0;height:1.5px;background:linear-gradient(90deg,transparent,var(--gold),transparent);transform:scaleX(0);transform-origin:center;transition:transform .32s cubic-bezier(.4,0,.2,1)}
+.fld-bx:focus-within::after{transform:scaleX(1)}
+.fld-bx:focus-within{border-color:rgba(201,168,76,0.30);box-shadow:0 0 0 3px rgba(201,168,76,0.09),var(--sh);background:rgba(201,168,76,0.025)}
+.fld-ic{position:absolute;left:14px;top:50%;transform:translateY(-50%);font-size:13px;color:var(--nude);pointer-events:none;transition:color .22s}
+.fld-bx:focus-within .fld-ic{color:var(--gold)}
+.fld-in{width:100%;padding:14px 42px 14px 40px;background:transparent;border:none;outline:none;font-family:'Jost',sans-serif;font-size:15px;font-weight:600;color:#8B5E2C}
+.fld-in::placeholder{color:var(--nude);font-size:13px;font-weight:400}
+.fld-eye{position:absolute;right:11px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--muted);font-size:13px;padding:4px;transition:color .2s;line-height:1}
+.fld-eye:hover{color:var(--navy3)}
+.fld-err{font-size:11px;color:var(--err);font-weight:600;margin-top:4px;display:none;align-items:center;gap:4px}
+.fld-err.show{display:flex}
+.fld-err::before{content:'⚠';font-size:9px}
+
+.forgot-row{text-align:right;margin-bottom:6px}
+.forgot-row span{font-size:12px;color:var(--muted);cursor:pointer;transition:color .2s;border:none;background:none;font-family:'Jost',sans-serif}
+.forgot-row span:hover{color:var(--gold)}
+
+
+.btn-gold{width:100%;padding:16px;background:linear-gradient(135deg,#C9A84C 0%,#E8C97D 55%,#C9A84C 100%);border:none;border-radius:var(--r);font-family:'Jost',sans-serif;font-size:13px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;color:var(--navy);cursor:pointer;box-shadow:0 8px 28px rgba(201,168,76,0.32),0 2px 6px rgba(201,168,76,0.20);position:relative;overflow:hidden;transition:transform .22s,box-shadow .22s}
+.btn-gold::after{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,0.18),transparent);pointer-events:none}
+.btn-gold:hover{transform:translateY(-2px);box-shadow:0 14px 40px rgba(201,168,76,0.42)}
+.btn-gold:active{transform:translateY(0)}
+.btn-gold:disabled{opacity:.62;cursor:not-allowed;transform:none}
+
+
+.spin{display:inline-block;width:17px;height:17px;border-radius:50%;border:2px solid rgba(13,27,42,0.18);border-top-color:var(--navy);animation:doSpin .7s linear infinite;vertical-align:middle}
+@keyframes doSpin{to{transform:rotate(360deg)}}
+
+.auth-sw{text-align:center;padding:12px 0 4px;font-size:13px;color:var(--muted)}
+.auth-sw b{color:var(--gold);font-weight:700;cursor:pointer}
+.auth-sw b:hover{opacity:.8}
+.terms-note{font-size:11px;color:var(--muted);text-align:center;line-height:1.7;margin-top:8px;font-style:italic;font-family:'Cormorant Garamond',serif}
+.terms-note a{color:var(--navy3);text-decoration:none}
+
+
+#s-splash{background:var(--cream)}
+.sp-bg-1{position:absolute;top:-70px;right:-55px;width:260px;height:260px;border-radius:50%;background:radial-gradient(circle,rgba(46,107,158,0.08) 0%,transparent 70%);pointer-events:none}
+.sp-bg-2{position:absolute;bottom:70px;left:-70px;width:230px;height:230px;border-radius:50%;background:radial-gradient(circle,rgba(201,168,76,0.08) 0%,transparent 70%);pointer-events:none}
+
+
+.sp-header{padding:50px 26px 0;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;position:relative;z-index:1}
+.sp-logo-row{display:flex;align-items:center;gap:10px}
+.sp-logo-badge{width:30px;height:30px;border-radius:7px;overflow:hidden;display:flex;align-items:center;justify-content:center;box-shadow:var(--sh)}
+.sp-brand{font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:700;letter-spacing:4px;text-transform:uppercase;color:var(--navy)}
+.user-widget{display:flex;flex-direction:column;align-items:flex-end;gap:3px}
+.user-pill{display:flex;align-items:center;gap:7px;padding:6px 12px;border-radius:100px;border:1px solid var(--bd);background:var(--warm);font-family:'Jost',sans-serif}
+.user-av{width:22px;height:22px;border-radius:50%;background:linear-gradient(135deg,var(--navy),var(--navy2));display:flex;align-items:center;justify-content:center;font-family:'Jost',sans-serif;font-size:8px;font-weight:700;color:#fff;flex-shrink:0}
+.user-name{font-size:12px;font-weight:600;color:var(--navy2);max-width:72px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.so-btn{font-size:10px;color:var(--muted);cursor:pointer;background:none;border:none;font-family:'Jost',sans-serif;transition:color .2s;padding:0 2px;letter-spacing:.3px}
+.so-btn:hover{color:var(--navy3)}
+
+
+.sp-hero{flex:1;padding:30px 26px 20px;display:flex;flex-direction:column;justify-content:center;position:relative;z-index:1}
+.sp-ey{font-size:10px;letter-spacing:4px;text-transform:uppercase;color:var(--gold);font-weight:700;margin-bottom:16px;display:flex;align-items:center;gap:10px}
+.sp-ey::before{content:'';width:20px;height:1px;background:var(--gold)}
+.sp-ttl{font-family:'Cormorant Garamond',serif;font-size:58px;font-weight:700;line-height:.9;letter-spacing:-1.5px;color:var(--navy);margin-bottom:5px}
+.sp-ttl em{font-style:italic;color:var(--gold)}
+.sp-ttl .l2{display:block;font-size:46px;color:var(--navy2)}
+.sp-desc{color:var(--muted);font-size:14px;line-height:1.80;max-width:308px;margin:16px 0 26px;font-weight:400}
+.sp-cta{display:flex;flex-direction:column;gap:9px}
+
+.btn-navy{width:100%;padding:16px;background:var(--navy);border:none;border-radius:var(--r);color:var(--cream);font-family:'Jost',sans-serif;font-size:13px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;cursor:pointer;transition:all .25s;box-shadow:0 6px 24px rgba(13,27,42,0.22)}
+.btn-navy:hover{background:var(--navy2);transform:translateY(-2px);box-shadow:0 10px 30px rgba(13,27,42,0.28)}
+.btn-outline{width:100%;padding:13px;background:transparent;border:1.5px solid var(--bd3);border-radius:var(--r);color:var(--navy2);font-family:'Jost',sans-serif;font-size:13px;font-weight:600;letter-spacing:1px;cursor:pointer;transition:all .2s}
+.btn-outline:hover{border-color:var(--bd2);color:var(--gold)}
+
+
+.sp-brands{padding:0 26px 36px;position:relative;z-index:1}
+.bp-lbl{font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--muted);margin-bottom:10px;font-weight:700}
+.bp-row{display:flex;gap:7px;flex-wrap:wrap}
+.b-pill{padding:5px 12px;border:1px solid var(--bd);border-radius:100px;font-size:12px;font-weight:600;color:var(--navy2);background:var(--warm);transition:all .2s;cursor:default}
+.b-pill:hover{border-color:var(--bd2);color:var(--gold)}
+
+
+.stats-row{display:flex;gap:8px;margin-bottom:22px}
+.stat-chip{flex:1;background:var(--warm);border:1px solid var(--bd);border-radius:var(--r);padding:12px 10px;text-align:center}
+.sc-num{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:700;color:var(--navy);line-height:1}
+.sc-lbl{font-size:10px;color:var(--muted);font-weight:600;letter-spacing:.5px;margin-top:2px}
+
+
+#s-measure{background:var(--cream)}
+.wiz-top{padding:50px 24px 0;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.back-btn{width:40px;height:40px;border-radius:50%;border:1.5px solid var(--bd3);background:transparent;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--navy);font-size:16px;transition:all .2s}
+.back-btn:hover{background:var(--warm);border-color:var(--gold)}
+.step-ct{font-family:'Cormorant Garamond',serif;font-size:16px;font-weight:600;color:var(--muted);letter-spacing:1px}
+.skip-btn{font-size:12px;color:var(--muted);cursor:pointer;background:none;border:none;font-family:'Jost',sans-serif;padding:4px 8px;transition:color .2s}
+.skip-btn:hover{color:var(--gold)}
+
+.prog-bar{display:flex;gap:4px;padding:16px 24px 0;flex-shrink:0}
+.pb-seg{flex:1;height:2px;background:var(--nude);border-radius:100px;overflow:hidden;position:relative}
+.pb-seg.done{background:var(--gold)}
+.pb-seg.now::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,var(--gold),var(--gold2));animation:pbFill .44s ease forwards}
+@keyframes pbFill{from{width:0}to{width:100%}}
+
+.wiz-head{padding:20px 24px 0;flex-shrink:0}
+.wiz-ey{font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--gold);font-weight:700;margin-bottom:8px}
+.wiz-ttl{font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:700;color:var(--navy);line-height:1.1;margin-bottom:4px}
+.wiz-sub{color:var(--muted);font-size:13px;line-height:1.6}
+
+.wiz-body{flex:1;overflow-y:auto;padding:16px 24px;display:flex;flex-direction:column;gap:13px;scrollbar-width:none}
+.wiz-body::-webkit-scrollbar{display:none}
+
+
+.unit-row{display:flex;align-items:center;justify-content:space-between;padding:11px 15px;background:var(--warm);border-radius:var(--r);border:1px solid var(--bd)}
+.unit-row-lbl{font-size:13px;color:var(--muted);font-weight:500}
+.unit-pills{display:flex;background:var(--cream);border:1px solid var(--bd);border-radius:100px;padding:3px;gap:2px}
+.u-pill{padding:5px 14px;border-radius:100px;border:none;font-family:'Jost',sans-serif;font-size:11px;font-weight:700;cursor:pointer;transition:all .2s;background:transparent;color:var(--muted);letter-spacing:.5px}
+.u-pill.on{background:var(--navy);color:var(--cream)}
+
+
+.nf{display:flex;flex-direction:column;gap:5px}
+.nf-lb{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--navy3);font-weight:700}
+.nf-wrap{display:flex;align-items:stretch;border:1.5px solid var(--bd);border-radius:var(--r);overflow:hidden;background:var(--cream);transition:border-color .2s,box-shadow .2s}
+.nf-wrap:focus-within{border-color:var(--gold);box-shadow:0 0 0 3px rgba(201,168,76,0.09)}
+.nf-inp{flex:1;padding:14px;border:none;outline:none;background:transparent;font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:700;color:var(--navy);-moz-appearance:textfield}
+.nf-inp::-webkit-inner-spin-button,.nf-inp::-webkit-outer-spin-button{-webkit-appearance:none}
+.nf-inp::placeholder{color:var(--nude);font-weight:300;font-size:22px;font-family:'Cormorant Garamond',serif}
+.nf-unit{padding:14px 13px;background:var(--warm);border-left:1.5px solid var(--bd);font-family:'Jost',sans-serif;font-size:11px;font-weight:700;letter-spacing:1px;color:var(--muted);display:flex;align-items:center;text-transform:uppercase;min-width:48px;justify-content:center}
+.nf-err{font-size:11px;color:var(--err);font-weight:600;display:none}
+.nf-err.show{display:block}
+.nf-hint{font-size:12px;color:var(--muted);font-style:italic;font-family:'Cormorant Garamond',serif;line-height:1.4}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+
+
+.guide-card{background:var(--warm);border:1px solid var(--bd);border-radius:var(--r2);padding:16px;display:flex;gap:16px;align-items:center}
+.guide-leg{display:flex;flex-direction:column;gap:10px;flex:1}
+.g-it{display:flex;align-items:flex-start;gap:9px}
+.g-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:3px}
+.g-name{font-size:13px;color:var(--navy2);font-weight:700;line-height:1.2}
+.g-desc{font-size:11px;color:var(--muted);margin-top:1px}
+
+
+.bt-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.bt-card{display:flex;flex-direction:column;align-items:center;padding:14px 6px;border:1.5px solid var(--bd);border-radius:var(--r);cursor:pointer;transition:all .22s;background:var(--cream)}
+.bt-card:hover{border-color:var(--navy3);background:var(--warm)}
+.bt-card.sel{border-color:var(--gold);background:rgba(201,168,76,0.08)}
+.bt-ic{font-size:22px;margin-bottom:5px}
+.bt-nm{font-size:11px;font-weight:700;color:var(--navy2);letter-spacing:.5px;text-align:center;line-height:1.2}
+.bt-card.sel .bt-nm{color:var(--navy3)}
+
+
+.tip-box{background:rgba(201,168,76,0.06);border:1px solid rgba(201,168,76,0.16);border-radius:var(--r);padding:12px 14px;display:flex;gap:9px;align-items:flex-start;font-size:12px;color:var(--navy3);line-height:1.65}
+.tip-ic{flex-shrink:0;color:var(--gold);margin-top:1px}
+
+
+.wiz-foot{padding:12px 24px 32px;border-top:1px solid var(--bd);flex-shrink:0;background:var(--cream)}
+
+
+#s-load{background:var(--navy);align-items:center;justify-content:center;gap:24px;position:relative;overflow:hidden}
+#s-load::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 50% 28%,rgba(46,107,158,0.22) 0%,transparent 55%),radial-gradient(ellipse at 50% 0%,rgba(201,168,76,0.09) 0%,transparent 45%)}
+.ld-logo-wrap{position:relative;width:92px;height:92px;display:flex;align-items:center;justify-content:center;z-index:1}
+.ld-ring{position:absolute;width:92px;height:92px;border-radius:50%;border:1.5px solid rgba(201,168,76,0.12);border-top-color:var(--gold);animation:doSpin 1.1s linear infinite}
+.ld-ring-2{position:absolute;width:72px;height:72px;border-radius:50%;border:1px solid rgba(201,168,76,0.07);border-bottom-color:rgba(201,168,76,0.35);animation:doSpin 1.8s linear infinite reverse}
+.ld-diamond{display:flex;align-items:center;justify-content:center;filter:drop-shadow(0 0 14px rgba(201,168,76,0.42))}
+.ld-ttl{font-family:'Cormorant Garamond',serif;font-size:30px;font-weight:600;color:rgba(250,246,238,0.90);line-height:1.2;text-align:center;position:relative;z-index:1}
+.ld-ttl em{font-style:italic;color:var(--gold2)}
+.ld-step{font-size:10px;color:rgba(250,246,238,0.32);letter-spacing:2.5px;text-transform:uppercase;font-weight:700;min-height:15px;position:relative;z-index:1;text-align:center}
+.ld-brands{display:flex;gap:7px;flex-wrap:wrap;justify-content:center;max-width:310px;position:relative;z-index:1}
+.ld-b{padding:5px 12px;border:1px solid rgba(250,246,238,0.07);border-radius:100px;font-family:'Jost',sans-serif;font-size:11px;font-weight:700;color:rgba(250,246,238,0.20);letter-spacing:1px;transition:all .4s}
+.ld-b.lit{border-color:var(--gold);color:var(--gold2);background:rgba(201,168,76,0.10)}
+
+
+#s-res{background:var(--cream);display:flex;flex-direction:column}
+
+
+.res-top{padding:46px 22px 12px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--bd);flex-shrink:0;background:var(--cream)}
+.res-logo{display:flex;align-items:center;gap:9px}
+.res-logo-badge{width:26px;height:26px;border-radius:5px;overflow:hidden;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(201,168,76,0.18)}
+.res-brand{font-family:'Cormorant Garamond',serif;font-size:16px;font-weight:700;letter-spacing:4px;text-transform:uppercase;color:var(--navy)}
+.res-actions{display:flex;align-items:center;gap:8px}
+.db-pill{display:flex;align-items:center;gap:5px;padding:5px 10px;border:1px solid rgba(26,107,74,0.22);border-radius:100px;background:rgba(26,107,74,0.06)}
+.db-dot{width:5px;height:5px;border-radius:50%;background:#1A6B4A;animation:blink 2s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.32}}
+.db-txt{font-family:'Jost',sans-serif;font-size:10px;font-weight:700;color:#1A6B4A;letter-spacing:1px}
+.edit-btn{padding:7px 13px;border:1.5px solid var(--bd3);border-radius:100px;background:transparent;font-family:'Jost',sans-serif;font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--navy2);cursor:pointer;transition:all .2s}
+.edit-btn:hover{border-color:var(--gold);color:var(--gold)}
+
+
+.res-scroll{flex:1;overflow-y:auto;scrollbar-width:none}
+.res-scroll::-webkit-scrollbar{display:none}
+
+
+.res-hero{padding:18px 22px 16px;border-bottom:1px solid var(--bd)}
+.res-ey{font-size:10px;letter-spacing:3.5px;text-transform:uppercase;color:var(--gold);font-weight:700;margin-bottom:8px;display:flex;align-items:center;gap:8px}
+.res-ey::before{content:'';width:14px;height:1px;background:var(--gold)}
+.res-ttl{font-family:'Cormorant Garamond',serif;font-size:36px;font-weight:600;color:var(--navy);line-height:.98;letter-spacing:-.5px;margin-bottom:11px}
+.res-ttl em{font-style:italic;color:var(--navy3)}
+.meas-strip{display:flex;flex-wrap:wrap;gap:6px}
+.meas-chip{padding:4px 11px;background:var(--warm);border:1px solid var(--bd);border-radius:100px;font-size:11px;color:var(--navy2);font-weight:500;display:flex;align-items:center;gap:3px}
+.meas-chip strong{color:var(--navy);font-weight:700}
+
+
+.confidence-row{display:flex;align-items:center;gap:10px;margin-top:12px}
+.conf-lbl{font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);font-weight:700;white-space:nowrap}
+.conf-track{flex:1;height:4px;background:var(--nude);border-radius:100px;overflow:hidden}
+.conf-fill{height:100%;background:linear-gradient(90deg,var(--gold),var(--gold2));border-radius:100px;transition:width 1.2s cubic-bezier(.4,0,.2,1)}
+.conf-pct{font-size:11px;font-weight:700;color:var(--gold);min-width:32px;text-align:right}
+
+
+.sz-overview{margin:14px 20px;border:1px solid var(--bd);border-radius:var(--r);overflow:hidden}
+.sz-ov-head{display:flex;align-items:center;gap:8px;background:var(--warm);padding:9px 14px;border-bottom:1px solid var(--bd)}
+.sz-ov-dot{width:5px;height:5px;border-radius:50%;background:var(--gold)}
+.sz-ov-lbl{font-family:'Jost',sans-serif;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);font-weight:700}
+.sz-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--bd)}
+.sz-cell{background:var(--cream);padding:12px 6px;display:flex;flex-direction:column;align-items:center;gap:2px;text-decoration:none;transition:background .2s;cursor:pointer}
+.sz-cell:hover{background:var(--warm)}
+.sz-br{font-family:'Jost',sans-serif;font-size:9px;font-weight:700;letter-spacing:.8px;color:var(--muted);text-transform:uppercase}
+.sz-sz{font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:700;color:var(--navy);line-height:1}
+
+
+.sec-divider{display:flex;align-items:center;gap:12px;padding:0 20px;margin:4px 0}
+.sec-ln{flex:1;height:1px;background:var(--bd)}
+.sec-lb{font-family:'Jost',sans-serif;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);font-weight:700;white-space:nowrap}
+.cat-row{display:flex;gap:6px;padding:10px 20px;overflow-x:auto;scrollbar-width:none}
+.cat-row::-webkit-scrollbar{display:none}
+.c-tab{display:flex;align-items:center;gap:5px;padding:8px 14px;border-radius:100px;border:1.5px solid var(--bd);background:var(--cream);font-family:'Jost',sans-serif;font-size:11px;font-weight:700;letter-spacing:.5px;color:var(--muted);cursor:pointer;white-space:nowrap;flex-shrink:0;transition:all .22s}
+.c-tab:hover{border-color:var(--navy3);color:var(--navy2)}
+.c-tab.on{background:var(--navy);border-color:var(--navy);color:var(--cream)}
+
+
+.brand-list{padding:0 20px;display:flex;flex-direction:column;gap:10px}
+.bcard{display:block;text-decoration:none;background:var(--cream);border:1.5px solid var(--bd);border-radius:var(--r2);overflow:hidden;transition:all .22s;position:relative}
+.bcard::before{content:'';position:absolute;left:0;top:0;bottom:0;width:2.5px;background:linear-gradient(180deg,var(--gold),var(--gold2));opacity:0;transition:opacity .22s}
+.bcard:hover{border-color:rgba(201,168,76,0.32);transform:translateY(-2px);box-shadow:var(--sh2)}
+.bcard:hover::before{opacity:1}
+.bcard:active{transform:translateY(0)}
+.bc-body{display:flex;align-items:center;padding:14px 16px;gap:12px}
+.bc-mono{width:44px;height:44px;border-radius:12px;border:1.5px solid var(--bd);background:var(--warm);display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;font-size:12px;font-weight:700;letter-spacing:1px;color:var(--navy2);flex-shrink:0;transition:all .22s}
+.bcard:hover .bc-mono{background:var(--navy);color:var(--cream);border-color:var(--navy)}
+.bc-info{flex:1;min-width:0}
+.bc-name{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:700;color:var(--navy);margin-bottom:1px}
+.bc-sub{font-size:11px;color:var(--muted)}
+.bc-price{font-size:12px;color:var(--navy3);font-weight:600;margin-top:2px}
+.bc-badge{display:flex;flex-direction:column;align-items:center;background:var(--warm);border:1px solid var(--bd);border-radius:10px;padding:8px 12px;min-width:56px;transition:all .22s}
+.bcard:hover .bc-badge{background:rgba(201,168,76,0.08);border-color:var(--bd2)}
+.bc-bl{font-family:'Jost',sans-serif;font-size:8px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:2px}
+.bc-bv{font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:700;color:var(--navy);line-height:1}
+.bc-foot{display:flex;align-items:center;justify-content:space-between;padding:9px 16px;border-top:1px solid var(--bd);background:var(--warm)}
+.bcf-l{font-size:11px;color:var(--muted)}
+.bcf-r{display:flex;align-items:center;gap:5px;font-family:'Jost',sans-serif;font-size:11px;font-weight:700;letter-spacing:1px;color:var(--gold);text-transform:uppercase}
+.bc-arr{width:19px;height:19px;border-radius:50%;background:linear-gradient(135deg,var(--gold),var(--gold2));display:flex;align-items:center;justify-content:center;font-size:8px;color:var(--navy);font-weight:900;transition:transform .22s;line-height:1}
+.bcard:hover .bc-arr{transform:translate(2px,-2px)}
+
+
+.price-section{margin:16px 20px 0;background:var(--warm);border:1px solid var(--bd);border-radius:var(--r2);overflow:hidden}
+.price-head{display:flex;align-items:center;gap:8px;padding:12px 16px;border-bottom:1px solid var(--bd)}
+.price-head-ic{font-size:14px}
+.price-head-lbl{font-family:'Cormorant Garamond',serif;font-size:16px;font-weight:700;color:var(--navy)}
+.price-head-sub{font-size:11px;color:var(--muted);margin-left:auto}
+.price-rows{padding:12px 16px;display:flex;flex-direction:column;gap:9px}
+.price-row{display:flex;align-items:center;gap:10px}
+.pr-brand{font-size:12px;font-weight:700;color:var(--navy2);min-width:56px}
+.pr-bar-wrap{flex:1;height:6px;background:var(--nude);border-radius:100px;overflow:hidden}
+.pr-bar{height:100%;background:linear-gradient(90deg,var(--navy),var(--navy2));border-radius:100px;transition:width .8s cubic-bezier(.4,0,.2,1)}
+.pr-bar.best{background:linear-gradient(90deg,var(--gold),var(--gold2))}
+.pr-price{font-size:12px;font-weight:700;color:var(--navy);min-width:50px;text-align:right}
+.pr-badge{font-size:9px;font-weight:700;color:var(--navy);background:linear-gradient(135deg,var(--gold),var(--gold2));padding:2px 7px;border-radius:100px;margin-left:4px;white-space:nowrap}
+
+
+.feedback-banner{margin:14px 20px;background:rgba(46,107,158,0.06);border:1px solid rgba(46,107,158,0.15);border-radius:var(--r);padding:13px 16px;display:flex;align-items:center;gap:12px;cursor:pointer;transition:all .2s}
+.feedback-banner:hover{background:rgba(46,107,158,0.10);border-color:rgba(46,107,158,0.25)}
+.fb-ic{font-size:20px;flex-shrink:0}
+.fb-info{flex:1}
+.fb-title{font-size:13px;font-weight:700;color:var(--navy);margin-bottom:2px}
+.fb-sub{font-size:11px;color:var(--muted)}
+.fb-arrow{font-size:14px;color:var(--navy3)}
+
+
+.res-foot{display:flex;gap:10px;padding:14px 20px 28px;border-top:1px solid var(--bd);margin-top:14px}
+.btn-ghost{flex:1;padding:12px;background:var(--warm);border:1.5px solid var(--bd3);border-radius:var(--r);font-family:'Jost',sans-serif;font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--navy2);cursor:pointer;transition:all .2s}
+.btn-ghost:hover{border-color:var(--bd2);color:var(--gold)}
+.btn-navy2{flex:2;padding:12px;background:var(--navy);border:none;border-radius:var(--r);font-family:'Jost',sans-serif;font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--cream);cursor:pointer;transition:all .2s;box-shadow:0 4px 14px rgba(13,27,42,0.20)}
+.btn-navy2:hover{background:var(--navy2);transform:translateY(-1px)}
+
+
+.modal-overlay{position:absolute;inset:0;background:rgba(13,27,42,0.50);display:flex;align-items:flex-end;z-index:500;opacity:0;pointer-events:none;transition:opacity .3s;backdrop-filter:blur(2px)}
+.modal-overlay.open{opacity:1;pointer-events:all}
+.modal-card{width:100%;background:var(--cream);border-radius:var(--r3) var(--r3) 0 0;padding:28px 26px;display:flex;flex-direction:column;gap:16px;transform:translateY(100%);transition:transform .38s cubic-bezier(.4,0,.2,1)}
+.modal-overlay.open .modal-card{transform:translateY(0)}
+.modal-handle{width:36px;height:4px;background:var(--nude);border-radius:100px;margin:0 auto -8px}
+.modal-ttl{font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:700;color:var(--navy)}
+.modal-sub{font-size:13px;color:var(--muted);margin-top:-10px}
+.fit-opts{display:flex;flex-wrap:wrap;gap:8px}
+.fit-opt{padding:8px 16px;border-radius:100px;border:1.5px solid var(--bd3);font-family:'Jost',sans-serif;font-size:12px;font-weight:700;color:var(--navy2);cursor:pointer;transition:all .2s;background:var(--cream)}
+.fit-opt:hover{border-color:var(--navy3)}
+.fit-opt.sel{background:var(--gold);border-color:var(--gold);color:var(--navy)}
+.notes-inp{width:100%;padding:13px 15px;border:1.5px solid var(--bd);border-radius:var(--r);background:var(--cream);font-family:'Jost',sans-serif;font-size:14px;color:var(--navy);resize:none;outline:none;min-height:72px;transition:border-color .2s}
+.notes-inp:focus{border-color:var(--gold)}
+.notes-inp::placeholder{color:var(--nude);font-style:italic}
+.modal-btns{display:flex;gap:10px}
+.m-cancel{flex:1;padding:13px;background:var(--warm);border:1.5px solid var(--bd3);border-radius:var(--r);font-family:'Jost',sans-serif;font-size:12px;font-weight:700;letter-spacing:.5px;color:var(--navy2);cursor:pointer;transition:all .2s}
+.m-cancel:hover{border-color:var(--bd2)}
+.m-submit{flex:2;padding:13px;background:linear-gradient(135deg,var(--gold),var(--gold2));border:none;border-radius:var(--r);font-family:'Jost',sans-serif;font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--navy);cursor:pointer;transition:all .2s;box-shadow:0 4px 14px rgba(201,168,76,0.28)}
+.m-submit:hover{transform:translateY(-1px);box-shadow:0 8px 22px rgba(201,168,76,0.35)}
+
+
+.user-pill{cursor:pointer;transition:border-color .2s,background .2s}
+.user-pill:hover{border-color:var(--bd2);background:var(--parch)}
+
+.profile-modal{position:absolute;inset:0;background:rgba(13,27,42,0.55);display:flex;align-items:center;justify-content:center;z-index:600;opacity:0;pointer-events:none;transition:opacity .26s;backdrop-filter:blur(3px);padding:40px 24px}
+.profile-modal.open{opacity:1;pointer-events:all}
+.profile-card{width:100%;max-width:340px;background:var(--cream);border-radius:var(--r2);padding:22px 22px 18px;display:flex;flex-direction:column;gap:14px;transform:scale(.92);transition:transform .3s cubic-bezier(.4,0,.2,1);box-shadow:var(--sh3)}
+.profile-modal.open .profile-card{transform:scale(1)}
+.profile-head{display:flex;align-items:center;gap:12px}
+.profile-av{width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,var(--navy),var(--navy2));display:flex;align-items:center;justify-content:center;font-family:'Jost',sans-serif;font-size:14px;font-weight:700;color:#fff;flex-shrink:0;box-shadow:var(--sh)}
+.profile-name{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:700;color:var(--navy);line-height:1.05}
+.profile-email{font-size:12px;color:var(--muted);margin-top:2px;word-break:break-all}
+.profile-section{display:flex;flex-direction:column;gap:6px}
+.profile-lbl{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--gold);font-weight:700}
+.profile-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.profile-cell{background:var(--warm);border:1px solid var(--bd);border-radius:10px;padding:8px 10px}
+.profile-ck{font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);font-weight:700}
+.profile-cv{font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:700;color:var(--navy);line-height:1;margin-top:2px}
+.profile-empty{font-size:12px;color:var(--muted);font-style:italic;font-family:'Cormorant Garamond',serif;background:var(--warm);border:1px dashed var(--bd);border-radius:10px;padding:14px;text-align:center}
+.profile-actions{display:flex;gap:8px;margin-top:4px}
+.profile-actions button{flex:1;padding:11px;border-radius:var(--r);font-family:'Jost',sans-serif;font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;cursor:pointer;transition:all .2s;border:1.5px solid var(--bd3)}
+.pa-close{background:var(--warm);color:var(--navy2)}
+.pa-close:hover{border-color:var(--bd2)}
+.pa-edit{background:var(--navy);color:var(--cream);border-color:var(--navy)}
+.pa-edit:hover{background:var(--navy2)}
+.pa-out{background:transparent;color:var(--err);border-color:rgba(192,57,43,0.30)}
+.pa-out:hover{background:rgba(192,57,43,0.06)}
+
+.gp-modal{position:absolute;inset:0;background:rgba(13,27,42,0.55);display:flex;align-items:center;justify-content:center;z-index:700;opacity:0;pointer-events:none;transition:opacity .26s;backdrop-filter:blur(3px);padding:40px 24px}
+.gp-modal.open{opacity:1;pointer-events:all}
+.gp-card{width:100%;max-width:330px;background:#fff;border-radius:18px;padding:22px;display:flex;flex-direction:column;gap:14px;transform:scale(.92);transition:transform .3s cubic-bezier(.4,0,.2,1);box-shadow:0 10px 40px rgba(0,0,0,0.30);font-family:'Roboto','Jost',sans-serif}
+.gp-modal.open .gp-card{transform:scale(1)}
+.gp-head{display:flex;align-items:center;gap:9px}
+.gp-logo{width:24px;height:24px;flex-shrink:0}
+.gp-title{font-size:16px;color:#202124;font-weight:500}
+.gp-sub{font-size:12px;color:#5f6368;line-height:1.4}
+.gp-acct-list{display:flex;flex-direction:column;gap:4px;margin:4px -8px}
+.gp-acct{display:flex;align-items:center;gap:11px;padding:9px 12px;border:none;background:transparent;border-radius:8px;cursor:pointer;text-align:left;font-family:inherit;transition:background .15s}
+.gp-acct:hover{background:#f1f3f4}
+.gp-av{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#4285F4,#34A853);display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:700;flex-shrink:0}
+.gp-acct-info{flex:1;min-width:0}
+.gp-acct-name{font-size:14px;color:#202124;font-weight:500;line-height:1.2}
+.gp-acct-email{font-size:12px;color:#5f6368;margin-top:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.gp-divider{height:1px;background:#e8eaed;margin:0 -8px}
+.gp-add{display:flex;align-items:center;gap:11px;padding:11px 12px;border:none;background:transparent;cursor:pointer;font-family:inherit;border-radius:8px;color:#1a73e8;font-size:14px;font-weight:500;transition:background .15s}
+.gp-add:hover{background:#f1f3f4}
+.gp-add-ic{width:32px;height:32px;border-radius:50%;background:#e8f0fe;color:#1a73e8;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:300}
+.gp-fields{display:flex;flex-direction:column;gap:10px;margin-top:4px}
+.gp-field{display:flex;flex-direction:column;gap:4px}
+.gp-flbl{font-size:11px;color:#5f6368;font-weight:500;letter-spacing:.3px}
+.gp-fin{padding:10px 12px;border:1.5px solid #dadce0;border-radius:6px;font-family:inherit;font-size:14px;color:#202124;outline:none;transition:border-color .15s,box-shadow .15s}
+.gp-fin:focus{border-color:#1a73e8;box-shadow:0 0 0 1px #1a73e8}
+.gp-btns{display:flex;gap:8px;justify-content:flex-end;margin-top:6px}
+.gp-btn{padding:9px 18px;border-radius:6px;font-family:inherit;font-size:13px;font-weight:500;cursor:pointer;border:none;letter-spacing:.2px;transition:background .15s,box-shadow .15s}
+.gp-btn-cancel{background:transparent;color:#1a73e8}
+.gp-btn-cancel:hover{background:#f1f3f4}
+.gp-btn-go{background:#1a73e8;color:#fff}
+.gp-btn-go:hover{background:#1967d2;box-shadow:0 1px 2px rgba(60,64,67,0.30)}
+.gp-foot{font-size:11px;color:#5f6368;line-height:1.45;border-top:1px solid #e8eaed;padding-top:10px;margin-top:2px}
+
+.price-section{position:relative}
+.price-head-refresh{margin-left:6px;background:none;border:none;cursor:pointer;color:var(--muted);font-size:13px;padding:2px 5px;border-radius:6px;transition:all .25s;font-family:'Jost',sans-serif;line-height:1}
+.price-head-refresh:hover{color:var(--gold);background:rgba(201,168,76,0.08)}
+.price-head-refresh.spinning{animation:doSpin .7s linear}
+.pr-bar-wrap{position:relative;display:flex;flex-direction:column;gap:3px}
+.pr-meta{font-size:9.5px;color:var(--muted);letter-spacing:.3px;font-weight:500;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.pr-meta .pr-stock{color:var(--navy3);font-weight:700}
+.pr-meta .pr-stock.low{color:#B8621E}
+.pr-meta .pr-range{font-weight:600}
+.price-foot{padding:9px 16px 10px;border-top:1px solid var(--bd);background:rgba(201,168,76,0.03);display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:10.5px;color:var(--muted);letter-spacing:.3px}
+.price-foot b{color:var(--navy);font-weight:700}
+.price-foot .pf-live{display:flex;align-items:center;gap:5px;font-weight:700;color:var(--ok)}
+.price-foot .pf-live .pf-dot{width:5px;height:5px;border-radius:50%;background:var(--ok);animation:blink 2s infinite}
+.price-section.analyzing .price-rows,
+.price-section.analyzing .outfit-total{opacity:.28;pointer-events:none;filter:blur(1.5px);transition:all .25s}
+.price-section.analyzing::after{content:'';position:absolute;left:0;right:0;top:44px;height:2px;background:linear-gradient(90deg,transparent,var(--gold),transparent);animation:analyzeScan 1.1s ease-in-out infinite;z-index:2}
+@keyframes analyzeScan{0%{transform:translateX(-100%)}100%{transform:translateX(100%)}}
+.price-analyzing-lbl{position:absolute;top:50%;left:0;right:0;text-align:center;font-size:10px;letter-spacing:3px;font-weight:700;color:var(--gold);text-transform:uppercase;opacity:0;pointer-events:none;transition:opacity .25s;z-index:3;transform:translateY(-50%)}
+.price-section.analyzing .price-analyzing-lbl{opacity:1}
+
+.outfit-total{margin:12px 16px 0;background:linear-gradient(135deg,var(--navy),var(--navy2));border-radius:var(--r);padding:13px 15px;display:flex;flex-direction:column;gap:8px;color:var(--cream)}
+.ot-ttl{font-family:'Jost',sans-serif;font-size:10px;letter-spacing:2px;font-weight:700;color:var(--gold2);text-transform:uppercase;display:flex;align-items:center;gap:6px}
+.ot-ttl::before{content:'◈';font-size:12px}
+.ot-desc{font-size:11px;color:rgba(250,246,238,0.60);line-height:1.5;font-style:italic;font-family:'Cormorant Garamond',serif;margin-top:-2px}
+.ot-rows{display:flex;flex-direction:column;gap:3px;margin-top:2px}
+.ot-row{display:flex;justify-content:space-between;align-items:center;font-size:12px;padding:4px 0;border-bottom:1px solid rgba(255,255,255,0.04)}
+.ot-row:last-child{border-bottom:none}
+.ot-row .ot-brand{font-weight:600;color:rgba(250,246,238,0.82);display:flex;align-items:center;gap:6px}
+.ot-row .ot-price{font-family:'Cormorant Garamond',serif;font-size:16px;font-weight:700;color:var(--gold2)}
+.ot-row.cheapest .ot-brand{color:var(--gold)}
+.ot-row.cheapest .ot-price{color:#fff;text-shadow:0 0 8px rgba(201,168,76,0.5)}
+.ot-star{color:var(--gold)}
+.ot-save{font-size:10px;font-weight:700;color:rgba(250,246,238,0.45);margin-left:6px}
+
+.outfit-section{margin:14px 20px 0;background:linear-gradient(135deg,rgba(201,168,76,0.06),rgba(46,107,158,0.05));border:1px solid var(--bd2);border-radius:var(--r2);padding:14px 16px;display:flex;flex-direction:column;gap:9px}
+.outfit-head{display:flex;align-items:center;gap:8px;font-family:'Cormorant Garamond',serif;font-size:17px;font-weight:700;color:var(--navy)}
+.outfit-head em{font-style:italic;color:var(--gold)}
+.outfit-sub{font-size:11px;color:var(--muted);margin-top:-2px;line-height:1.5}
+.outfit-chips{display:flex;flex-wrap:wrap;gap:6px}
+.outfit-chip{padding:6px 12px;border-radius:100px;background:var(--cream);border:1px solid var(--bd2);font-family:'Jost',sans-serif;font-size:11px;font-weight:700;letter-spacing:.5px;color:var(--navy2);cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:4px}
+.outfit-chip:hover{background:var(--warm);border-color:var(--gold);color:var(--navy)}
+.outfit-chip.hot{background:linear-gradient(135deg,var(--gold),var(--gold2));color:var(--navy);border-color:var(--gold)}
+
+.bcard{position:relative}
+.bc-fav{position:absolute;top:10px;right:10px;z-index:4;width:30px;height:30px;border-radius:50%;border:1.5px solid var(--bd);background:var(--cream);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--muted);transition:all .2s;font-size:15px;line-height:1;padding:0}
+.bc-fav:hover{border-color:var(--gold);color:var(--gold);background:var(--warm);transform:scale(1.06)}
+.bc-fav.on{border-color:var(--gold);background:linear-gradient(135deg,var(--gold),var(--gold2));color:var(--navy)}
+.bc-body{padding-right:48px !important}
+.bc-note{margin:0 16px 10px;padding:10px 12px;background:rgba(46,107,158,0.05);border:1px solid rgba(46,107,158,0.12);border-left:2.5px solid var(--navy3);border-radius:10px;font-size:11.5px;color:var(--navy2);line-height:1.5;display:flex;gap:8px;align-items:flex-start}
+.bc-note-ic{color:var(--navy3);flex-shrink:0;font-weight:700;font-size:10px;letter-spacing:1px}
+.bc-fit-tag{display:inline-block;padding:1px 7px;border-radius:100px;font-size:9px;font-weight:700;letter-spacing:.5px;margin-left:4px;background:rgba(26,107,74,0.12);color:#1A6B4A;vertical-align:middle}
+.bc-fit-tag.warn{background:rgba(201,168,76,0.14);color:#8B6B1E}
+.bc-fav-row{padding:0 16px 10px;display:flex;align-items:center;gap:6px;font-size:10px;color:var(--gold);letter-spacing:1.5px;font-weight:700;text-transform:uppercase}
+
+.history-scroll{display:flex;flex-direction:column;gap:6px;max-height:180px;overflow-y:auto;padding-right:2px;scrollbar-width:thin}
+.history-scroll::-webkit-scrollbar{width:4px}
+.history-scroll::-webkit-scrollbar-thumb{background:var(--nude);border-radius:4px}
+.hist-row{background:var(--warm);border:1px solid var(--bd);border-radius:10px;padding:9px 11px;display:flex;flex-direction:column;gap:4px}
+.hist-row.current{border-color:var(--bd2);background:rgba(201,168,76,0.06)}
+.hist-head{display:flex;align-items:center;justify-content:space-between}
+.hist-date{font-size:10px;letter-spacing:1px;color:var(--muted);font-weight:700;text-transform:uppercase}
+.hist-badge{font-size:9px;letter-spacing:1px;font-weight:700;color:var(--gold);text-transform:uppercase}
+.hist-row-vals{display:flex;gap:10px;flex-wrap:wrap;font-size:11px;color:var(--navy2)}
+.hist-row-vals span{display:inline-flex;align-items:center;gap:3px}
+.hist-row-vals b{color:var(--navy);font-weight:700}
+.hist-delta{font-size:10px;font-weight:700;padding:1px 5px;border-radius:4px}
+.hist-delta.up{background:rgba(192,57,43,0.10);color:var(--err)}
+.hist-delta.down{background:rgba(26,107,74,0.10);color:var(--ok)}
+.hist-delta.same{background:var(--bd);color:var(--muted)}
+.hist-empty{font-size:12px;color:var(--muted);font-style:italic;font-family:'Cormorant Garamond',serif;text-align:center;padding:10px}
+
+.export-section{margin:14px 20px 0;display:flex;gap:8px}
+.export-btn{flex:1;padding:11px;background:var(--warm);border:1.5px solid var(--bd2);border-radius:var(--r);font-family:'Jost',sans-serif;font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--navy);cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:6px}
+.export-btn:hover{border-color:var(--gold);background:rgba(201,168,76,0.08);transform:translateY(-1px)}
+.export-btn .ex-ic{font-size:14px}
+
+.admin-link{text-align:center;font-size:11px;color:var(--muted);font-style:italic;font-family:'Cormorant Garamond',serif;cursor:pointer;margin-top:-4px;padding:4px}
+.admin-link:hover{color:var(--gold)}
+
+.admin-modal{position:absolute;inset:0;background:rgba(13,27,42,0.60);display:flex;align-items:center;justify-content:center;z-index:650;opacity:0;pointer-events:none;transition:opacity .26s;backdrop-filter:blur(3px);padding:28px 22px}
+.admin-modal.open{opacity:1;pointer-events:all}
+.admin-card{width:100%;max-width:340px;background:var(--cream);border-radius:var(--r2);padding:20px;display:flex;flex-direction:column;gap:12px;transform:scale(.92);transition:transform .3s cubic-bezier(.4,0,.2,1);box-shadow:var(--sh3);max-height:90%;overflow-y:auto;scrollbar-width:none}
+.admin-card::-webkit-scrollbar{display:none}
+.admin-modal.open .admin-card{transform:scale(1)}
+.admin-ttl{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:700;color:var(--navy);display:flex;align-items:center;gap:8px}
+.admin-ttl .admin-badge{font-size:9px;letter-spacing:2px;background:var(--navy);color:var(--gold2);padding:3px 8px;border-radius:100px;font-family:'Jost',sans-serif;font-weight:700;text-transform:uppercase}
+.admin-sub{font-size:11px;color:var(--muted);line-height:1.5;margin-top:-6px}
+.admin-field{display:flex;flex-direction:column;gap:4px}
+.admin-flbl{font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--navy3);font-weight:700}
+.admin-fin{padding:10px 12px;border:1.5px solid var(--bd);border-radius:10px;background:var(--cream);font-family:'Jost',sans-serif;font-size:13px;color:var(--navy);outline:none;transition:border-color .2s}
+.admin-fin:focus{border-color:var(--gold)}
+.admin-brands-list{display:flex;flex-direction:column;gap:6px;max-height:160px;overflow-y:auto;scrollbar-width:none}
+.admin-brands-list::-webkit-scrollbar{display:none}
+.admin-brand-row{display:flex;align-items:center;gap:8px;padding:8px 10px;background:var(--warm);border:1px solid var(--bd);border-radius:8px}
+.admin-brand-row .ab-name{flex:1;font-size:12px;font-weight:700;color:var(--navy2)}
+.admin-brand-row .ab-tag{font-size:9px;color:var(--muted);letter-spacing:1px;text-transform:uppercase}
+.admin-brand-row .ab-del{background:none;border:none;color:var(--err);font-size:16px;cursor:pointer;padding:2px 6px;opacity:.6;transition:opacity .2s}
+.admin-brand-row .ab-del:hover{opacity:1}
+.admin-btns{display:flex;gap:8px;margin-top:4px}
+.admin-btns button{flex:1;padding:11px;border-radius:var(--r);font-family:'Jost',sans-serif;font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;cursor:pointer;transition:all .2s;border:1.5px solid var(--bd3)}
+.admin-save{background:var(--navy);color:var(--cream);border-color:var(--navy)}
+.admin-save:hover{background:var(--navy2)}
+.admin-close{background:var(--warm);color:var(--navy2)}
+.admin-close:hover{border-color:var(--bd2)}
+
+.toasts{position:absolute;top:50px;left:50%;transform:translateX(-50%);z-index:999;display:flex;flex-direction:column;gap:8px;pointer-events:none;width:340px;align-items:center}
+.toast{padding:11px 18px;border-radius:100px;font-family:'Jost',sans-serif;font-size:12px;font-weight:700;letter-spacing:.3px;white-space:nowrap;animation:toastPop .3s cubic-bezier(.34,1.56,.64,1);border:1px solid var(--bd)}
+.toast.ok{background:var(--navy);color:var(--gold2);border-color:rgba(201,168,76,0.22)}
+.toast.err{background:#5C1520;color:#FFB3B3;border-color:rgba(192,57,43,0.25)}
+.toast.info{background:var(--navy2);color:var(--cream);border-color:rgba(255,255,255,0.08)}
+@keyframes toastPop{from{opacity:0;transform:scale(.9) translateY(-8px)}to{opacity:1;transform:scale(1) translateY(0)}}
+</style>
+</head>
+<body>
+
+
+<div class="toasts" id="toasts"></div>
+
+
+<div class="app">
+  
+  <div class="bg-scene">
+    <div class="bg-orb bg-orb-1"></div>
+    <div class="bg-orb bg-orb-2"></div>
+    <div class="bg-orb bg-orb-3"></div>
+    <div class="bg-grid"></div>
+  </div>
+
+  <div class="phone">
+    <div class="notch"></div>
+
+    
+    <div class="screen active" id="s-auth">
+
+      
+      <div class="auth-hero">
+        <div class="ah-glow"></div>
+        <div class="ah-ring ah-ring-1"></div>
+        <div class="ah-ring ah-ring-2"></div>
+        <div class="ah-ring ah-ring-3"></div>
+        <div class="ah-separator"></div>
+
+        <div class="auth-logo-wrap">
+          
+          <div class="auth-spin-ring">
+            <div class="auth-logo-core">
+              <svg width="66" height="66" viewBox="0 0 100 100" fill="none">
+                <defs>
+                  <linearGradient id="dg" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stop-color="#E8C97D"/>
+                    <stop offset="55%" stop-color="#C9A84C"/>
+                    <stop offset="100%" stop-color="#A8842A"/>
+                  </linearGradient>
+                </defs>
+                
+                <polygon points="50,4 93,50 50,90 7,50" fill="none" stroke="url(#dg)" stroke-width="2.2"/>
+                
+                <polygon points="50,14 83,50 50,80 17,50" fill="none" stroke="url(#dg)" stroke-width="0.7" opacity="0.22"/>
+                
+                <polygon points="50,7 90,50 50,87 10,50" fill="rgba(250,246,238,0.07)"/>
+                
+                <path d="M29 38 L38 65 L50 40 L62 65 L71 38" stroke="url(#dg)" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+                
+                <circle cx="42" cy="80" r="2.2" fill="url(#dg)" opacity="0.7"/>
+                <circle cx="50" cy="85" r="2.2" fill="url(#dg)" opacity="0.7"/>
+                <circle cx="58" cy="80" r="2.2" fill="url(#dg)" opacity="0.7"/>
+              </svg>
+            </div>
+          </div>
+
+          <div class="auth-wordmark">Weav AI</div>
+          <div class="auth-tagline">Your Personal Tailor</div>
+          <div style="margin-top:6px;font-size:11px;color:rgba(245,237,208,0.30);letter-spacing:1.5px;font-family:'Jost',sans-serif">Create a free account to begin</div>
+        </div>
+      </div>
+
+      
+      <div class="auth-tabs" id="auth-tabs">
+        <button class="a-tab on" data-t="login">Sign In</button>
+        <button class="a-tab" data-t="signup">Create Account</button>
+        <div class="a-tab-line" id="tab-line"></div>
+      </div>
+
+      
+      <div class="auth-form" id="auth-form">
+
+        
+        <button class="g-btn" id="g-btn" style="margin-top:4px">
+          <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+            <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+            <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+            <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+          </svg>
+          Continue with Google
+        </button>
+
+        <div class="div-row">
+          <div class="div-ln"></div>
+          <span class="div-tx">or use email</span>
+          <div class="div-ln"></div>
+        </div>
+
+        
+        <div class="fld" id="f-name" style="display:none">
+          <label class="fld-lb">Full Name</label>
+          <div class="fld-bx">
+            <span class="fld-ic">✦</span>
+            <input class="fld-in" id="i-name" type="text" placeholder="e.g. Ananya Kaushal" autocomplete="name"/>
+          </div>
+          <div class="fld-err" id="e-name">Full name is required</div>
+        </div>
+
+        
+        <div class="fld">
+          <label class="fld-lb">Email Address</label>
+          <div class="fld-bx">
+            <span class="fld-ic">✉</span>
+            <input class="fld-in" id="i-email" type="email" placeholder="your@email.com" autocomplete="email"/>
+          </div>
+          <div class="fld-err" id="e-email">Enter a valid email address</div>
+        </div>
+
+        
+        <div class="fld">
+          <label class="fld-lb">Password</label>
+          <div class="fld-bx">
+            <span class="fld-ic">●</span>
+            <input class="fld-in" id="i-pw" type="password" placeholder="Min. 6 characters" autocomplete="current-password"/>
+            <button class="fld-eye" id="pw-eye" type="button" aria-label="Toggle password">👁</button>
+          </div>
+          <div class="fld-err" id="e-pw">Minimum 6 characters required</div>
+        </div>
+
+        
+        <div class="fld" id="f-conf" style="display:none">
+          <label class="fld-lb">Confirm Password</label>
+          <div class="fld-bx">
+            <span class="fld-ic">●</span>
+            <input class="fld-in" id="i-conf" type="password" placeholder="Re-enter password" autocomplete="new-password"/>
+          </div>
+          <div class="fld-err" id="e-conf">Passwords do not match</div>
+        </div>
+
+        <div class="forgot-row" id="forgot-row">
+          <span role="button" tabindex="0">Forgot password?</span>
+        </div>
+
+        <button class="btn-gold" id="auth-btn">SIGN IN TO WEAV AI →</button>
+
+        <div class="auth-sw" id="auth-sw">
+          New to Weav AI? <b id="sw-link">Create free account</b>
+        </div>
+
+        <p class="terms-note" id="terms-note" style="display:none">
+          By signing up you agree to our <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>.<br/>
+          Your measurements are stored securely. Never shared.
+        </p>
+      </div>
+    </div>
+
+    
+    <div class="screen" id="s-splash">
+      <div class="sp-bg-1"></div>
+      <div class="sp-bg-2"></div>
+
+      <div class="sp-header">
+        <div class="sp-logo-row">
+          <div class="sp-logo-badge">
+            <svg width="30" height="30" viewBox="0 0 100 100" fill="none">
+              <defs><linearGradient id="sp-dg" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#E8C97D"/><stop offset="100%" stop-color="#C9A84C"/></linearGradient></defs>
+              <rect width="100" height="100" fill="#FAF6EE"/>
+              <polygon points="50,6 90,50 50,88 10,50" fill="none" stroke="url(#sp-dg)" stroke-width="3"/>
+              <path d="M31 40 L40 64 L50 42 L60 64 L69 40" stroke="#0D1B2A" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+            </svg>
+          </div>
+          <div class="sp-brand">Weav AI</div>
+        </div>
+        <div class="user-widget">
+          <button class="user-pill" onclick="openProfile()" aria-label="Open profile" type="button">
+            <div class="user-av" id="user-av">AN</div>
+            <span class="user-name" id="user-name">User</span>
+          </button>
+          <button class="so-btn" onclick="doSignOut()">Sign out</button>
+        </div>
+      </div>
+
+      <div class="sp-hero">
+        <div class="sp-ey">Your Personal Tailor</div>
+        <div class="sp-ttl">
+          Find Your<br/>
+          <em>Perfect</em>
+          <span class="l2">Fit.</span>
+        </div>
+        <div class="stats-row">
+          <div class="stat-chip"><div class="sc-num">6</div><div class="sc-lbl">Brands</div></div>
+          <div class="stat-chip"><div class="sc-num">8</div><div class="sc-lbl">Categories</div></div>
+          <div class="stat-chip"><div class="sc-num">95%</div><div class="sc-lbl">Accuracy</div></div>
+        </div>
+        <p class="sp-desc">Enter your measurements once. Get your exact size across Nike, Adidas, Puma, H&amp;M, Zara &amp; Levi's — perfectly calibrated.</p>
+        <div class="sp-cta">
+          <button class="btn-navy" onclick="startWiz()">BEGIN MEASUREMENT →</button>
+          <button class="btn-outline" onclick="startWiz()">Update My Profile</button>
+        </div>
+      </div>
+
+      <div class="sp-brands">
+        <div class="bp-lbl">Supported Brands</div>
+        <div class="bp-row">
+          <div class="b-pill">Nike</div>
+          <div class="b-pill">Adidas</div>
+          <div class="b-pill">Puma</div>
+          <div class="b-pill">H&amp;M</div>
+          <div class="b-pill">Zara</div>
+          <div class="b-pill">Levi's</div>
+        </div>
+      </div>
+    </div>
+
+    
+    <div class="screen" id="s-measure">
+      <div class="wiz-top">
+        <button class="back-btn" id="wiz-back" aria-label="Go back">←</button>
+        <span class="step-ct" id="step-ct">1 / 3</span>
+        <button class="skip-btn" id="wiz-skip">Skip</button>
+      </div>
+      <div class="prog-bar" id="prog-bar">
+        <div class="pb-seg now"></div>
+        <div class="pb-seg"></div>
+        <div class="pb-seg"></div>
+      </div>
+      <div class="wiz-head">
+        <div class="wiz-ey" id="wiz-ey">BASIC DETAILS</div>
+        <div class="wiz-ttl" id="wiz-ttl">Tell us about yourself</div>
+        <div class="wiz-sub" id="wiz-sub">Helps calibrate your size across every brand.</div>
+      </div>
+      <div class="wiz-body" id="wiz-body"></div>
+      <div class="wiz-foot">
+        <button class="btn-gold" id="wiz-next">CONTINUE →</button>
+      </div>
+    </div>
+
+    
+    <div class="screen" id="s-load">
+      <div class="ld-logo-wrap">
+        <div class="ld-ring"></div>
+        <div class="ld-ring-2"></div>
+        <div class="ld-diamond">
+          <svg width="58" height="58" viewBox="0 0 100 100" fill="none">
+            <defs><linearGradient id="ld-dg" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#E8C97D"/><stop offset="55%" stop-color="#C9A84C"/><stop offset="100%" stop-color="#A8842A"/></linearGradient></defs>
+            <polygon points="50,4 93,50 50,90 7,50" fill="rgba(255,255,255,0.04)" stroke="url(#ld-dg)" stroke-width="2.5"/>
+            <polygon points="50,16 81,50 50,78 19,50" fill="none" stroke="url(#ld-dg)" stroke-width="0.8" opacity="0.28"/>
+            <path d="M29 38 L38 65 L50 40 L62 65 L71 38" stroke="url(#ld-dg)" stroke-width="6.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+            <circle cx="42" cy="80" r="2" fill="url(#ld-dg)" opacity="0.7"/>
+            <circle cx="50" cy="84" r="2" fill="url(#ld-dg)" opacity="0.7"/>
+            <circle cx="58" cy="80" r="2" fill="url(#ld-dg)" opacity="0.7"/>
+          </svg>
+        </div>
+      </div>
+      <div class="ld-ttl">Finding your<br/><em>perfect fit</em></div>
+      <div class="ld-step" id="ld-step">Saving your profile securely…</div>
+      <div class="ld-brands" id="ld-brands">
+        <span class="ld-b">Nike</span>
+        <span class="ld-b">Adidas</span>
+        <span class="ld-b">Puma</span>
+        <span class="ld-b">H&amp;M</span>
+        <span class="ld-b">Zara</span>
+        <span class="ld-b">Levi's</span>
+      </div>
+    </div>
+
+    
+    <div class="screen" id="s-res">
+      <div class="res-top">
+        <div class="res-logo">
+          <div class="res-logo-badge">
+            <svg width="26" height="26" viewBox="0 0 100 100" fill="none">
+              <defs><linearGradient id="res-dg" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#E8C97D"/><stop offset="100%" stop-color="#C9A84C"/></linearGradient></defs>
+              <rect width="100" height="100" fill="#FAF6EE"/>
+              <polygon points="50,6 90,50 50,88 10,50" fill="none" stroke="url(#res-dg)" stroke-width="3"/>
+              <path d="M31 40 L40 64 L50 42 L60 64 L69 40" stroke="#0D1B2A" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+            </svg>
+          </div>
+          <div class="res-brand">Weav AI</div>
+        </div>
+        <div class="res-actions">
+          <div class="db-pill"><div class="db-dot"></div><span class="db-txt">SAVED</span></div>
+          <button class="edit-btn" onclick="startWiz()">Edit</button>
+        </div>
+      </div>
+
+      <div class="res-scroll" id="res-scroll">
+        
+      </div>
+
+      
+      <div class="modal-overlay" id="feedback-modal">
+        <div class="modal-card">
+          <div class="modal-handle"></div>
+          <div class="modal-ttl">How did it fit?</div>
+          <div class="modal-sub" id="modal-sub">Rate your fit for this recommendation</div>
+          <div class="fit-opts">
+            <div class="fit-opt" data-v="perfect">✓ Perfect fit</div>
+            <div class="fit-opt" data-v="slightly_small">Slightly small</div>
+            <div class="fit-opt" data-v="too_small">Too small</div>
+            <div class="fit-opt" data-v="slightly_large">Slightly large</div>
+            <div class="fit-opt" data-v="too_large">Too large</div>
+          </div>
+          <textarea class="notes-inp" id="notes-inp" placeholder="Any notes? (optional)" rows="3"></textarea>
+          <div class="modal-btns">
+            <button class="m-cancel" onclick="closeFeedback()">Cancel</button>
+            <button class="m-submit" onclick="submitFeedback()">Submit Feedback</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+    <div class="profile-modal" id="profile-modal">
+      <div class="profile-card">
+        <div class="profile-head">
+          <div class="profile-av" id="pm-av">AN</div>
+          <div style="flex:1;min-width:0">
+            <div class="profile-name" id="pm-name">Your Profile</div>
+            <div class="profile-email" id="pm-email">—</div>
+          </div>
+        </div>
+        <div class="profile-section">
+          <div class="profile-lbl">Saved Measurements</div>
+          <div id="pm-measurements"></div>
+        </div>
+        <div class="profile-section">
+          <div class="profile-lbl">Measurement History</div>
+          <div id="pm-history" class="history-scroll"></div>
+        </div>
+        <div class="profile-section" id="pm-fav-wrap" style="display:none">
+          <div class="profile-lbl">Favorite Brands</div>
+          <div id="pm-favs" style="display:flex;flex-wrap:wrap;gap:6px"></div>
+        </div>
+        <div class="profile-actions">
+          <button class="pa-close" onclick="closeProfile()">Close</button>
+          <button class="pa-edit" onclick="closeProfile();startWiz();">Update</button>
+          <button class="pa-out" onclick="closeProfile();doSignOut();">Sign out</button>
+        </div>
+        <div class="admin-link" onclick="closeProfile();openAdmin();">⚙ Open admin panel</div>
+      </div>
+    </div>
+
+
+    <div class="admin-modal" id="admin-modal">
+      <div class="admin-card">
+        <div class="admin-ttl">Admin Panel <span class="admin-badge">Demo</span></div>
+        <div class="admin-sub">Add a custom brand to the size engine. New brands instantly appear in your recommendations. Default size chart is applied — you can tune it later in code.</div>
+
+        <div class="admin-field">
+          <label class="admin-flbl" for="ad-brand">Brand name</label>
+          <input class="admin-fin" id="ad-brand" type="text" placeholder="e.g. Uniqlo" maxlength="24"/>
+        </div>
+        <div class="admin-field">
+          <label class="admin-flbl" for="ad-logo">Logo initials (2 chars)</label>
+          <input class="admin-fin" id="ad-logo" type="text" placeholder="e.g. UQ" maxlength="3"/>
+        </div>
+        <div class="admin-field">
+          <label class="admin-flbl" for="ad-url">Official site URL</label>
+          <input class="admin-fin" id="ad-url" type="url" placeholder="https://..."/>
+        </div>
+
+        <div class="admin-field">
+          <label class="admin-flbl">Existing custom brands</label>
+          <div class="admin-brands-list" id="ad-list"></div>
+        </div>
+
+        <div class="admin-btns">
+          <button class="admin-close" onclick="closeAdmin()">Close</button>
+          <button class="admin-save" onclick="addCustomBrand()">Add Brand</button>
+        </div>
+      </div>
+    </div>
+
+
+    <div class="gp-modal" id="gp-modal">
+      <div class="gp-card">
+        <div class="gp-head">
+          <svg class="gp-logo" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+            <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+            <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+            <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+          </svg>
+          <div>
+            <div class="gp-title">Sign in with Google</div>
+            <div class="gp-sub">to continue to Weav AI</div>
+          </div>
+        </div>
+
+
+        <div id="gp-pick-stage">
+          <div class="gp-acct-list" id="gp-acct-list"></div>
+          <div class="gp-divider"></div>
+          <button class="gp-add" type="button" onclick="gpShowAdd()">
+            <span class="gp-add-ic">+</span>
+            <span>Use another account</span>
+          </button>
+        </div>
+
+
+        <div id="gp-add-stage" style="display:none">
+          <div class="gp-fields">
+            <div class="gp-field">
+              <label class="gp-flbl" for="gp-name">Full name</label>
+              <input class="gp-fin" id="gp-name" type="text" placeholder="e.g. Ananya Kaushal" autocomplete="name"/>
+            </div>
+            <div class="gp-field">
+              <label class="gp-flbl" for="gp-email">Email</label>
+              <input class="gp-fin" id="gp-email" type="email" placeholder="you@gmail.com" autocomplete="email"/>
+            </div>
+          </div>
+          <div class="gp-btns">
+            <button class="gp-btn gp-btn-cancel" type="button" onclick="gpShowPick()">Back</button>
+            <button class="gp-btn gp-btn-go" type="button" onclick="gpAddAccount()">Next</button>
+          </div>
+        </div>
+
+        <div class="gp-foot">By continuing, Google will share your name and email with Weav AI.</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+"use strict";
+
+
+const BRANDS = {
+  Nike: {
+    logo: 'NK',
+    url:  'https://www.nike.com/in/w/womens-clothing',
+    cats: {
+      tops:        'https://www.nike.com/in/w/womens-tops-shirts-5e1x6znik1',
+      bottoms:     'https://www.nike.com/in/w/womens-pants-tights-leggings-37v7jznik1',
+      dresses:     'https://www.nike.com/in/w/womens-skirts-dresses-5e1x6znik1',
+      sports_bras: 'https://www.nike.com/in/w/womens-sports-bras-znik1',
+      hoodies:     'https://www.nike.com/in/w/womens-hoodies-sweatshirts-6rive',
+      accessories: 'https://www.nike.com/in/w/womens-accessories-6nmx2',
+      outerwear:   'https://www.nike.com/in/w/womens-jackets-vests-50r7y',
+      footwear:    'https://www.nike.com/in/w/womens-shoes-5e1x6',
+    },
+    price: { tops:'₹1,995–₹4,995', bottoms:'₹2,495–₹6,995', dresses:'₹2,995–₹6,995', sports_bras:'₹1,495–₹3,995', hoodies:'₹3,495–₹7,995', accessories:'₹999–₹2,995', outerwear:'₹5,995–₹19,995', footwear:'₹4,995–₹14,995' },
+    sizes:[{l:'XS',b:[79,84],w:[61,66],h:[86,91]},{l:'S',b:[84,89],w:[66,71],h:[91,96]},{l:'M',b:[89,94],w:[71,76],h:[96,101]},{l:'L',b:[94,100],w:[76,82],h:[101,107]},{l:'XL',b:[100,107],w:[82,89],h:[107,114]},{l:'XXL',b:[107,114],w:[89,96],h:[114,121]}],
+  },
+  Adidas: {
+    logo: 'AD',
+    url:  'https://www.adidas.co.in/women-clothing',
+    cats: {
+      tops:        'https://www.adidas.co.in/women-tops',
+      bottoms:     'https://www.adidas.co.in/women-pants-tights',
+      dresses:     'https://www.adidas.co.in/women-dresses-skirts',
+      sports_bras: 'https://www.adidas.co.in/women-sports-bras',
+      hoodies:     'https://www.adidas.co.in/women-hoodies-sweatshirts',
+      accessories: 'https://www.adidas.co.in/women-accessories',
+      outerwear:   'https://www.adidas.co.in/women-jackets-vests',
+      footwear:    'https://www.adidas.co.in/women-shoes',
+    },
+    price: { tops:'₹1,799–₹4,499', bottoms:'₹2,299–₹5,999', dresses:'₹2,799–₹5,999', sports_bras:'₹1,299–₹3,499', hoodies:'₹2,999–₹6,999', accessories:'₹799–₹2,799', outerwear:'₹4,999–₹17,999', footwear:'₹4,499–₹12,999' },
+    sizes:[{l:'XS',b:[76,82],w:[58,63],h:[83,89]},{l:'S',b:[82,88],w:[63,68],h:[89,95]},{l:'M',b:[88,94],w:[68,74],h:[95,101]},{l:'L',b:[94,101],w:[74,81],h:[101,108]},{l:'XL',b:[101,108],w:[81,88],h:[108,115]},{l:'XXL',b:[108,116],w:[88,96],h:[115,123]}],
+  },
+  Puma: {
+    logo: 'PM',
+    url:  'https://in.puma.com/in/en/women/clothing',
+    cats: {
+      tops:        'https://in.puma.com/in/en/women/clothing/tops',
+      bottoms:     'https://in.puma.com/in/en/women/clothing/bottoms',
+      dresses:     'https://in.puma.com/in/en/women/clothing/dresses',
+      sports_bras: 'https://in.puma.com/in/en/women/clothing/sports-bras',
+      hoodies:     'https://in.puma.com/in/en/women/clothing/hoodies-sweatshirts',
+      accessories: 'https://in.puma.com/in/en/women/accessories',
+      outerwear:   'https://in.puma.com/in/en/women/clothing/jackets',
+      footwear:    'https://in.puma.com/in/en/women/shoes',
+    },
+    price: { tops:'₹1,299–₹3,499', bottoms:'₹1,799–₹4,999', dresses:'₹2,299–₹4,999', sports_bras:'₹1,099–₹2,999', hoodies:'₹2,499–₹5,499', accessories:'₹599–₹2,499', outerwear:'₹3,999–₹12,999', footwear:'₹3,499–₹10,999' },
+    sizes:[{l:'XS',b:[80,84],w:[61,65],h:[87,91]},{l:'S',b:[84,88],w:[65,69],h:[91,95]},{l:'M',b:[88,93],w:[69,74],h:[95,100]},{l:'L',b:[93,99],w:[74,80],h:[100,106]},{l:'XL',b:[99,105],w:[80,87],h:[106,113]},{l:'XXL',b:[105,113],w:[87,95],h:[113,121]}],
+  },
+  'H&M': {
+    logo: 'HM',
+    url:  'https://www2.hm.com/en_in/ladies/shop-by-product/view-all.html',
+    cats: {
+      tops:        'https://www2.hm.com/en_in/ladies/shop-by-product/tops.html',
+      bottoms:     'https://www2.hm.com/en_in/ladies/shop-by-product/trousers.html',
+      dresses:     'https://www2.hm.com/en_in/ladies/shop-by-product/dresses.html',
+      sports_bras: 'https://www2.hm.com/en_in/ladies/shop-by-product/sport-bras.html',
+      hoodies:     'https://www2.hm.com/en_in/ladies/shop-by-product/hoodies-sweatshirts.html',
+      accessories: 'https://www2.hm.com/en_in/ladies/accessories.html',
+      outerwear:   'https://www2.hm.com/en_in/ladies/shop-by-product/jackets-coats.html',
+      footwear:    'https://www2.hm.com/en_in/ladies/shop-by-product/shoes.html',
+    },
+    price: { tops:'₹799–₹2,499', bottoms:'₹1,299–₹3,299', dresses:'₹1,499–₹3,999', sports_bras:'₹699–₹1,999', hoodies:'₹1,799–₹3,999', accessories:'₹299–₹1,499', outerwear:'₹2,999–₹9,999', footwear:'₹1,999–₹6,999' },
+    sizes:[{l:'XS',b:[80,83],w:[61,64],h:[86,89]},{l:'S',b:[83,87],w:[64,68],h:[89,93]},{l:'M',b:[87,93],w:[68,74],h:[93,99]},{l:'L',b:[93,99],w:[74,80],h:[99,105]},{l:'XL',b:[99,107],w:[80,88],h:[105,113]},{l:'XXL',b:[107,115],w:[88,96],h:[113,121]}],
+  },
+  Zara: {
+    logo: 'ZA',
+    url:  'https://www.zara.com/in/en/woman-clothing-l1066.html',
+    cats: {
+      tops:        'https://www.zara.com/in/en/woman-tops-l1249.html',
+      bottoms:     'https://www.zara.com/in/en/woman-trousers-l1335.html',
+      dresses:     'https://www.zara.com/in/en/woman-dresses-l1066.html',
+      sports_bras: 'https://www.zara.com/in/en/woman-sport-l1418.html',
+      hoodies:     'https://www.zara.com/in/en/woman-sweatshirts-l1371.html',
+      accessories: 'https://www.zara.com/in/en/woman-accessories-l1244.html',
+      outerwear:   'https://www.zara.com/in/en/woman-outerwear-l1108.html',
+      footwear:    'https://www.zara.com/in/en/woman-shoes-l1251.html',
+    },
+    price: { tops:'₹1,590–₹3,990', bottoms:'₹1,990–₹4,990', dresses:'₹2,290–₹5,990', sports_bras:'₹1,190–₹2,790', hoodies:'₹2,490–₹4,990', accessories:'₹790–₹2,990', outerwear:'₹3,990–₹14,990', footwear:'₹2,990–₹8,990' },
+    sizes:[{l:'XS',b:[79,83],w:[60,64],h:[86,90]},{l:'S',b:[83,87],w:[64,68],h:[90,94]},{l:'M',b:[87,93],w:[68,74],h:[94,100]},{l:'L',b:[93,99],w:[74,80],h:[100,106]},{l:'XL',b:[99,107],w:[80,88],h:[106,114]},{l:'XXL',b:[107,115],w:[88,96],h:[114,122]}],
+  },
+  "Levi's": {
+    logo: 'LV',
+    url:  'https://www.levi.in/',
+    cats: {
+      tops:        'https://www.levi.in/women/tops',
+      bottoms:     'https://www.levi.in/women/jeans',
+      dresses:     'https://www.levi.in/women/dresses-skirts',
+      sports_bras: 'https://www.levi.in/women',
+      hoodies:     'https://www.levi.in/women/sweatshirts-hoodies',
+      accessories: 'https://www.levi.in/women/accessories',
+      outerwear:   'https://www.levi.in/women/jackets',
+      footwear:    'https://www.levi.in/women/footwear',
+    },
+    price: { tops:'₹1,699–₹3,999', bottoms:'₹2,299–₹5,999', dresses:'₹2,499–₹4,999', sports_bras:'₹1,299–₹2,999', hoodies:'₹2,999–₹6,499', accessories:'₹999–₹2,999', outerwear:'₹4,499–₹13,999', footwear:'₹3,499–₹8,999' },
+    sizes:[{l:'XS',b:[81,84],w:[62,65],h:[87,90]},{l:'S',b:[84,88],w:[65,69],h:[90,94]},{l:'M',b:[88,94],w:[69,75],h:[94,100]},{l:'L',b:[94,100],w:[75,81],h:[100,106]},{l:'XL',b:[100,108],w:[81,89],h:[106,114]},{l:'XXL',b:[108,116],w:[89,97],h:[114,122]}],
+  },
+};
+
+const CATS = [
+  { id:'tops',        label:'Tops',        sym:'✦' },
+  { id:'bottoms',     label:'Bottoms',     sym:'◆' },
+  { id:'dresses',     label:'Dresses',     sym:'◇' },
+  { id:'sports_bras', label:'Sports Bras', sym:'○' },
+  { id:'hoodies',     label:'Hoodies',     sym:'▽' },
+  { id:'accessories', label:'Accessories', sym:'❋' },
+  { id:'outerwear',   label:'Outerwear',   sym:'◈' },
+  { id:'footwear',    label:'Footwear',    sym:'◎' },
+];
+
+
+// Reference median price per brand/category in INR. Kept as a fallback for
+// admin-added brands; the live analyzer computes actual medians dynamically.
+const AVG_PRICE = {
+  Nike:    { tops:2700, bottoms:3900, dresses:3900, sports_bras:2200, hoodies:4900, accessories:1500, outerwear:11000, footwear:7900 },
+  Adidas:  { tops:2400, bottoms:3500, dresses:3500, sports_bras:2000, hoodies:4200, accessories:1300, outerwear:9500,  footwear:7200 },
+  Puma:    { tops:1900, bottoms:2800, dresses:2800, sports_bras:1700, hoodies:3400, accessories:1100, outerwear:7500,  footwear:5900 },
+  'H&M':   { tops:1299, bottoms:1999, dresses:2299, sports_bras:1099, hoodies:2499, accessories:699,  outerwear:4999,  footwear:3499 },
+  Zara:    { tops:1990, bottoms:2990, dresses:3290, sports_bras:1590, hoodies:3290, accessories:1290, outerwear:7490,  footwear:4990 },
+  "Levi's":{ tops:2200, bottoms:3400, dresses:3200, sports_bras:1800, hoodies:4000, accessories:1500, outerwear:7900,  footwear:5200 },
+};
+
+
+// Per-category weights — what matters most for each category.
+const CAT_WEIGHTS = {
+  tops:        { b: 2.2, w: 1.0, h: 0.8 },
+  dresses:     { b: 1.6, w: 1.4, h: 1.4 },
+  sports_bras: { b: 2.6, w: 0.4, h: 0.4 },
+  hoodies:     { b: 2.0, w: 0.9, h: 0.9 },
+  outerwear:   { b: 2.0, w: 1.0, h: 1.0 },
+  bottoms:     { b: 0.5, w: 2.2, h: 2.0 },
+  accessories: { b: 1.0, w: 1.0, h: 1.0 },
+  footwear:    { b: 1.0, w: 1.0, h: 1.0 },
+  balanced:    { b: 1.0, w: 1.4, h: 1.0 },
+};
+
+function getSizeForCategory(brandName, bust, waist, hips, category) {
+  const c = BRANDS[brandName];
+  if (!c) return 'N/A';
+  const w = CAT_WEIGHTS[category] || CAT_WEIGHTS.balanced;
+
+  let best = null, bestScore = -Infinity;
+  for (const s of c.sizes) {
+    const bOk = bust  >= s.b[0] && bust  <= s.b[1];
+    const wOk = waist >= s.w[0] && waist <= s.w[1];
+    const hOk = hips  >= s.h[0] && hips  <= s.h[1];
+    // Reward in-range matches; softly penalize out-of-range by distance (cm).
+    const bDist = bOk ? 0 : Math.min(Math.abs(bust  - s.b[0]), Math.abs(bust  - s.b[1]));
+    const wDist = wOk ? 0 : Math.min(Math.abs(waist - s.w[0]), Math.abs(waist - s.w[1]));
+    const hDist = hOk ? 0 : Math.min(Math.abs(hips  - s.h[0]), Math.abs(hips  - s.h[1]));
+    const hit = (bOk?w.b:0) + (wOk?w.w:0) + (hOk?w.h:0);
+    const miss = (bDist * w.b + wDist * w.w + hDist * w.h) * 0.05;
+    const score = hit - miss;
+    if (score > bestScore) { bestScore = score; best = s; }
+  }
+  return (best || c.sizes[0]).l;
+}
+
+function getSize(brandName, bust, waist, hips) {
+  return getSizeForCategory(brandName, bust, waist, hips, 'balanced');
+}
+
+// Build a short, human fit explanation for a given size on a brand.
+function getFitExplanation(brandName, bust, waist, hips, category, chosenSize) {
+  const c = BRANDS[brandName];
+  if (!c) return '';
+  const s = c.sizes.find(x => x.l === chosenSize);
+  if (!s) return '';
+
+  const verdict = [];
+  const consider = (name, v, range) => {
+    const [lo, hi] = range;
+    if (v >= lo && v <= hi) return { name, status: 'match' };
+    const above = v > hi;
+    const mid = (lo + hi) / 2;
+    return { name, status: above ? 'above' : 'below', diff: Math.abs(v - mid).toFixed(0) };
+  };
+  verdict.push(consider('bust',  bust,  s.b));
+  verdict.push(consider('waist', waist, s.w));
+  verdict.push(consider('hips',  hips,  s.h));
+
+  const matches = verdict.filter(v => v.status === 'match').map(v => v.name);
+  const off     = verdict.filter(v => v.status !== 'match');
+
+  if (matches.length === 3) {
+    return `All three measurements sit inside ${chosenSize} — a confident match.`;
+  }
+
+  const idx = c.sizes.findIndex(x => x.l === chosenSize);
+  const upL   = c.sizes[idx + 1]?.l;
+  const downL = c.sizes[idx - 1]?.l;
+
+  const fmtList = arr => arr.length === 1 ? arr[0]
+    : arr.length === 2 ? arr.join(' and ')
+    : arr.slice(0, -1).join(', ') + ' and ' + arr[arr.length - 1];
+
+  let txt = '';
+  if (matches.length) {
+    txt = `Your ${fmtList(matches)} ${matches.length > 1 ? 'align' : 'aligns'} with ${chosenSize}`;
+  } else {
+    txt = `No measurement sits perfectly inside ${chosenSize}`;
+  }
+  if (off.length) {
+    const o = off[0];
+    const direction = o.status === 'above' ? 'closer to ' + (upL || 'a larger size') : 'closer to ' + (downL || 'a smaller size');
+    txt += `, while ${o.name} is ${direction}`;
+  }
+  return txt + '.';
+}
+
+// Shift a size up/down based on the user's past fit feedback for this brand.
+function applyFeedbackAdjustment(brand, category, baseSize) {
+  if (!currentUser) return { size: baseSize, shifted: false };
+  const c = BRANDS[brand];
+  if (!c) return { size: baseSize, shifted: false };
+  const feedback = lsGet(LS.FEEDBACK(currentUser.email), []);
+  const relevant = feedback
+    .filter(f =>
+      (f.brand === brand || f.brand === 'general') &&
+      (f.category === category || f.category === 'general' || !f.category)
+    )
+    .slice(-3);
+  if (!relevant.length) return { size: baseSize, shifted: false };
+
+  let acc = 0;
+  for (const f of relevant) {
+    if (f.fit === 'too_small')       acc += 1;
+    else if (f.fit === 'slightly_small') acc += 0.5;
+    else if (f.fit === 'slightly_large') acc -= 0.5;
+    else if (f.fit === 'too_large')      acc -= 1;
+  }
+  const shift = Math.round(acc / Math.max(1, relevant.length));
+  if (!shift) return { size: baseSize, shifted: false };
+
+  const i = c.sizes.findIndex(x => x.l === baseSize);
+  const ti = Math.max(0, Math.min(c.sizes.length - 1, i + shift));
+  return { size: c.sizes[ti].l, shifted: ti !== i };
+}
+
+
+function getConfidence(brandName, bust, waist, hips) {
+  const c = BRANDS[brandName];
+  if (!c) return 75;
+  let bestScore = -1;
+  for (const s of c.sizes) {
+    const wOk = waist >= s.w[0] && waist <= s.w[1];
+    const bOk = bust  >= s.b[0] && bust  <= s.b[1];
+    const hOk = hips  >= s.h[0] && hips  <= s.h[1];
+    const count = (wOk?1:0) + (bOk?1:0) + (hOk?1:0);
+    const score = count * 10 + (wOk ? 5 : 0);
+    if (count > 0 && score > bestScore) bestScore = score;
+  }
+  if (bestScore >= 35) return 97; // 3 matches + waist
+  if (bestScore >= 30) return 94; // 3 matches
+  if (bestScore >= 25) return 88; // 2 + waist
+  if (bestScore >= 20) return 84; // 2 matches
+  if (bestScore >= 15) return 78; // 1 + waist
+  if (bestScore >= 10) return 72; // 1 match
+  return 62; // fallback
+}
+
+
+function toast(msg, type = 'ok') {
+  const el = document.createElement('div');
+  el.className = `toast ${type}`;
+  el.textContent = msg;
+  document.getElementById('toasts').appendChild(el);
+  setTimeout(() => el.remove(), 3400);
+}
+
+
+let _nav = false;
+function go(toId, fromId) {
+  if (_nav) return;
+  _nav = true;
+  const from = document.getElementById(fromId);
+  const to   = document.getElementById(toId);
+  from.classList.add('out');
+  setTimeout(() => {
+    from.classList.remove('active', 'out');
+    to.classList.add('active');
+    _nav = false;
+  }, 440);
+}
+
+
+let authMode = 'login';
+let showPw   = false;
+let currentUser = null;
+
+const API_BASE_URL = 'http://localhost:8000';
+
+const LS = {
+  USERS:    'weavai.users.v1',
+  SESSION:  'weavai.session.v1',
+  GOOGLE:   'weavai.google.v1',
+  PROFILE:  e => 'weavai.profile.'   + e.toLowerCase(),
+  HISTORY:  e => 'weavai.history.'   + e.toLowerCase(),
+  FAVORITES:e => 'weavai.favorites.' + e.toLowerCase(),
+  FEEDBACK: e => 'weavai.feedback.'  + e.toLowerCase(),
+  CUSTOM_BRANDS: 'weavai.custombrands.v1',
+};
+
+function lsGet(k, fallback) {
+  try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : fallback; }
+  catch (_) { return fallback; }
+}
+function lsSet(k, v) {
+  try { localStorage.setItem(k, JSON.stringify(v)); } catch (_) {}
+}
+function lsRemove(k) {
+  try { localStorage.removeItem(k); } catch (_) {}
+}
+
+function fallbackBackendPassword(user) {
+  const raw = `${user.email || 'weavai'}:${user.createdAt || 'local'}`;
+  return 'weavai_' + btoa(unescape(encodeURIComponent(raw))).replace(/[^a-zA-Z0-9]/g, '').slice(0, 24);
+}
+
+async function ensureBackendSession() {
+  if (!currentUser) return null;
+  if (currentUser.token) return currentUser.token;
+
+  const password = currentUser.pw || fallbackBackendPassword(currentUser);
+  const authBody = { email: currentUser.email, password };
+  let data = null;
+
+  try {
+    const loginRes = await fetch(API_BASE_URL + '/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(authBody),
+    });
+    if (loginRes.ok) data = await loginRes.json();
+  } catch (_) {}
+
+  if (!data) {
+    try {
+      const signupRes = await fetch(API_BASE_URL + '/auth/signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: currentUser.name || currentUser.email.split('@')[0],
+          email: currentUser.email,
+          password,
+        }),
+      });
+      if (signupRes.ok) data = await signupRes.json();
+    } catch (_) {}
+  }
+
+  if (!data?.token) return null;
+  currentUser = { ...currentUser, ...data.user, token: data.token, initials: initialsOf(data.user.name) };
+  rememberUser(currentUser);
+  lsSet(LS.SESSION, { email: currentUser.email, token: data.token });
+  updateUserChip();
+  return data.token;
+}
+
+async function apiRequest(path, { method = 'GET', body, token } = {}) {
+  const headers = { 'Content-Type': 'application/json' };
+  let authToken = token || currentUser?.token || lsGet(LS.SESSION, null)?.token;
+  const needsAuth = !path.startsWith('/auth/') && path !== '/' && path !== '/brands' && path !== '/price/predict';
+  if (!authToken && needsAuth) authToken = await ensureBackendSession();
+  if (authToken) headers.Authorization = `Bearer ${authToken}`;
+  const res = await fetch(API_BASE_URL + path, {
+    method,
+    headers,
+    body: body ? JSON.stringify(body) : undefined,
+  });
+  let data = null;
+  try { data = await res.json(); } catch (_) {}
+  if (!res.ok) {
+    const err = new Error(data?.detail || 'Backend request failed');
+    err.status = res.status;
+    err.data = data;
+    throw err;
+  }
+  return data;
+}
+
+function rememberUser(user) {
+  const users = getUsers();
+  const idx = users.findIndex(u => u.email.toLowerCase() === user.email.toLowerCase());
+  if (idx >= 0) users[idx] = { ...users[idx], ...user };
+  else users.push(user);
+  saveUsers(users);
+}
+
+// Indian currency formatter — "₹1,999" / "₹1,00,000" (lakh grouping).
+const formatINR = v => '₹' + Math.round(v).toLocaleString('en-IN');
+
+function getUsers()  { return lsGet(LS.USERS, []); }
+function saveUsers(u){ lsSet(LS.USERS, u); }
+function findUser(email) {
+  const e = (email || '').trim().toLowerCase();
+  return getUsers().find(u => u.email.toLowerCase() === e) || null;
+}
+function initialsOf(name) {
+  const parts = (name || '').trim().split(/\s+/).filter(Boolean);
+  if (!parts.length) return '?';
+  return ((parts[0][0] || '') + (parts[1]?.[0] || '')).toUpperCase();
+}
+function setSession(user, token = user.token || null) {
+  currentUser = { ...user, token };
+  rememberUser(currentUser);
+  lsSet(LS.SESSION, { email: user.email, token });
+  updateUserChip();
+  loadProfileForCurrentUser();
+}
+function clearSession() {
+  currentUser = null;
+  lsRemove(LS.SESSION);
+  wizData = {};
+}
+
+
+function posTabLine() {
+  requestAnimationFrame(() => {
+    const active = document.querySelector('.a-tab.on');
+    if (!active) return;
+    const line = document.getElementById('tab-line');
+    line.style.left  = active.offsetLeft + 'px';
+    line.style.width = active.offsetWidth + 'px';
+  });
+}
+window.addEventListener('load', posTabLine);
+
+
+document.getElementById('auth-tabs').addEventListener('click', e => {
+  const btn = e.target.closest('.a-tab');
+  if (!btn || !btn.dataset.t) return;
+  authMode = btn.dataset.t;
+  document.querySelectorAll('.a-tab').forEach(b => b.classList.remove('on'));
+  btn.classList.add('on');
+  posTabLine();
+  const su = (authMode === 'signup');
+  document.getElementById('f-name').style.display     = su ? 'block' : 'none';
+  document.getElementById('f-conf').style.display     = su ? 'block' : 'none';
+  document.getElementById('forgot-row').style.display = su ? 'none'  : 'block';
+  document.getElementById('terms-note').style.display = su ? 'block' : 'none';
+  document.getElementById('auth-btn').textContent     = su ? 'CREATE MY ACCOUNT →' : 'SIGN IN TO WEAV AI →';
+  
+  document.getElementById('auth-sw').innerHTML = su
+    ? 'Already have an account? <b id="sw-link">Sign in</b>'
+    : 'New to Weav AI? <b id="sw-link">Create free account</b>';
+  document.getElementById('sw-link').addEventListener('click', toggleMode);
+  clearErrs();
+});
+
+function toggleMode() {
+  const next = authMode === 'login' ? 'signup' : 'login';
+  document.querySelector(`.a-tab[data-t="${next}"]`).click();
+}
+document.getElementById('sw-link').addEventListener('click', toggleMode);
+
+
+document.getElementById('pw-eye').addEventListener('click', () => {
+  showPw = !showPw;
+  document.getElementById('i-pw').type = showPw ? 'text' : 'password';
+  const conf = document.getElementById('i-conf');
+  if (conf) conf.type = showPw ? 'text' : 'password';
+});
+
+function clearErrs() {
+  ['name','email','pw','conf'].forEach(f => {
+    document.getElementById('e-' + f)?.classList.remove('show');
+  });
+}
+function showErr(f) { document.getElementById('e-' + f)?.classList.add('show'); }
+
+function validateAuth() {
+  let ok = true;
+  const name  = document.getElementById('i-name').value.trim();
+  const email = document.getElementById('i-email').value.trim();
+  const pw    = document.getElementById('i-pw').value;
+  const conf  = document.getElementById('i-conf').value;
+  if (authMode === 'signup' && !name)        { showErr('name');  ok = false; }
+  if (!email.includes('@') || !email.includes('.')) { showErr('email'); ok = false; }
+  if (pw.length < 6)                         { showErr('pw');    ok = false; }
+  if (authMode === 'signup' && pw !== conf)  { showErr('conf');  ok = false; }
+  return ok;
+}
+
+
+document.getElementById('auth-btn').addEventListener('click', async () => {
+  clearErrs();
+  if (!validateAuth()) return;
+  const mode  = authMode;
+  const btn   = document.getElementById('auth-btn');
+  const email = document.getElementById('i-email').value.trim();
+  const pw    = document.getElementById('i-pw').value;
+  const name  = document.getElementById('i-name').value.trim();
+
+  btn.innerHTML = '<span class="spin"></span>';
+  btn.disabled  = true;
+  await new Promise(r => setTimeout(r, 900));
+
+  const restoreBtn = () => {
+    btn.textContent = mode === 'login' ? 'SIGN IN TO WEAV AI →' : 'CREATE MY ACCOUNT →';
+    btn.disabled = false;
+  };
+
+  if (mode === 'signup') {
+    try {
+      const res = await apiRequest('/auth/signup', { method: 'POST', body: { name, email, password: pw } });
+      const user = { ...res.user, initials: initialsOf(res.user.name), provider: 'email' };
+      setSession(user, res.token);
+      restoreBtn();
+      toast('Account saved in MySQL. Welcome, ' + name.split(' ')[0] + '! ✦', 'ok');
+      go('s-splash', 's-auth');
+      return;
+    } catch (err) {
+      if (err.status) {
+        restoreBtn();
+        toast(err.message || 'Could not create account.', 'err');
+        return;
+      }
+    }
+
+    if (findUser(email)) {
+      restoreBtn();
+      toast('An account with this email already exists. Please sign in.', 'err');
+      return;
+    }
+    const user = {
+      name,
+      email,
+      pw,
+      initials: initialsOf(name),
+      provider: 'email',
+      createdAt: Date.now(),
+    };
+    const users = getUsers();
+    users.push(user);
+    saveUsers(users);
+    setSession(user);
+    restoreBtn();
+    toast('Welcome to Weav AI, ' + name.split(' ')[0] + '! ✦', 'ok');
+    go('s-splash', 's-auth');
+    return;
+  }
+
+
+  try {
+    const res = await apiRequest('/auth/login', { method: 'POST', body: { email, password: pw } });
+    const user = { ...res.user, initials: initialsOf(res.user.name), provider: 'email' };
+    setSession(user, res.token);
+    restoreBtn();
+    toast('Signed in with MySQL backend. Welcome back! ✦', 'ok');
+    go('s-splash', 's-auth');
+    return;
+  } catch (err) {
+    if (err.status) {
+      restoreBtn();
+      toast(err.message || 'Could not sign in.', 'err');
+      return;
+    }
+  }
+
+  const existing = findUser(email);
+  if (!existing) {
+    restoreBtn();
+    toast('No account found for that email. Create one to continue.', 'err');
+    return;
+  }
+  if (existing.provider === 'google' && existing.pw == null) {
+    restoreBtn();
+    toast('This email is linked to Google. Use “Continue with Google”.', 'err');
+    return;
+  }
+  if (existing.pw !== pw) {
+    restoreBtn();
+    toast('Incorrect password. Please try again.', 'err');
+    return;
+  }
+  setSession(existing);
+  restoreBtn();
+  toast('Welcome back, ' + (existing.name || email).split(' ')[0] + '! ✦', 'ok');
+  go('s-splash', 's-auth');
+});
+
+
+document.getElementById('g-btn').addEventListener('click', () => {
+  openGooglePicker();
+});
+
+
+function openGooglePicker() {
+  const list = document.getElementById('gp-acct-list');
+  const accounts = lsGet(LS.GOOGLE, []);
+  if (accounts.length === 0) {
+    gpShowAdd();
+  } else {
+    list.innerHTML = accounts.map((a, i) => `
+      <button class="gp-acct" type="button" data-i="${i}">
+        <div class="gp-av">${initialsOf(a.name)}</div>
+        <div class="gp-acct-info">
+          <div class="gp-acct-name">${a.name}</div>
+          <div class="gp-acct-email">${a.email}</div>
+        </div>
+      </button>`).join('');
+    list.querySelectorAll('.gp-acct').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const acc = accounts[parseInt(btn.dataset.i, 10)];
+        gpFinishSignIn(acc.name, acc.email);
+      });
+    });
+    gpShowPick();
+  }
+  document.getElementById('gp-modal').classList.add('open');
+}
+function closeGooglePicker() {
+  document.getElementById('gp-modal').classList.remove('open');
+}
+function gpShowAdd() {
+  document.getElementById('gp-pick-stage').style.display = 'none';
+  document.getElementById('gp-add-stage').style.display  = 'block';
+  setTimeout(() => document.getElementById('gp-name')?.focus(), 60);
+}
+function gpShowPick() {
+  document.getElementById('gp-pick-stage').style.display = 'block';
+  document.getElementById('gp-add-stage').style.display  = 'none';
+}
+function gpAddAccount() {
+  const name  = document.getElementById('gp-name').value.trim();
+  const email = document.getElementById('gp-email').value.trim();
+  if (!name) { toast('Enter your name to continue.', 'err'); return; }
+  if (!email.includes('@') || !email.includes('.')) { toast('Enter a valid email.', 'err'); return; }
+
+
+  const accounts = lsGet(LS.GOOGLE, []);
+  if (!accounts.find(a => a.email.toLowerCase() === email.toLowerCase())) {
+    accounts.push({ name, email });
+    lsSet(LS.GOOGLE, accounts);
+  }
+  document.getElementById('gp-name').value  = '';
+  document.getElementById('gp-email').value = '';
+  gpFinishSignIn(name, email);
+}
+function gpFinishSignIn(name, email) {
+  closeGooglePicker();
+
+  let user = findUser(email);
+  if (!user) {
+    user = {
+      name, email,
+      pw: null,
+      initials: initialsOf(name),
+      provider: 'google',
+      createdAt: Date.now(),
+    };
+    const users = getUsers();
+    users.push(user);
+    saveUsers(users);
+  } else {
+
+    user.name = name || user.name;
+    user.initials = initialsOf(user.name);
+    if (!user.provider) user.provider = 'google';
+    const users = getUsers().map(u => u.email.toLowerCase() === user.email.toLowerCase() ? user : u);
+    saveUsers(users);
+  }
+  setSession(user);
+  toast('Signed in as ' + (name || email) + ' ✦', 'ok');
+  go('s-splash', 's-auth');
+}
+
+document.getElementById('gp-modal').addEventListener('click', e => {
+  if (e.target === e.currentTarget) closeGooglePicker();
+});
+
+
+function updateUserChip() {
+  if (!currentUser) return;
+  document.getElementById('user-av').textContent   = currentUser.initials || initialsOf(currentUser.name);
+  document.getElementById('user-name').textContent = (currentUser.name || currentUser.email).split(' ')[0];
+}
+function doSignOut() {
+  const wasOn = document.querySelector('.screen.active')?.id;
+  clearSession();
+  toast('Signed out.', 'info');
+
+  if (wasOn && wasOn !== 's-auth') go('s-auth', wasOn);
+}
+
+
+function openProfile() {
+  if (!currentUser) return;
+  document.getElementById('pm-av').textContent    = currentUser.initials || initialsOf(currentUser.name);
+  document.getElementById('pm-name').textContent  = currentUser.name || 'Your Profile';
+  document.getElementById('pm-email').textContent = currentUser.email || '';
+
+  const target = document.getElementById('pm-measurements');
+  const p = lsGet(LS.PROFILE(currentUser.email), null);
+  if (!p || !p.bust) {
+    target.innerHTML = '<div class="profile-empty">No measurements saved yet. Tap <b>Update</b> to begin.</div>';
+  } else {
+    const fmt  = v => v ? (p.unit === 'in' ? `${(v / 2.54).toFixed(1)}"` : `${Math.round(v)} cm`) : '—';
+    const fmtW = v => v ? (p.unit === 'in' ? `${Math.round(v / 0.453592)} lbs` : `${Math.round(v)} kg`) : '—';
+    target.innerHTML = `
+      <div class="profile-grid">
+        <div class="profile-cell"><div class="profile-ck">Height</div><div class="profile-cv">${fmt(p.height)}</div></div>
+        <div class="profile-cell"><div class="profile-ck">Weight</div><div class="profile-cv">${fmtW(p.weight)}</div></div>
+        <div class="profile-cell"><div class="profile-ck">Age</div><div class="profile-cv">${p.age || '—'}</div></div>
+        <div class="profile-cell"><div class="profile-ck">Body Type</div><div class="profile-cv">${p.bodyType || '—'}</div></div>
+        <div class="profile-cell"><div class="profile-ck">Bust</div><div class="profile-cv">${fmt(p.bust)}</div></div>
+        <div class="profile-cell"><div class="profile-ck">Waist</div><div class="profile-cv">${fmt(p.waist)}</div></div>
+        <div class="profile-cell" style="grid-column:1 / -1"><div class="profile-ck">Hips</div><div class="profile-cv">${fmt(p.hips)}</div></div>
+      </div>`;
+  }
+
+  const histTarget = document.getElementById('pm-history');
+  const hist = getHistory().slice().reverse();
+  if (hist.length === 0) {
+    histTarget.innerHTML = '<div class="hist-empty">No history yet. Complete a measurement to start tracking changes.</div>';
+  } else {
+    const deltaHtml = (curr, prev, key, unit) => {
+      if (prev == null || prev[key] == null || curr[key] == null) return '';
+      const d = curr[key] - prev[key];
+      if (Math.abs(d) < 0.5) return `<span class="hist-delta same">± 0</span>`;
+      const up = d > 0;
+      const val = (unit === 'in' ? Math.abs(d / 2.54).toFixed(1) + '"' : Math.abs(d).toFixed(1) + 'cm');
+      return `<span class="hist-delta ${up ? 'up' : 'down'}">${up ? '▲' : '▼'} ${val}</span>`;
+    };
+    const fmtCell = (v, u) => v == null ? '—' : (u === 'in' ? `${(v / 2.54).toFixed(1)}"` : `${Math.round(v)}cm`);
+    histTarget.innerHTML = hist.slice(0, 5).map((entry, idx) => {
+      const prev = hist[idx + 1]; // older entry
+      const u = entry.unit || 'cm';
+      return `
+        <div class="hist-row ${idx === 0 ? 'current' : ''}">
+          <div class="hist-head">
+            <span class="hist-date">${formatDate(entry.savedAt)}</span>
+            ${idx === 0 ? '<span class="hist-badge">Current</span>' : ''}
+          </div>
+          <div class="hist-row-vals">
+            <span>Bust <b>${fmtCell(entry.bust, u)}</b>${deltaHtml(entry, prev, 'bust', u)}</span>
+            <span>Waist <b>${fmtCell(entry.waist, u)}</b>${deltaHtml(entry, prev, 'waist', u)}</span>
+            <span>Hips <b>${fmtCell(entry.hips, u)}</b>${deltaHtml(entry, prev, 'hips', u)}</span>
+          </div>
+        </div>`;
+    }).join('');
+  }
+
+  const favs = lsGet(LS.FAVORITES(currentUser.email), []);
+  const favWrap = document.getElementById('pm-fav-wrap');
+  const favList = document.getElementById('pm-favs');
+  if (favs.length === 0) {
+    favWrap.style.display = 'none';
+  } else {
+    favWrap.style.display = 'flex';
+    favList.innerHTML = favs.map(b => `<span class="b-pill" style="cursor:default">★ ${b}</span>`).join('');
+  }
+
+  document.getElementById('profile-modal').classList.add('open');
+}
+function closeProfile() {
+  document.getElementById('profile-modal').classList.remove('open');
+}
+document.getElementById('profile-modal').addEventListener('click', e => {
+  if (e.target === e.currentTarget) closeProfile();
+});
+
+
+function loadProfileForCurrentUser() {
+  if (!currentUser) { wizData = {}; return; }
+  const p = lsGet(LS.PROFILE(currentUser.email), null);
+  wizData = p ? { ...p } : {};
+  wizUnit = wizData.unit || 'cm';
+}
+
+
+let wizStep = 1;
+let wizUnit = 'cm';
+let wizData = {};
+
+function startWiz() {
+  wizStep = 1;
+  loadProfileForCurrentUser();
+  renderWizStep();
+  const fromId = document.querySelector('.screen.active')?.id || 's-splash';
+  if (fromId !== 's-measure') go('s-measure', fromId);
+}
+
+async function saveCurrentProfile() {
+  if (!currentUser) return;
+  const snap = { ...wizData, savedAt: Date.now() };
+  lsSet(LS.PROFILE(currentUser.email), snap);
+
+  // Append to history (keep last 20). Dedupe if last snapshot is identical.
+  const hist = lsGet(LS.HISTORY(currentUser.email), []);
+  const last = hist[hist.length - 1];
+  const sameAsLast = last
+    && last.bust === snap.bust && last.waist === snap.waist && last.hips === snap.hips
+    && last.height === snap.height && last.weight === snap.weight
+    && last.bodyType === snap.bodyType;
+  if (!sameAsLast) {
+    hist.push(snap);
+    if (hist.length > 20) hist.splice(0, hist.length - 20);
+    lsSet(LS.HISTORY(currentUser.email), hist);
+  }
+
+  try {
+    await apiRequest('/measurements', {
+      method: 'POST',
+      body: {
+        bust: snap.bust,
+        waist: snap.waist,
+        hips: snap.hips,
+        height: snap.height,
+        weight: snap.weight,
+        age: snap.age,
+        body_type: snap.bodyType || 'Not specified',
+        unit: snap.unit || 'cm',
+      },
+    });
+    toast('Measurement saved to MySQL ✦', 'ok');
+  } catch (_) {
+    toast('Saved locally. Backend DB unavailable.', 'info');
+  }
+}
+
+function getHistory() {
+  if (!currentUser) return [];
+  return lsGet(LS.HISTORY(currentUser.email), []);
+}
+
+
+function isFavorite(brand) {
+  if (!currentUser) return false;
+  return lsGet(LS.FAVORITES(currentUser.email), []).includes(brand);
+}
+function toggleFavorite(brand) {
+  if (!currentUser) return false;
+  const favs = lsGet(LS.FAVORITES(currentUser.email), []);
+  const i = favs.indexOf(brand);
+  if (i >= 0) favs.splice(i, 1); else favs.push(brand);
+  lsSet(LS.FAVORITES(currentUser.email), favs);
+  return i < 0;
+}
+
+
+const OUTFIT_RECS = {
+  Hourglass: { cats: ['dresses', 'tops', 'bottoms', 'outerwear'],   note: 'Wrap dresses, fitted tops and tailored bottoms flatter your balanced proportions.' },
+  Pear:      { cats: ['tops', 'dresses', 'outerwear', 'accessories'], note: 'Structured tops and A-line silhouettes balance fuller hips beautifully.' },
+  Apple:     { cats: ['dresses', 'tops', 'bottoms', 'accessories'], note: 'Empire-waist dresses and straight-leg bottoms elongate your frame.' },
+  Rectangle: { cats: ['tops', 'bottoms', 'dresses', 'hoodies'],     note: 'Ruffled tops, belted dresses and skinny bottoms add subtle curves.' },
+  Athletic:  { cats: ['tops', 'bottoms', 'sports_bras', 'hoodies'], note: 'Fitted athleticwear and tailored jeans celebrate a strong silhouette.' },
+  Curvy:     { cats: ['dresses', 'tops', 'bottoms', 'outerwear'],   note: 'High-waist bottoms and wrap dresses define your curves gracefully.' },
+};
+function getOutfitPicks(bodyType) {
+  return OUTFIT_RECS[bodyType] || { cats: ['tops', 'bottoms', 'dresses', 'hoodies'], note: 'A versatile mix that works across occasions.' };
+}
+
+
+function formatDate(ts) {
+  if (!ts) return '';
+  const d = new Date(ts);
+  const mo = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  return `${mo[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()}`;
+}
+
+
+function exportProfile() {
+  const d = wizData;
+  if (!d || !d.bust) { toast('Complete your measurements first.', 'err'); return; }
+
+  const canvas = document.createElement('canvas');
+  canvas.width  = 800;
+  canvas.height = 1100;
+  const ctx = canvas.getContext('2d');
+
+  const grad = ctx.createLinearGradient(0, 0, 0, canvas.height);
+  grad.addColorStop(0, '#071118');
+  grad.addColorStop(0.55, '#0D1B2A');
+  grad.addColorStop(1, '#142840');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  ctx.strokeStyle = 'rgba(201,168,76,0.35)';
+  ctx.lineWidth = 2;
+  ctx.strokeRect(40, 40, canvas.width - 80, canvas.height - 80);
+  ctx.strokeStyle = 'rgba(201,168,76,0.12)';
+  ctx.strokeRect(60, 60, canvas.width - 120, canvas.height - 120);
+
+  ctx.textAlign = 'center';
+  ctx.fillStyle = '#E8C97D';
+  ctx.font = 'italic 500 22px Georgia, serif';
+  ctx.fillText('— WEAV AI —', 400, 130);
+  ctx.font = 'bold 48px Georgia, serif';
+  ctx.fillText('Size Profile', 400, 200);
+  ctx.fillStyle = 'rgba(250,246,238,0.55)';
+  ctx.font = 'italic 16px Georgia, serif';
+  ctx.fillText('Your Personal Tailor', 400, 235);
+
+  if (currentUser?.name) {
+    ctx.fillStyle = '#FAF6EE';
+    ctx.font = '500 22px Georgia, serif';
+    ctx.fillText(currentUser.name, 400, 290);
+  }
+
+  const fmt = v => d.unit === 'in' ? `${(v / 2.54).toFixed(1)}"` : `${Math.round(v)} cm`;
+  const fmtW = v => d.unit === 'in' ? `${Math.round(v / 0.453592)} lbs` : `${Math.round(v)} kg`;
+
+  ctx.textAlign = 'center';
+  ctx.fillStyle = '#C9A84C';
+  ctx.font = 'bold 14px Helvetica, sans-serif';
+  ctx.fillText('— MEASUREMENTS —', 400, 360);
+
+  const rows = [
+    ['Bust',  fmt(d.bust)],
+    ['Waist', fmt(d.waist)],
+    ['Hips',  fmt(d.hips)],
+    ['Height', fmt(d.height)],
+    ['Weight', fmtW(d.weight)],
+    ['Body Type', d.bodyType || '—'],
+  ];
+  ctx.font = '22px Helvetica, sans-serif';
+  let y = 410;
+  rows.forEach(([k, v]) => {
+    ctx.textAlign = 'left';
+    ctx.fillStyle = 'rgba(250,246,238,0.70)';
+    ctx.fillText(k, 160, y);
+    ctx.textAlign = 'right';
+    ctx.fillStyle = '#FAF6EE';
+    ctx.fillText(v, 640, y);
+    y += 42;
+  });
+
+  y += 20;
+  ctx.textAlign = 'center';
+  ctx.fillStyle = '#C9A84C';
+  ctx.font = 'bold 14px Helvetica, sans-serif';
+  ctx.fillText('— YOUR SIZES —', 400, y);
+  y += 40;
+
+  ctx.font = 'bold 24px Helvetica, sans-serif';
+  Object.entries(currentSizes).forEach(([b, s]) => {
+    ctx.textAlign = 'left';
+    ctx.fillStyle = 'rgba(250,246,238,0.80)';
+    ctx.fillText(b, 160, y);
+    ctx.textAlign = 'right';
+    ctx.fillStyle = '#E8C97D';
+    ctx.fillText(s, 640, y);
+    y += 44;
+  });
+
+  ctx.textAlign = 'center';
+  ctx.fillStyle = 'rgba(250,246,238,0.40)';
+  ctx.font = 'italic 13px Georgia, serif';
+  ctx.fillText('Generated ' + formatDate(Date.now()) + ' · weav.ai', 400, canvas.height - 70);
+
+  canvas.toBlob(blob => {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'weavai-size-card.png';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    toast('Size card downloaded ✦', 'ok');
+  }, 'image/png');
+}
+
+
+function openAdmin() {
+  renderAdminList();
+  document.getElementById('admin-modal').classList.add('open');
+}
+function closeAdmin() {
+  document.getElementById('admin-modal').classList.remove('open');
+}
+function renderAdminList() {
+  const custom = lsGet(LS.CUSTOM_BRANDS, {});
+  const list = document.getElementById('ad-list');
+  const keys = Object.keys(custom);
+  if (!keys.length) {
+    list.innerHTML = '<div style="font-size:11px;color:var(--muted);font-style:italic;padding:6px 2px">No custom brands yet.</div>';
+    return;
+  }
+  list.innerHTML = keys.map(k => `
+    <div class="admin-brand-row">
+      <span class="ab-name">${k}</span>
+      <span class="ab-tag">Custom</span>
+      <button class="ab-del" data-b="${k}" aria-label="Remove">×</button>
+    </div>`).join('');
+  list.querySelectorAll('.ab-del').forEach(btn => {
+    btn.addEventListener('click', () => removeCustomBrand(btn.dataset.b));
+  });
+}
+function addCustomBrand() {
+  const name = document.getElementById('ad-brand').value.trim();
+  const logo = (document.getElementById('ad-logo').value.trim() || name.slice(0, 2)).toUpperCase().slice(0, 3);
+  const url  = document.getElementById('ad-url').value.trim();
+  if (!name) { toast('Enter a brand name.', 'err'); return; }
+  if (!url || !/^https?:\/\//i.test(url)) { toast('Enter a valid URL starting with https://', 'err'); return; }
+  if (BRANDS[name]) { toast('A brand with that name already exists.', 'err'); return; }
+
+  // Default size chart (reasonable international women's sizes in cm).
+  const defaultSizes = [
+    {l:'XS',b:[80,84],w:[62,66],h:[86,91]},
+    {l:'S', b:[84,89],w:[66,71],h:[91,96]},
+    {l:'M', b:[89,94],w:[71,76],h:[96,101]},
+    {l:'L', b:[94,100],w:[76,82],h:[101,107]},
+    {l:'XL',b:[100,107],w:[82,89],h:[107,114]},
+    {l:'XXL',b:[107,115],w:[89,96],h:[114,121]},
+  ];
+  const defaultPrice = { tops:1800, bottoms:2800, dresses:2900, sports_bras:1500, hoodies:3500, accessories:900, outerwear:6500, footwear:4500 };
+  const newBrand = {
+    logo, url,
+    cats: Object.fromEntries(CATS.map(c => [c.id, url])),
+    price: Object.fromEntries(CATS.map(c => [c.id, formatINR(defaultPrice[c.id] * 0.6) + '–' + formatINR(defaultPrice[c.id] * 1.6)])),
+    sizes: defaultSizes,
+    custom: true,
+  };
+  BRANDS[name] = newBrand;
+  AVG_PRICE[name] = { ...defaultPrice };
+
+  const custom = lsGet(LS.CUSTOM_BRANDS, {});
+  custom[name] = newBrand;
+  lsSet(LS.CUSTOM_BRANDS, custom);
+
+  document.getElementById('ad-brand').value = '';
+  document.getElementById('ad-logo').value  = '';
+  document.getElementById('ad-url').value   = '';
+  renderAdminList();
+  toast(`${name} added to your size engine ✦`, 'ok');
+}
+function removeCustomBrand(name) {
+  const custom = lsGet(LS.CUSTOM_BRANDS, {});
+  if (!custom[name]) return;
+  delete custom[name];
+  lsSet(LS.CUSTOM_BRANDS, custom);
+  delete BRANDS[name];
+  delete AVG_PRICE[name];
+  renderAdminList();
+  toast(`${name} removed`, 'info');
+}
+document.getElementById('admin-modal').addEventListener('click', e => {
+  if (e.target === e.currentTarget) closeAdmin();
+});
+
+
+function makeNumField(id, label, ph, hint, unit) {
+  const ul = id === 'age' ? 'YRS' : id === 'weight' ? (unit === 'cm' ? 'KG' : 'LBS') : unit.toUpperCase();
+  return `<div class="nf">
+    <div class="nf-lb">${label}</div>
+    <div class="nf-wrap">
+      <input class="nf-inp" id="nf-${id}" type="number" inputmode="decimal" placeholder="${ph}" autocomplete="off"/>
+      <div class="nf-unit">${ul}</div>
+    </div>
+    <div class="nf-err" id="ne-${id}">Required</div>
+    ${hint ? `<div class="nf-hint">${hint}</div>` : ''}
+  </div>`;
+}
+
+function renderWizStep() {
+  const EY    = ['BASIC DETAILS', 'BODY MEASUREMENTS', 'BODY TYPE'];
+  const TTL   = ['Tell us about yourself', 'Your measurements', 'Your body type'];
+  const SUB   = ['Calibrates your size profile across every brand.', 'Measure in a relaxed posture for best accuracy.', 'Optional — helps fine-tune your recommendations.'];
+  document.getElementById('wiz-ey').textContent  = EY[wizStep - 1];
+  document.getElementById('wiz-ttl').textContent = TTL[wizStep - 1];
+  document.getElementById('wiz-sub').textContent = SUB[wizStep - 1];
+  document.getElementById('step-ct').textContent = `${wizStep} / 3`;
+  document.getElementById('wiz-next').textContent = wizStep === 3 ? 'GENERATE MY SIZE PROFILE →' : 'CONTINUE →';
+  document.getElementById('wiz-skip').style.visibility = wizStep === 3 ? 'visible' : 'hidden';
+  
+  document.querySelectorAll('.pb-seg').forEach((s, i) => {
+    s.className = 'pb-seg' + (i < wizStep - 1 ? ' done' : i === wizStep - 1 ? ' now' : '');
+  });
+
+  const body = document.getElementById('wiz-body');
+  const u    = wizUnit;
+
+  if (wizStep === 1) {
+    body.innerHTML = `
+      <div class="unit-row">
+        <span class="unit-row-lbl">Units of measure</span>
+        <div class="unit-pills">
+          <button class="u-pill ${u === 'cm' ? 'on' : ''}" data-u="cm">cm / kg</button>
+          <button class="u-pill ${u === 'in' ? 'on' : ''}" data-u="in">in / lbs</button>
+        </div>
+      </div>
+      ${makeNumField('height', 'HEIGHT', u === 'cm' ? '165' : '65',  'Standing height without shoes', u)}
+      ${makeNumField('weight', 'WEIGHT', u === 'cm' ? '60' : '132', '', u)}
+      ${makeNumField('age',    'AGE',    '26', '', u)}
+      <div class="tip-box"><span class="tip-ic">✦</span> Your account, profile and measurements are saved on this device for instant sign-in.</div>`;
+
+    const fromCm = v => v ? (wizUnit === 'in' ? +(v / 2.54).toFixed(1) : Math.round(v * 10) / 10) : '';
+    const fromKg = v => v ? (wizUnit === 'in' ? +(v / 0.453592).toFixed(1) : Math.round(v * 10) / 10) : '';
+    if (wizData.height) document.getElementById('nf-height').value = fromCm(wizData.height);
+    if (wizData.weight) document.getElementById('nf-weight').value = fromKg(wizData.weight);
+    if (wizData.age)    document.getElementById('nf-age').value    = wizData.age;
+    
+    document.querySelectorAll('.u-pill').forEach(p => p.addEventListener('click', () => {
+      wizUnit = p.dataset.u; renderWizStep();
+    }));
+
+  } else if (wizStep === 2) {
+    body.innerHTML = `
+      <div class="guide-card">
+        <svg width="66" height="122" viewBox="0 0 66 122" fill="none">
+          <ellipse cx="33" cy="14" rx="13" ry="13" fill="${u==='cm'?'#F5EDE0':'#F5EDE0'}" stroke="#C2A07A" stroke-width="1"/>
+          <path d="M13 34C7 46 9 65 13 87L15 108Q17 116 26 116L40 116Q49 116 51 108L53 87C57 65 59 46 53 34L48 30Q41 28 33 28Q25 28 18 30Z" fill="#F5EDE0" stroke="#C2A07A" stroke-width="1"/>
+          <line x1="8" y1="47" x2="33" y2="47" stroke="#C9A84C" stroke-width="1.4" stroke-dasharray="4 3"/>
+          <circle cx="33" cy="47" r="2.5" fill="#C9A84C"/>
+          <line x1="10" y1="63" x2="33" y2="63" stroke="#1A3A5C" stroke-width="1.4" stroke-dasharray="4 3"/>
+          <circle cx="33" cy="63" r="2.5" fill="#1A3A5C"/>
+          <line x1="7" y1="79" x2="33" y2="79" stroke="#0D1B2A" stroke-width="1.4" stroke-dasharray="4 3"/>
+          <circle cx="33" cy="79" r="2.5" fill="#0D1B2A"/>
+        </svg>
+        <div class="guide-leg">
+          <div class="g-it"><div class="g-dot" style="background:#C9A84C"></div><div><div class="g-name">Bust</div><div class="g-desc">Fullest part of chest</div></div></div>
+          <div class="g-it"><div class="g-dot" style="background:#1A3A5C"></div><div><div class="g-name">Waist</div><div class="g-desc">Narrowest point</div></div></div>
+          <div class="g-it"><div class="g-dot" style="background:#0D1B2A"></div><div><div class="g-name">Hips</div><div class="g-desc">Widest point</div></div></div>
+        </div>
+      </div>
+      ${makeNumField('bust',  'BUST / CHEST', u === 'cm' ? '88' : '34.5', 'Keep tape parallel to the ground', u)}
+      ${makeNumField('waist', 'WAIST',        u === 'cm' ? '70' : '27.5', 'At the natural waistline', u)}
+      ${makeNumField('hips',  'HIPS',         u === 'cm' ? '96' : '37.5', 'Stand with feet together', u)}`;
+    const fromCm2 = v => v ? (wizUnit === 'in' ? +(v / 2.54).toFixed(1) : Math.round(v * 10) / 10) : '';
+    if (wizData.bust)  document.getElementById('nf-bust').value  = fromCm2(wizData.bust);
+    if (wizData.waist) document.getElementById('nf-waist').value = fromCm2(wizData.waist);
+    if (wizData.hips)  document.getElementById('nf-hips').value  = fromCm2(wizData.hips);
+
+  } else {
+    const BT = [
+      {id:'Hourglass',i:'⌛'},{id:'Pear',i:'🍐'},
+      {id:'Apple',i:'🍎'},{id:'Rectangle',i:'▭'},
+      {id:'Athletic',i:'⚡'},{id:'Curvy',i:'〜'},
+    ];
+    body.innerHTML = `
+      <div class="bt-grid">
+        ${BT.map(bt => `<div class="bt-card ${wizData.bodyType === bt.id ? 'sel' : ''}" data-bt="${bt.id}">
+          <div class="bt-ic">${bt.i}</div><div class="bt-nm">${bt.id}</div>
+        </div>`).join('')}
+      </div>
+      <div class="tip-box"><span class="tip-ic">◇</span> Your measurements alone provide accurate results. Body type fine-tunes further.</div>`;
+    document.querySelectorAll('.bt-card').forEach(c => c.addEventListener('click', () => {
+      document.querySelectorAll('.bt-card').forEach(x => x.classList.remove('sel'));
+      c.classList.add('sel');
+      wizData.bodyType = c.dataset.bt;
+    }));
+  }
+}
+
+
+document.getElementById('wiz-back').addEventListener('click', () => {
+  if (wizStep === 1) go('s-splash', 's-measure');
+  else { wizStep--; renderWizStep(); }
+});
+document.getElementById('wiz-skip').addEventListener('click', async () => {
+  if (wizStep === 3) {
+    // Body type is optional — skip it and generate results
+    await saveCurrentProfile();
+    document.querySelectorAll('.ld-b').forEach(el => el.classList.remove('lit'));
+    document.getElementById('ld-step').textContent = 'Saving your profile securely…';
+    go('s-load', 's-measure');
+    const msgs = ['Saving your profile securely…','Loading Nike size charts…','Comparing Adidas standards…','Matching Puma & H&M data…','Cross-referencing Zara…','Building your size profile…'];
+    const dots = document.querySelectorAll('.ld-b');
+    let i = 0;
+    const timer = setInterval(() => {
+      if (i < dots.length) dots[i].classList.add('lit');
+      if (i < msgs.length) document.getElementById('ld-step').textContent = msgs[i];
+      i++;
+      if (i > dots.length + 1) { clearInterval(timer); buildResults(); }
+    }, 460);
+  }
+});
+
+
+document.getElementById('wiz-next').addEventListener('click', async () => {
+  const toCm = v => wizUnit === 'in' ? (parseFloat(v) || 0) * 2.54 : (parseFloat(v) || 0);
+  const toKg = v => wizUnit === 'in' ? (parseFloat(v) || 0) * 0.453592 : (parseFloat(v) || 0);
+
+  if (wizStep === 1) {
+    const hv = document.getElementById('nf-height')?.value;
+    const wv = document.getElementById('nf-weight')?.value;
+    const av = document.getElementById('nf-age')?.value;
+    let ok = true;
+    if (!hv || !parseFloat(hv)) { document.getElementById('ne-height').classList.add('show'); ok = false; }
+    if (!wv || !parseFloat(wv)) { document.getElementById('ne-weight').classList.add('show'); ok = false; }
+    if (!av || !parseFloat(av)) { document.getElementById('ne-age').classList.add('show');    ok = false; }
+    if (!ok) return;
+    wizData.height = toCm(hv);
+    wizData.weight = toKg(wv);
+    wizData.age    = parseInt(av) || 0;
+    wizData.unit   = wizUnit;
+
+  } else if (wizStep === 2) {
+    const bv = document.getElementById('nf-bust')?.value;
+    const wv = document.getElementById('nf-waist')?.value;
+    const hv = document.getElementById('nf-hips')?.value;
+    let ok = true;
+    if (!bv || !parseFloat(bv)) { document.getElementById('ne-bust').classList.add('show');  ok = false; }
+    if (!wv || !parseFloat(wv)) { document.getElementById('ne-waist').classList.add('show'); ok = false; }
+    if (!hv || !parseFloat(hv)) { document.getElementById('ne-hips').classList.add('show');  ok = false; }
+    if (!ok) return;
+    wizData.bust  = toCm(bv);
+    wizData.waist = toCm(wv);
+    wizData.hips  = toCm(hv);
+  }
+
+  if (wizStep < 3) { wizStep++; renderWizStep(); return; }
+
+  await saveCurrentProfile();
+
+  document.querySelectorAll('.ld-b').forEach(el => el.classList.remove('lit'));
+  document.getElementById('ld-step').textContent = 'Saving your profile securely…';
+  go('s-load', 's-measure');
+
+  const msgs = [
+    'Saving your profile securely…',
+    'Loading Nike size charts…',
+    'Comparing Adidas standards…',
+    'Matching Puma & H&M data…',
+    'Cross-referencing Zara…',
+    'Building your size profile…',
+  ];
+  const dots = document.querySelectorAll('.ld-b');
+  let i = 0;
+  const timer = setInterval(() => {
+    if (i < dots.length) dots[i].classList.add('lit');
+    if (i < msgs.length) document.getElementById('ld-step').textContent = msgs[i];
+    i++;
+    if (i > dots.length + 1) { clearInterval(timer); buildResults(); }
+  }, 460);
+});
+
+
+let activeCat = 'tops';
+let currentSizes = {};
+let feedbackTarget = null;
+
+function updateCurrentSizes(cat = activeCat) {
+  const d = wizData;
+  Object.keys(BRANDS).forEach(b => {
+    const base = getSizeForCategory(b, d.bust || 0, d.waist || 0, d.hips || 0, cat);
+    const adj  = applyFeedbackAdjustment(b, cat, base);
+    currentSizes[b] = adj.size;
+  });
+}
+
+function renderSizeOverview(cat = activeCat) {
+  updateCurrentSizes(cat);
+  return Object.entries(currentSizes).map(([brand, size]) => {
+    const rawUrl = BRANDS[brand].cats?.[cat] || BRANDS[brand].url;
+    return `
+      <a class="sz-cell" href="${buildSizedUrl(brand, rawUrl, size)}" target="_blank" rel="noopener">
+        <span class="sz-br">${brand}</span>
+        <span class="sz-sz">${size}</span>
+      </a>`;
+  }).join('');
+}
+
+function buildResults() {
+  const d = wizData;
+  const fmtLen = v => d.unit === 'in' ? `${(v / 2.54).toFixed(1)}"` : `${Math.round(v)} cm`;
+
+  const avgConf = Math.round(
+    Object.keys(BRANDS).reduce((sum, b) => sum + getConfidence(b, d.bust || 0, d.waist || 0, d.hips || 0), 0)
+    / Object.keys(BRANDS).length
+  );
+
+  activeCat = 'tops';
+  const scroll = document.getElementById('res-scroll');
+
+  const outfit = getOutfitPicks(d.bodyType);
+  const outfitChipsHtml = outfit.cats.map(cid => {
+    const c = CATS.find(x => x.id === cid);
+    if (!c) return '';
+    return `<span class="outfit-chip" data-c="${cid}">${c.sym} ${c.label}</span>`;
+  }).join('');
+
+  scroll.innerHTML = `
+    <div class="res-hero">
+      <div class="res-ey">Size Profile Ready</div>
+      <div class="res-ttl">Your exact<br/><em>sizes, curated.</em></div>
+      <div class="meas-strip">
+        <div class="meas-chip">Bust <strong>${fmtLen(d.bust || 0)}</strong></div>
+        <div class="meas-chip">Waist <strong>${fmtLen(d.waist || 0)}</strong></div>
+        <div class="meas-chip">Hips <strong>${fmtLen(d.hips || 0)}</strong></div>
+        <div class="meas-chip">Type <strong>${d.bodyType || '—'}</strong></div>
+      </div>
+      <div class="confidence-row">
+        <span class="conf-lbl">Fit Confidence</span>
+        <div class="conf-track"><div class="conf-fill" id="conf-fill" style="width:0%"></div></div>
+        <span class="conf-pct" id="conf-pct">0%</span>
+      </div>
+    </div>
+
+
+    <div class="outfit-section">
+      <div class="outfit-head">✦ Outfits for your <em>${d.bodyType || 'silhouette'}</em> shape</div>
+      <div class="outfit-sub">${outfit.note}</div>
+      <div class="outfit-chips">${outfitChipsHtml}</div>
+    </div>
+
+
+    <div class="sz-overview">
+      <div class="sz-ov-head">
+        <div class="sz-ov-dot"></div>
+        <span class="sz-ov-lbl">All-brand overview — tap to shop</span>
+      </div>
+      <div class="sz-grid">
+        ${renderSizeOverview(activeCat)}
+      </div>
+    </div>
+
+
+    <div class="sec-divider"><div class="sec-ln"></div><span class="sec-lb">Shop by category</span><div class="sec-ln"></div></div>
+    <div class="cat-row" id="cat-row">
+      ${CATS.map(c => `<div class="c-tab ${c.id === activeCat ? 'on' : ''}" data-c="${c.id}">${c.sym} ${c.label}</div>`).join('')}
+    </div>
+
+
+    <div class="brand-list" id="brand-list">
+      ${renderBrandCards(activeCat)}
+    </div>
+
+
+    <div class="price-section analyzing" id="price-section">
+      <div class="price-head">
+        <span class="price-head-ic">💰</span>
+        <span class="price-head-lbl">Live Price Predictor</span>
+        <span class="price-head-sub">Predicting market prices…</span>
+      </div>
+      <div class="price-analyzing-lbl">Predicting current prices…</div>
+    </div>
+
+
+    <div class="export-section">
+      <button class="export-btn" onclick="exportProfile()"><span class="ex-ic">◈</span> Export Size Card</button>
+      <button class="export-btn" onclick="openProfile()"><span class="ex-ic">⏱</span> View History</button>
+    </div>
+
+
+    <div class="feedback-banner" onclick="openFeedback('general','all brands')">
+      <div class="fb-ic">⭐</div>
+      <div class="fb-info">
+        <div class="fb-title">Rate your fit experience</div>
+        <div class="fb-sub">Teaches the app — next recommendations will adapt.</div>
+      </div>
+      <span class="fb-arrow">›</span>
+    </div>
+
+
+    <div class="res-foot">
+      <button class="btn-ghost" onclick="startWiz()">← Remeasure</button>
+      <button class="btn-navy2" onclick="go('s-splash','s-res')">Home</button>
+    </div>`;
+
+  setTimeout(() => {
+    const fill = document.getElementById('conf-fill');
+    const pct  = document.getElementById('conf-pct');
+    if (fill) fill.style.width = avgConf + '%';
+    if (pct)  pct.textContent  = avgConf + '%';
+  }, 300);
+
+  document.querySelectorAll('.c-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      activeCat = tab.dataset.c;
+      document.querySelectorAll('.c-tab').forEach(x => x.classList.remove('on'));
+      tab.classList.add('on');
+      document.querySelector('.sz-grid').innerHTML     = renderSizeOverview(activeCat);
+      document.getElementById('brand-list').innerHTML  = renderBrandCards(activeCat);
+      runPriceAnalysis(activeCat);
+    });
+  });
+
+  // First paint: simulate the analyzer running, then reveal.
+  runPriceAnalysis(activeCat, true);
+
+  // Outfit chips jump to their category tab.
+  document.querySelectorAll('.outfit-chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      const cid = chip.dataset.c;
+      const tab = document.querySelector(`.c-tab[data-c="${cid}"]`);
+      if (tab) tab.click();
+      document.querySelectorAll('.outfit-chip').forEach(x => x.classList.remove('hot'));
+      chip.classList.add('hot');
+      document.getElementById('brand-list')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  });
+
+  go('s-res', 's-load');
+  toast('Profile saved to database ✦', 'ok');
+}
+
+
+function handleFavClick(btn) {
+  if (!currentUser) { toast('Sign in to save favorites.', 'err'); return; }
+  const brand = btn.dataset.brand;
+  const now = toggleFavorite(brand);
+  toast(now ? `${brand} added to favorites ✦` : `${brand} removed from favorites`, now ? 'ok' : 'info');
+  document.getElementById('brand-list').innerHTML = renderBrandCards(activeCat);
+}
+
+
+// ── SIZE-FILTERED SHOP URLS ──────────────────────────────────────────────────
+// Each brand uses its own size-filter syntax. We append the correct facet so
+// the destination page opens with the user's size already filtered. If a
+// brand changes its query format, the link still resolves to a valid catalog
+// page (the facet is silently ignored), so the user never hits a 404.
+function buildSizedUrl(brand, baseUrl, size) {
+  const sz = (size || '').toUpperCase().trim();
+  if (!sz) return baseUrl;
+  const enc = encodeURIComponent(sz);
+  const sep = baseUrl.includes('?') ? '&' : '?';
+
+  switch (brand) {
+    case 'Nike':
+      // Nike uses facet "size" on /w/ pages, e.g. ?f=size%3AXXL
+      return baseUrl + sep + 'f=size%3A' + enc;
+
+    case 'Adidas':
+      // Adidas catalog accepts ?size=XXL on category pages
+      return baseUrl + sep + 'size=' + enc;
+
+    case 'Puma':
+      // Puma's filter facet — works on category pages
+      return baseUrl + sep + 'filter.size=' + enc;
+
+    case 'H&M':
+      // H&M uses lowercase size codes
+      return baseUrl + sep + 'sizes=' + sz.toLowerCase();
+
+    case 'Zara':
+      // Zara catalog filter — accepted on /us/en/ category pages
+      return baseUrl + sep + 'size=' + enc;
+
+    case "Levi's":
+      // Levi's accepts ?size=XXL on its category pages
+      return baseUrl + sep + 'size=' + enc;
+
+    default:
+      return baseUrl;
+  }
+}
+
+
+function renderBrandCards(cat) {
+  const catLabel = CATS.find(c => c.id === cat)?.label || cat;
+  const d = wizData;
+  const favs = currentUser ? lsGet(LS.FAVORITES(currentUser.email), []) : [];
+
+  const brands = Object.keys(BRANDS).slice().sort((a, b) => {
+    const af = favs.includes(a) ? 0 : 1;
+    const bf = favs.includes(b) ? 0 : 1;
+    return af - bf;
+  });
+
+  return brands.map(brand => {
+    const data = BRANDS[brand];
+    const baseSize = getSizeForCategory(brand, d.bust || 0, d.waist || 0, d.hips || 0, cat);
+    const adj  = applyFeedbackAdjustment(brand, cat, baseSize);
+    const size = adj.size;
+    const rawUrl = data.cats?.[cat] || data.url;
+    const url   = buildSizedUrl(brand, rawUrl, size);
+    const price = data.price?.[cat] || '';
+    const fit   = getFitExplanation(brand, d.bust || 0, d.waist || 0, d.hips || 0, cat, size);
+    const fav   = favs.includes(brand);
+    const adjTag = adj.shifted ? ` <span class="bc-fit-tag warn">adjusted from feedback</span>` : '';
+
+    return `
+      <a class="bcard" href="${url}" target="_blank" rel="noopener">
+        <button class="bc-fav ${fav ? 'on' : ''}" type="button" data-brand="${brand}" aria-label="Toggle favorite"
+                onclick="event.preventDefault();event.stopPropagation();handleFavClick(this);">★</button>
+        <div class="bc-body">
+          <div class="bc-mono">${data.logo}</div>
+          <div class="bc-info">
+            <div class="bc-name">${brand}${fav ? ' <span class="bc-fit-tag">Favorite</span>' : ''}</div>
+            <div class="bc-sub">Women's ${catLabel} · Official Store</div>
+            <div class="bc-price">${price}</div>
+          </div>
+          <div class="bc-badge">
+            <div class="bc-bl">YOUR SIZE</div>
+            <div class="bc-bv">${size}</div>
+          </div>
+        </div>
+        <div class="bc-note">
+          <span class="bc-note-ic">AI ✦</span>
+          <span>${fit}${adjTag}</span>
+        </div>
+        <div class="bc-foot">
+          <span class="bcf-l">Tap to shop · <span style="color:var(--navy3);font-weight:700">${catLabel} in ${size}</span></span>
+          <span class="bcf-r">Shop Now <span class="bc-arr">↗</span></span>
+        </div>
+      </a>`;
+  }).join('');
+}
+
+
+// ── LIVE PRICE PREDICTOR ────────────────────────────────────────────────────
+// Predicts likely current prices from brand/category/size, a 6-hour live time
+// bucket, day-of-week sale pressure, and refresh seed. This is a prediction
+// model, not an official store price feed.
+
+const BRAND_TIER = {
+  'H&M':   1.00,
+  Puma:    1.30,
+  Zara:    1.42,
+  "Levi's": 1.55,
+  Adidas:  1.62,
+  Nike:    1.78,
+};
+// Base INR price for a tier-1.0 (H&M-level) brand. Other brands scale by tier.
+const CAT_BASE_PRICE = {
+  tops:        1399,
+  bottoms:     2199,
+  dresses:     2499,
+  sports_bras: 1199,
+  hoodies:     2799,
+  accessories: 749,
+  outerwear:   5299,
+  footwear:    3799,
+};
+const SIZE_PRICE_MULT = { XS: 1.00, S: 1.00, M: 1.00, L: 1.025, XL: 1.05, XXL: 1.08 };
+const SIZE_STOCK_MULT = { XS: 0.78, S: 1.00, M: 1.00, L: 0.92, XL: 0.74, XXL: 0.58 };
+const PRICE_BUCKET_MS = 6 * 60 * 60 * 1000;
+const PRICE_API_URL = 'http://localhost:8000/price/predict';
+
+let _priceSalt = 0; // bumped by the refresh button to reshuffle the sample
+
+function hashStr(s) {
+  let h = 2166136261 >>> 0;
+  for (let i = 0; i < s.length; i++) {
+    h ^= s.charCodeAt(i);
+    h = Math.imul(h, 16777619) >>> 0;
+  }
+  return h;
+}
+function seededRand(seed) {
+  let s = seed >>> 0;
+  return () => {
+    s = (Math.imul(s, 1664525) + 1013904223) >>> 0;
+    return (s >>> 8) / 16777216;
+  };
+}
+
+function getLivePriceBucket() {
+  return Math.floor(Date.now() / PRICE_BUCKET_MS);
+}
+
+function getPriceTrendMultiplier(cat, rand) {
+  const now = new Date();
+  const day = now.getDay();
+  const hour = now.getHours();
+  const isWeekend = day === 0 || day === 6;
+  const eveningDemand = hour >= 18 && hour <= 23 ? 1.03 : 1;
+  const weekendSale = isWeekend ? 0.94 : 1;
+  const categoryVolatility = cat === 'footwear' || cat === 'outerwear' ? 0.10 : 0.07;
+  return weekendSale * eveningDemand * (1 - categoryVolatility / 2 + rand() * categoryVolatility);
+}
+
+function getPredictionTimestamp() {
+  return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+}
+
+function analyzeInventory(brand, cat, size) {
+  const bucket = getLivePriceBucket();
+  const rand = seededRand(hashStr(brand + ':' + cat + ':' + size + ':' + bucket + ':' + _priceSalt));
+  const tier = BRAND_TIER[brand] ?? 1.25;
+  const base = CAT_BASE_PRICE[cat] || 30;
+  const szMult = SIZE_PRICE_MULT[size] || 1;
+  const stockMult = SIZE_STOCK_MULT[size] || 1;
+  const trendMult = getPriceTrendMultiplier(cat, rand);
+
+  const totalItems = 8 + Math.floor(rand() * 22); // 8–29 items catalogued
+  const prices = [];
+  for (let i = 0; i < totalItems; i++) {
+    // Long-tail distribution: mostly near median, some higher outliers.
+    const r = rand();
+    const spread = r < 0.82 ? 0.65 + r * 0.9 : 1.4 + (r - 0.82) * 3.1;
+    const price = base * tier * szMult * trendMult * spread * (0.92 + rand() * 0.18);
+    prices.push(Math.round(price));
+  }
+  prices.sort((a, b) => a - b);
+
+  const median = prices[Math.floor(prices.length / 2)];
+  const avg    = Math.round(prices.reduce((s, p) => s + p, 0) / prices.length);
+  const min    = prices[0];
+  const max    = prices[prices.length - 1];
+  const inStock = Math.max(1, Math.round(totalItems * stockMult * (0.75 + rand() * 0.25)));
+
+  return { totalItems, inStock, min, max, avg, median, size, bucket };
+}
+
+// Compute the full brand list for a category with sizes + analyses.
+function buildPriceAnalysis(cat) {
+  const d = wizData;
+  const brands = Object.keys(BRANDS);
+  return brands.map(brand => {
+    const baseSize = getSizeForCategory(brand, d.bust || 0, d.waist || 0, d.hips || 0, cat);
+    const adj  = applyFeedbackAdjustment(brand, cat, baseSize);
+    return { brand, ...analyzeInventory(brand, cat, adj.size) };
+  });
+}
+
+function buildPricePredictionRequest(cat) {
+  const d = wizData;
+  const sizes = {};
+  Object.keys(BRANDS).forEach(brand => {
+    const baseSize = getSizeForCategory(brand, d.bust || 0, d.waist || 0, d.hips || 0, cat);
+    const adj = applyFeedbackAdjustment(brand, cat, baseSize);
+    sizes[brand] = adj.size;
+  });
+  return { category: cat, sizes, salt: _priceSalt };
+}
+
+function buildLocalPricePrediction(cat) {
+  const catLabel = CATS.find(c => c.id === cat)?.label || cat;
+  const analyses = buildPriceAnalysis(cat);
+  const updatedAt = getPredictionTimestamp();
+
+  const totalSamples = analyses.reduce((s, a) => s + a.totalItems, 0);
+  const totalStock   = analyses.reduce((s, a) => s + a.inStock, 0);
+  const minMed = Math.min(...analyses.map(a => a.median));
+  const maxMed = Math.max(...analyses.map(a => a.median));
+  const cheapest = analyses.find(a => a.median === minMed);
+  const priciest = analyses.find(a => a.median === maxMed);
+  const savings  = Math.max(0, maxMed - minMed);
+  const savingsPct = maxMed > 0 ? Math.round(savings / maxMed * 100) : 0;
+
+  // "Complete the look" — for a selection of everyday categories, sum each
+  // brand's median to estimate a full-outfit spend at that brand.
+  const OUTFIT_CATS = ['tops', 'bottoms', 'hoodies', 'footwear'];
+  const outfit = Object.keys(BRANDS).map(brand => {
+    const total = OUTFIT_CATS.reduce((sum, c) => {
+      const baseSize = getSizeForCategory(brand, wizData.bust || 0, wizData.waist || 0, wizData.hips || 0, c);
+      const adj = applyFeedbackAdjustment(brand, c, baseSize);
+      return sum + analyzeInventory(brand, c, adj.size).median;
+    }, 0);
+    return { brand, total };
+  }).sort((a, b) => a.total - b.total);
+
+  return {
+    source: 'browser_fallback_predictor',
+    category: cat,
+    catLabel,
+    updated_at: updatedAt,
+    total_samples: totalSamples,
+    total_stock: totalStock,
+    cheapest: cheapest.brand,
+    savings,
+    savings_pct: savingsPct,
+    analyses: analyses.slice().sort((a, b) => a.median - b.median),
+    outfit,
+  };
+}
+
+function renderPriceComparisonFromData(cat, data) {
+  const catLabel = CATS.find(c => c.id === cat)?.label || cat;
+  const analyses = data.analyses || [];
+  const maxMed = Math.max(...analyses.map(a => a.median), 1);
+  const minMed = Math.min(...analyses.map(a => a.median), maxMed);
+  const totalSamples = data.total_samples || analyses.reduce((s, a) => s + a.totalItems, 0);
+  const totalStock = data.total_stock || analyses.reduce((s, a) => s + a.inStock, 0);
+  const savings = data.savings || 0;
+  const savingsPct = data.savings_pct || 0;
+  const cheapestBrand = data.cheapest || analyses.find(a => a.median === minMed)?.brand || 'Best match';
+  const updatedAt = data.updated_at || getPredictionTimestamp();
+  const sourceLabel = data.source === 'backend_price_predictor' ? 'Backend API' : 'Browser fallback';
+
+  const rows = analyses
+    .slice()
+    .sort((a, b) => a.median - b.median)
+    .map((a) => {
+      const widthPct = Math.max(6, Math.round((a.median / maxMed) * 100));
+      const isBest   = a.median === minMed;
+      const lowStock = a.inStock < 6;
+      return `<div class="price-row">
+        <span class="pr-brand">${a.brand}</span>
+        <div class="pr-bar-wrap">
+          <div class="pr-bar ${isBest ? 'best' : ''}" style="width:${widthPct}%"></div>
+          <div class="pr-meta">
+            <span class="pr-stock ${lowStock ? 'low' : ''}">${a.inStock}/${a.totalItems} in ${a.size}</span>
+            <span class="pr-range">${formatINR(a.min)}–${formatINR(a.max)}</span>
+          </div>
+        </div>
+        <span class="pr-price">~${formatINR(a.median)}${isBest ? '<span class="pr-badge">Best</span>' : ''}</span>
+      </div>`;
+    }).join('');
+
+  const outfitByBrand = (data.outfit || []).slice().sort((a, b) => a.total - b.total);
+  const outfitCheapest = outfitByBrand[0]?.total || 0;
+
+  const outfitRowsHtml = outfitByBrand.map((o, i) => {
+    const isCheap = i === 0;
+    const diff = o.total - outfitCheapest;
+    return `<div class="ot-row ${isCheap ? 'cheapest' : ''}">
+      <span class="ot-brand">${isCheap ? '<span class="ot-star">★</span>' : ''}${o.brand}${diff > 0 ? `<span class="ot-save">+${formatINR(diff)}</span>` : ''}</span>
+      <span class="ot-price">${formatINR(o.total)}</span>
+    </div>`;
+  }).join('');
+
+  return `<div class="price-head">
+      <span class="price-head-ic">💰</span>
+      <span class="price-head-lbl">Live Price Predictor</span>
+      <span class="price-head-sub">${catLabel} · ${totalSamples} samples · ${updatedAt}</span>
+      <button class="price-head-refresh" onclick="refreshPriceAnalysis()" aria-label="Refresh prediction" title="Refresh prediction">↻</button>
+    </div>
+    <div class="price-analyzing-lbl">Predicting current prices…</div>
+    <div class="price-rows">${rows}</div>
+
+    <div class="outfit-total">
+      <div class="ot-ttl">Complete your outfit</div>
+      <div class="ot-desc">Median cost of one tops + bottoms + hoodie + shoes at each brand, in your recommended size.</div>
+      <div class="ot-rows">${outfitRowsHtml}</div>
+    </div>
+
+    <div class="price-foot">
+      <span class="pf-live"><span class="pf-dot"></span>Prediction</span>
+      <span>Predicted deal: <b>${cheapestBrand}</b> · save up to <b>${formatINR(savings)}</b> (~${savingsPct}%)</span>
+      <span>${totalStock} in your size · ${sourceLabel}</span>
+    </div>`;
+}
+
+function renderPriceComparison(cat) {
+  return renderPriceComparisonFromData(cat, buildLocalPricePrediction(cat));
+}
+
+async function fetchBackendPricePrediction(cat) {
+  const res = await fetch(PRICE_API_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(buildPricePredictionRequest(cat)),
+  });
+  if (!res.ok) throw new Error('Price API unavailable');
+  return res.json();
+}
+
+// Bumps the seed so the predictor refreshes to a new plausible live sample.
+function refreshPriceAnalysis() {
+  _priceSalt = (_priceSalt + 1) & 0xffff;
+  runPriceAnalysis(activeCat, false, true);
+}
+
+// Renders the predictor with a brief shimmer. Called on first mount, tab switch,
+// and refresh.
+async function runPriceAnalysis(cat, firstPaint = false, isRefresh = false) {
+  const sec = document.getElementById('price-section');
+  if (!sec) return;
+
+  // Render fallback content immediately, then replace it with backend data.
+  sec.innerHTML = renderPriceComparison(cat);
+  sec.classList.add('analyzing');
+
+  try {
+    const data = await fetchBackendPricePrediction(cat);
+    sec.innerHTML = renderPriceComparisonFromData(cat, data);
+  } catch (_) {
+    // Keep the browser predictor visible when the backend is not running.
+  }
+
+  const delay = firstPaint ? 850 : isRefresh ? 750 : 480;
+  setTimeout(() => {
+    sec.classList.remove('analyzing');
+    if (isRefresh) toast('Price data refreshed ✦', 'info');
+  }, delay);
+}
+
+
+let selectedFit = '';
+
+function openFeedback(brand, sub) {
+  feedbackTarget = brand;
+  selectedFit    = '';
+  document.getElementById('notes-inp').value = '';
+  document.querySelectorAll('.fit-opt').forEach(el => el.classList.remove('sel'));
+  document.getElementById('modal-sub').textContent = `Recommended size for ${sub}`;
+  document.getElementById('feedback-modal').classList.add('open');
+}
+function closeFeedback() {
+  document.getElementById('feedback-modal').classList.remove('open');
+}
+document.getElementById('feedback-modal').addEventListener('click', e => {
+  if (e.target === e.currentTarget) closeFeedback();
+});
+document.querySelectorAll('.fit-opt').forEach(opt => {
+  opt.addEventListener('click', () => {
+    document.querySelectorAll('.fit-opt').forEach(x => x.classList.remove('sel'));
+    opt.classList.add('sel');
+    selectedFit = opt.dataset.v;
+  });
+});
+async function submitFeedback() {
+  if (!selectedFit) { toast('Please select how the item fits', 'err'); return; }
+  const notes = document.getElementById('notes-inp').value.trim();
+
+  if (currentUser) {
+    const feedback = lsGet(LS.FEEDBACK(currentUser.email), []);
+    feedback.push({
+      brand:    feedbackTarget || 'general',
+      category: activeCat,
+      fit:      selectedFit,
+      notes,
+      ts:       Date.now(),
+    });
+    if (feedback.length > 50) feedback.splice(0, feedback.length - 50);
+    lsSet(LS.FEEDBACK(currentUser.email), feedback);
+  }
+
+  try {
+    await apiRequest('/feedback', {
+      method: 'POST',
+      body: {
+        brand: feedbackTarget || 'general',
+        category: activeCat,
+        recommended_size: feedbackTarget && currentSizes[feedbackTarget] ? currentSizes[feedbackTarget] : 'N/A',
+        actual_fit: selectedFit,
+        notes,
+      },
+    });
+  } catch (_) {}
+
+  const willAdapt = selectedFit !== 'perfect';
+  toast(willAdapt ? 'Thanks — we\'ll adapt your sizes ✦' : 'Glad it was a perfect fit ✦', 'ok');
+  closeFeedback();
+  selectedFit = '';
+
+  // Re-render brand cards to reflect the new feedback immediately.
+  if (document.getElementById('brand-list')) {
+    document.getElementById('brand-list').innerHTML = renderBrandCards(activeCat);
+  }
+}
+
+
+document.querySelector('#forgot-row span')?.addEventListener('click', () => {
+  const email = document.getElementById('i-email').value.trim();
+  if (!email) { toast('Enter your email above first.', 'err'); return; }
+  const u = findUser(email);
+  if (!u) { toast('No account exists for that email.', 'err'); return; }
+  toast('A reset link would be sent to ' + email + ' (demo).', 'info');
+});
+
+
+(function loadCustomBrands() {
+  const custom = lsGet(LS.CUSTOM_BRANDS, {});
+  Object.keys(custom).forEach(name => {
+    if (!BRANDS[name]) {
+      BRANDS[name] = custom[name];
+      AVG_PRICE[name] = AVG_PRICE[name] || {
+        tops:1800, bottoms:2800, dresses:2900, sports_bras:1500, hoodies:3500, accessories:900, outerwear:6500, footwear:4500,
+      };
+    }
+  });
+})();
+
+
+(function restoreSession() {
+  const s = lsGet(LS.SESSION, null);
+  if (!s || !s.email) return;
+  const u = findUser(s.email);
+  if (!u) { lsRemove(LS.SESSION); return; }
+  currentUser = { ...u, token: s.token || u.token || null };
+  updateUserChip();
+  loadProfileForCurrentUser();
+
+  document.getElementById('s-auth').classList.remove('active');
+  document.getElementById('s-splash').classList.add('active');
+})();
+</script>
+</body>
+</html>
