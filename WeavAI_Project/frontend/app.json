@@ -1,0 +1,23 @@
+{
+  "expo": {
+    "name": "Weav AI",
+    "slug": "weavai",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.weavai.app"
+    },
+    "android": {
+      "package": "com.weavai.app"
+    },
+    "web": {
+      "bundler": "metro"
+    },
+    "extra": {
+      "apiBaseUrl": "http://10.20.17.10:8000"
+    }
+  }
+}
