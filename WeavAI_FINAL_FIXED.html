@@ -1281,7 +1281,7 @@ let authMode = 'login';
 let showPw   = false;
 let currentUser = null;
 
-const API_BASE_URL = 'http://localhost:8000';
+const API_BASE_URL = window.WEAVAI_API_BASE_URL || 'http://localhost:8000';
 
 const LS = {
   USERS:    'weavai.users.v1',
@@ -2512,7 +2512,7 @@ const CAT_BASE_PRICE = {
 const SIZE_PRICE_MULT = { XS: 1.00, S: 1.00, M: 1.00, L: 1.025, XL: 1.05, XXL: 1.08 };
 const SIZE_STOCK_MULT = { XS: 0.78, S: 1.00, M: 1.00, L: 0.92, XL: 0.74, XXL: 0.58 };
 const PRICE_BUCKET_MS = 6 * 60 * 60 * 1000;
-const PRICE_API_URL = 'http://localhost:8000/price/predict';
+const PRICE_API_URL = API_BASE_URL + '/price/predict';
 
 let _priceSalt = 0; // bumped by the refresh button to reshuffle the sample
 
