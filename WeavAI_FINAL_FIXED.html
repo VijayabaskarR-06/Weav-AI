@@ -569,6 +569,7 @@ html,body{height:100%;background:var(--parch);font-family:'Jost',sans-serif;colo
 .toast.info{background:var(--navy2);color:var(--cream);border-color:rgba(255,255,255,0.08)}
 @keyframes toastPop{from{opacity:0;transform:scale(.9) translateY(-8px)}to{opacity:1;transform:scale(1) translateY(0)}}
 </style>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body>
 
@@ -1574,8 +1575,43 @@ document.getElementById('auth-btn').addEventListener('click', async () => {
 });
 
 
+const GOOGLE_CLIENT_ID = '896666385381-e5f5icfhu23jsvncmofpb2pgo29s5kp9.apps.googleusercontent.com';
+let _googleTokenClient = null;
+function getGoogleTokenClient() {
+  if (_googleTokenClient) return _googleTokenClient;
+  if (!window.google || !window.google.accounts || !window.google.accounts.oauth2) return null;
+  _googleTokenClient = google.accounts.oauth2.initTokenClient({
+    client_id: GOOGLE_CLIENT_ID,
+    scope: 'openid email profile',
+    callback: async (resp) => {
+      if (!resp || resp.error || !resp.access_token) {
+        toast('Google sign-in was cancelled or failed.', 'err');
+        return;
+      }
+      try {
+        const ui = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+          headers: { Authorization: 'Bearer ' + resp.access_token }
+        }).then(r => r.json());
+        if (!ui || !ui.email) {
+          toast('Could not read your Google profile.', 'err');
+          return;
+        }
+        gpFinishSignIn(ui.name || ui.email, ui.email);
+      } catch (e) {
+        toast('Google sign-in failed. Please try again.', 'err');
+      }
+    }
+  });
+  return _googleTokenClient;
+}
+
 document.getElementById('g-btn').addEventListener('click', () => {
-  openGooglePicker();
+  const tc = getGoogleTokenClient();
+  if (!tc) {
+    toast('Google services are still loading — please retry in a moment.', 'err');
+    return;
+  }
+  tc.requestAccessToken();
 });
 
 
