@@ -870,13 +870,13 @@ function getConfidence(brandName, bust, waist, hips) {
     const score = count * 10 + (wOk ? 5 : 0);
     if (count > 0 && score > bestScore) bestScore = score;
   }
-  if (bestScore >= 35) return 97; // 3 matches + waist
-  if (bestScore >= 30) return 94; // 3 matches
-  if (bestScore >= 25) return 88; // 2 + waist
-  if (bestScore >= 20) return 84; // 2 matches
-  if (bestScore >= 15) return 78; // 1 + waist
-  if (bestScore >= 10) return 72; // 1 match
-  return 62; // fallback
+  if (bestScore >= 35) return 97;
+  if (bestScore >= 30) return 94;
+  if (bestScore >= 25) return 88;
+  if (bestScore >= 20) return 84;
+  if (bestScore >= 15) return 78;
+  if (bestScore >= 10) return 72;
+  return 62;
 }
 
 
@@ -1144,7 +1144,6 @@ document.getElementById('wiz-back').addEventListener('click', () => {
 });
 document.getElementById('wiz-skip').addEventListener('click', () => {
   if (wizStep === 3) {
-    // Body type is optional — skip it and generate results
     document.querySelectorAll('.ld-b').forEach(el => el.classList.remove('lit'));
     document.getElementById('ld-step').textContent = 'Saving your profile securely…';
     go('s-load', 's-measure');
@@ -1328,11 +1327,6 @@ function buildResults() {
   go('s-res', 's-load');
   toast('Profile saved to database ✦', 'ok');
 }
-
-
-// ── SIZE-FILTERED SHOP URLS ──────────────────────────────────────────────────
-// Each brand uses a different query param format for filtering by size.
-// buildSizedUrl() appends the correct param so the link opens pre-filtered.
 function buildSizedUrl(brand, baseUrl, size) {
   const sz  = (size || '').toUpperCase().trim();
   const enc = encodeURIComponent(sz);
@@ -1429,7 +1423,6 @@ document.querySelectorAll('.fit-opt').forEach(opt => {
 function submitFeedback() {
   if (!selectedFit) { toast('Please select how the item fits', 'err'); return; }
   const notes = document.getElementById('notes-inp').value.trim();
-  // Simulate save to backend
   toast('Feedback saved — thank you! ✦', 'ok');
   closeFeedback();
   selectedFit = '';

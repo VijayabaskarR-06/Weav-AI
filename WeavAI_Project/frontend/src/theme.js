@@ -1,4 +1,3 @@
-// src/theme.js — Weav AI design tokens
 export const C = {
   gold:       '#C9A84C',
   goldLight:  '#E8C97D',
@@ -21,7 +20,7 @@ export const C = {
 };
 
 export const F = {
-  display: 'Cochin',          // iOS serif; falls back to serif on Android
+  display: 'Cochin',
   body:    'System',
 };
 

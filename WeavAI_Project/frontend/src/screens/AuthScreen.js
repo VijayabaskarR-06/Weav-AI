@@ -1,4 +1,3 @@
-// src/screens/AuthScreen.js
 import React, { useState } from 'react';
 import {
   View, Text, TextInput, TouchableOpacity, StyleSheet,
@@ -91,7 +90,7 @@ export default function AuthScreen() {
     >
       <ScrollView style={s.screen} contentContainerStyle={s.scroll} keyboardShouldPersistTaps="handled">
 
-        {/* ── Gold Top Panel ── */}
+        
         <View style={s.top}>
           <View style={s.seal}>
             <View style={s.sealInner}>
@@ -102,7 +101,7 @@ export default function AuthScreen() {
           <Text style={s.tagline}>Your Personal Tailor</Text>
         </View>
 
-        {/* ── Tabs ── */}
+        
         <View style={s.tabs}>
           <TouchableOpacity style={[s.tab, mode==='login' && s.tabAct]}   onPress={() => { setMode('login');  setErrs({}); }}>
             <Text style={[s.tabTxt, mode==='login'  && s.tabTxtAct]}>SIGN IN</Text>
@@ -112,7 +111,7 @@ export default function AuthScreen() {
           </TouchableOpacity>
         </View>
 
-        {/* ── Form ── */}
+        
         <View style={s.body}>
           {mode==='signup' && <Field label="FULL NAME"  placeholder="e.g. Ananya Kaushal" {...fieldProps('name')}/>}
           <Field label="EMAIL ADDRESS" placeholder="your@email.com" keyboardType="email-address" {...fieldProps('email')}/>
@@ -163,8 +162,6 @@ export default function AuthScreen() {
 const s = StyleSheet.create({
   screen:       { flex:1, backgroundColor:C.cream },
   scroll:       { flexGrow:1 },
-
-  // Top gold-espresso panel
   top: {
     backgroundColor:'#1E120A',
     paddingTop:72, paddingBottom:44,
@@ -190,15 +187,11 @@ const s = StyleSheet.create({
     marginBottom:6,
   },
   tagline:      { fontSize:13, fontStyle:'italic', color:'rgba(245,237,208,0.45)', letterSpacing:2 },
-
-  // Tabs
   tabs:         { flexDirection:'row', borderBottomWidth:1, borderBottomColor:C.border, backgroundColor:C.cream },
   tab:          { flex:1, paddingVertical:15, alignItems:'center', position:'relative' },
   tabAct:       { borderBottomWidth:2, borderBottomColor:C.gold },
   tabTxt:       { fontSize:11, fontWeight:'700', letterSpacing:2, color:C.muted },
   tabTxtAct:    { color:C.espresso },
-
-  // Form body
   body:         { padding:28, gap:16 },
 
   fieldGrp:     { gap:5 },

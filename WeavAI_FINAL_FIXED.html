@@ -781,17 +781,18 @@ html,body{height:100%;background:var(--parch);font-family:'Jost',sans-serif;colo
     <div class="screen" id="s-measure">
       <div class="wiz-top">
         <button class="back-btn" id="wiz-back" aria-label="Go back">←</button>
-        <span class="step-ct" id="step-ct">1 / 3</span>
+        <span class="step-ct" id="step-ct">1 / 4</span>
         <button class="skip-btn" id="wiz-skip">Skip</button>
       </div>
       <div class="prog-bar" id="prog-bar">
         <div class="pb-seg now"></div>
         <div class="pb-seg"></div>
         <div class="pb-seg"></div>
+        <div class="pb-seg"></div>
       </div>
       <div class="wiz-head">
-        <div class="wiz-ey" id="wiz-ey">BASIC DETAILS</div>
-        <div class="wiz-ttl" id="wiz-ttl">Tell us about yourself</div>
+        <div class="wiz-ey" id="wiz-ey">WHO ARE YOU</div>
+        <div class="wiz-ttl" id="wiz-ttl">Tell us your gender</div>
         <div class="wiz-sub" id="wiz-sub">Helps calibrate your size across every brand.</div>
       </div>
       <div class="wiz-body" id="wiz-body"></div>
@@ -992,115 +993,239 @@ html,body{height:100%;background:var(--parch);font-family:'Jost',sans-serif;colo
 "use strict";
 
 
-const BRANDS = {
+// Brand data is split per gender. Each brand exposes `female` and `male`
+// variants with their own URLs, prices, and size charts. The active variant
+// is materialised into the live `BRANDS` object whenever wizData.gender
+// changes (see rebuildBrands()).
+const BRANDS_RAW = {
   Nike: {
     logo: 'NK',
-    url:  'https://www.nike.com/in/w/womens-clothing',
-    cats: {
-      tops:        'https://www.nike.com/in/w/womens-tops-shirts-5e1x6znik1',
-      bottoms:     'https://www.nike.com/in/w/womens-pants-tights-leggings-37v7jznik1',
-      dresses:     'https://www.nike.com/in/w/womens-skirts-dresses-5e1x6znik1',
-      sports_bras: 'https://www.nike.com/in/w/womens-sports-bras-znik1',
-      hoodies:     'https://www.nike.com/in/w/womens-hoodies-sweatshirts-6rive',
-      accessories: 'https://www.nike.com/in/w/womens-accessories-6nmx2',
-      outerwear:   'https://www.nike.com/in/w/womens-jackets-vests-50r7y',
-      footwear:    'https://www.nike.com/in/w/womens-shoes-5e1x6',
+    female: {
+      url:  'https://www.nike.com/in/w/womens-clothing',
+      cats: {
+        tops:        'https://www.nike.com/in/w/womens-tops-shirts-5e1x6znik1',
+        bottoms:     'https://www.nike.com/in/w/womens-pants-tights-leggings-37v7jznik1',
+        dresses:     'https://www.nike.com/in/w/womens-skirts-dresses-5e1x6znik1',
+        sports_bras: 'https://www.nike.com/in/w/womens-sports-bras-znik1',
+        hoodies:     'https://www.nike.com/in/w/womens-hoodies-sweatshirts-6rive',
+        accessories: 'https://www.nike.com/in/w/womens-accessories-6nmx2',
+        outerwear:   'https://www.nike.com/in/w/womens-jackets-vests-50r7y',
+        footwear:    'https://www.nike.com/in/w/womens-shoes-5e1x6',
+      },
+      price: { tops:'₹1,995–₹4,995', bottoms:'₹2,495–₹6,995', dresses:'₹2,995–₹6,995', sports_bras:'₹1,495–₹3,995', hoodies:'₹3,495–₹7,995', accessories:'₹999–₹2,995', outerwear:'₹5,995–₹19,995', footwear:'₹4,995–₹14,995' },
+      sizes:[{l:'XS',b:[79,84],w:[61,66],h:[86,91]},{l:'S',b:[84,89],w:[66,71],h:[91,96]},{l:'M',b:[89,94],w:[71,76],h:[96,101]},{l:'L',b:[94,100],w:[76,82],h:[101,107]},{l:'XL',b:[100,107],w:[82,89],h:[107,114]},{l:'XXL',b:[107,114],w:[89,96],h:[114,121]}],
     },
-    price: { tops:'₹1,995–₹4,995', bottoms:'₹2,495–₹6,995', dresses:'₹2,995–₹6,995', sports_bras:'₹1,495–₹3,995', hoodies:'₹3,495–₹7,995', accessories:'₹999–₹2,995', outerwear:'₹5,995–₹19,995', footwear:'₹4,995–₹14,995' },
-    sizes:[{l:'XS',b:[79,84],w:[61,66],h:[86,91]},{l:'S',b:[84,89],w:[66,71],h:[91,96]},{l:'M',b:[89,94],w:[71,76],h:[96,101]},{l:'L',b:[94,100],w:[76,82],h:[101,107]},{l:'XL',b:[100,107],w:[82,89],h:[107,114]},{l:'XXL',b:[107,114],w:[89,96],h:[114,121]}],
+    male: {
+      url:  'https://www.nike.com/in/w/mens-clothing-6ymx6',
+      cats: {
+        tops:        'https://www.nike.com/in/w/mens-tops-tshirts-9om13',
+        bottoms:     'https://www.nike.com/in/w/mens-trousers-tights-2kq19',
+        hoodies:     'https://www.nike.com/in/w/mens-hoodies-pullovers-6rium',
+        accessories: 'https://www.nike.com/in/w/mens-accessories-awwpwzy7ok',
+        outerwear:   'https://www.nike.com/in/w/mens-jackets-vests-50r7yznik1',
+        footwear:    'https://www.nike.com/in/w/mens-shoes-nik1zy7ok',
+      },
+      price: { tops:'₹1,995–₹4,995', bottoms:'₹2,495–₹6,995', hoodies:'₹3,495–₹7,995', accessories:'₹999–₹2,995', outerwear:'₹5,995–₹19,995', footwear:'₹4,995–₹14,995' },
+      sizes:[{l:'XS',b:[84,89],w:[71,76],h:[86,91]},{l:'S',b:[89,94],w:[76,81],h:[91,96]},{l:'M',b:[94,99],w:[81,86],h:[96,101]},{l:'L',b:[99,104],w:[86,91],h:[101,106]},{l:'XL',b:[104,110],w:[91,97],h:[106,112]},{l:'XXL',b:[110,117],w:[97,104],h:[112,119]}],
+    },
   },
   Adidas: {
     logo: 'AD',
-    url:  'https://www.adidas.co.in/women-clothing',
-    cats: {
-      tops:        'https://www.adidas.co.in/women-tops',
-      bottoms:     'https://www.adidas.co.in/women-pants-tights',
-      dresses:     'https://www.adidas.co.in/women-dresses-skirts',
-      sports_bras: 'https://www.adidas.co.in/women-sports-bras',
-      hoodies:     'https://www.adidas.co.in/women-hoodies-sweatshirts',
-      accessories: 'https://www.adidas.co.in/women-accessories',
-      outerwear:   'https://www.adidas.co.in/women-jackets-vests',
-      footwear:    'https://www.adidas.co.in/women-shoes',
+    female: {
+      url:  'https://www.adidas.co.in/women-clothing',
+      cats: {
+        tops:        'https://www.adidas.co.in/women-tops',
+        bottoms:     'https://www.adidas.co.in/women-pants-tights',
+        dresses:     'https://www.adidas.co.in/women-dresses-skirts',
+        sports_bras: 'https://www.adidas.co.in/women-sports-bras',
+        hoodies:     'https://www.adidas.co.in/women-hoodies-sweatshirts',
+        accessories: 'https://www.adidas.co.in/women-accessories',
+        outerwear:   'https://www.adidas.co.in/women-jackets-vests',
+        footwear:    'https://www.adidas.co.in/women-shoes',
+      },
+      price: { tops:'₹1,799–₹4,499', bottoms:'₹2,299–₹5,999', dresses:'₹2,799–₹5,999', sports_bras:'₹1,299–₹3,499', hoodies:'₹2,999–₹6,999', accessories:'₹799–₹2,799', outerwear:'₹4,999–₹17,999', footwear:'₹4,499–₹12,999' },
+      sizes:[{l:'XS',b:[76,82],w:[58,63],h:[83,89]},{l:'S',b:[82,88],w:[63,68],h:[89,95]},{l:'M',b:[88,94],w:[68,74],h:[95,101]},{l:'L',b:[94,101],w:[74,81],h:[101,108]},{l:'XL',b:[101,108],w:[81,88],h:[108,115]},{l:'XXL',b:[108,116],w:[88,96],h:[115,123]}],
     },
-    price: { tops:'₹1,799–₹4,499', bottoms:'₹2,299–₹5,999', dresses:'₹2,799–₹5,999', sports_bras:'₹1,299–₹3,499', hoodies:'₹2,999–₹6,999', accessories:'₹799–₹2,799', outerwear:'₹4,999–₹17,999', footwear:'₹4,499–₹12,999' },
-    sizes:[{l:'XS',b:[76,82],w:[58,63],h:[83,89]},{l:'S',b:[82,88],w:[63,68],h:[89,95]},{l:'M',b:[88,94],w:[68,74],h:[95,101]},{l:'L',b:[94,101],w:[74,81],h:[101,108]},{l:'XL',b:[101,108],w:[81,88],h:[108,115]},{l:'XXL',b:[108,116],w:[88,96],h:[115,123]}],
+    male: {
+      url:  'https://www.adidas.co.in/men-clothing',
+      cats: {
+        tops:        'https://www.adidas.co.in/men-tops',
+        bottoms:     'https://www.adidas.co.in/men-trousers-pants',
+        hoodies:     'https://www.adidas.co.in/men-hoodies',
+        accessories: 'https://www.adidas.co.in/men-accessories',
+        outerwear:   'https://www.adidas.co.in/men-jackets-vests',
+        footwear:    'https://www.adidas.co.in/men-shoes',
+      },
+      price: { tops:'₹1,799–₹4,499', bottoms:'₹2,299–₹5,999', hoodies:'₹2,999–₹6,999', accessories:'₹799–₹2,799', outerwear:'₹4,999–₹17,999', footwear:'₹4,499–₹12,999' },
+      sizes:[{l:'XS',b:[84,89],w:[71,76],h:[86,91]},{l:'S',b:[89,94],w:[76,81],h:[91,96]},{l:'M',b:[94,99],w:[81,86],h:[96,101]},{l:'L',b:[99,104],w:[86,91],h:[101,106]},{l:'XL',b:[104,110],w:[91,97],h:[106,112]},{l:'XXL',b:[110,117],w:[97,104],h:[112,119]}],
+    },
   },
   Puma: {
     logo: 'PM',
-    url:  'https://in.puma.com/in/en/women/clothing',
-    cats: {
-      tops:        'https://in.puma.com/in/en/women/clothing/tops',
-      bottoms:     'https://in.puma.com/in/en/women/clothing/bottoms',
-      dresses:     'https://in.puma.com/in/en/women/clothing/dresses',
-      sports_bras: 'https://in.puma.com/in/en/women/clothing/sports-bras',
-      hoodies:     'https://in.puma.com/in/en/women/clothing/hoodies-sweatshirts',
-      accessories: 'https://in.puma.com/in/en/women/accessories',
-      outerwear:   'https://in.puma.com/in/en/women/clothing/jackets',
-      footwear:    'https://in.puma.com/in/en/women/shoes',
+    female: {
+      url:  'https://in.puma.com/in/en/women/clothing',
+      cats: {
+        tops:        'https://in.puma.com/in/en/women/clothing/tops',
+        bottoms:     'https://in.puma.com/in/en/women/clothing/bottoms',
+        dresses:     'https://in.puma.com/in/en/women/clothing/dresses',
+        sports_bras: 'https://in.puma.com/in/en/women/clothing/sports-bras',
+        hoodies:     'https://in.puma.com/in/en/women/clothing/hoodies-sweatshirts',
+        accessories: 'https://in.puma.com/in/en/women/accessories',
+        outerwear:   'https://in.puma.com/in/en/women/clothing/jackets',
+        footwear:    'https://in.puma.com/in/en/women/shoes',
+      },
+      price: { tops:'₹1,299–₹3,499', bottoms:'₹1,799–₹4,999', dresses:'₹2,299–₹4,999', sports_bras:'₹1,099–₹2,999', hoodies:'₹2,499–₹5,499', accessories:'₹599–₹2,499', outerwear:'₹3,999–₹12,999', footwear:'₹3,499–₹10,999' },
+      sizes:[{l:'XS',b:[80,84],w:[61,65],h:[87,91]},{l:'S',b:[84,88],w:[65,69],h:[91,95]},{l:'M',b:[88,93],w:[69,74],h:[95,100]},{l:'L',b:[93,99],w:[74,80],h:[100,106]},{l:'XL',b:[99,105],w:[80,87],h:[106,113]},{l:'XXL',b:[105,113],w:[87,95],h:[113,121]}],
     },
-    price: { tops:'₹1,299–₹3,499', bottoms:'₹1,799–₹4,999', dresses:'₹2,299–₹4,999', sports_bras:'₹1,099–₹2,999', hoodies:'₹2,499–₹5,499', accessories:'₹599–₹2,499', outerwear:'₹3,999–₹12,999', footwear:'₹3,499–₹10,999' },
-    sizes:[{l:'XS',b:[80,84],w:[61,65],h:[87,91]},{l:'S',b:[84,88],w:[65,69],h:[91,95]},{l:'M',b:[88,93],w:[69,74],h:[95,100]},{l:'L',b:[93,99],w:[74,80],h:[100,106]},{l:'XL',b:[99,105],w:[80,87],h:[106,113]},{l:'XXL',b:[105,113],w:[87,95],h:[113,121]}],
+    male: {
+      url:  'https://in.puma.com/in/en/men/clothing',
+      cats: {
+        tops:        'https://in.puma.com/in/en/men/clothing/tops',
+        bottoms:     'https://in.puma.com/in/en/men/clothing/bottoms',
+        hoodies:     'https://in.puma.com/in/en/men/clothing/hoodies-sweatshirts',
+        accessories: 'https://in.puma.com/in/en/men/accessories',
+        outerwear:   'https://in.puma.com/in/en/men/clothing/jackets',
+        footwear:    'https://in.puma.com/in/en/men/shoes',
+      },
+      price: { tops:'₹1,299–₹3,499', bottoms:'₹1,799–₹4,999', hoodies:'₹2,499–₹5,499', accessories:'₹599–₹2,499', outerwear:'₹3,999–₹12,999', footwear:'₹3,499–₹10,999' },
+      sizes:[{l:'XS',b:[83,88],w:[70,75],h:[86,91]},{l:'S',b:[88,93],w:[75,80],h:[91,96]},{l:'M',b:[93,98],w:[80,85],h:[96,101]},{l:'L',b:[98,103],w:[85,90],h:[101,106]},{l:'XL',b:[103,109],w:[90,96],h:[106,112]},{l:'XXL',b:[109,116],w:[96,103],h:[112,119]}],
+    },
   },
   'H&M': {
     logo: 'HM',
-    url:  'https://www2.hm.com/en_in/ladies/shop-by-product/view-all.html',
-    cats: {
-      tops:        'https://www2.hm.com/en_in/ladies/shop-by-product/tops.html',
-      bottoms:     'https://www2.hm.com/en_in/ladies/shop-by-product/trousers.html',
-      dresses:     'https://www2.hm.com/en_in/ladies/shop-by-product/dresses.html',
-      sports_bras: 'https://www2.hm.com/en_in/ladies/shop-by-product/sport-bras.html',
-      hoodies:     'https://www2.hm.com/en_in/ladies/shop-by-product/hoodies-sweatshirts.html',
-      accessories: 'https://www2.hm.com/en_in/ladies/accessories.html',
-      outerwear:   'https://www2.hm.com/en_in/ladies/shop-by-product/jackets-coats.html',
-      footwear:    'https://www2.hm.com/en_in/ladies/shop-by-product/shoes.html',
+    female: {
+      url:  'https://www2.hm.com/en_in/ladies/shop-by-product/view-all.html',
+      cats: {
+        tops:        'https://www2.hm.com/en_in/ladies/shop-by-product/tops.html',
+        bottoms:     'https://www2.hm.com/en_in/ladies/shop-by-product/trousers.html',
+        dresses:     'https://www2.hm.com/en_in/ladies/shop-by-product/dresses.html',
+        sports_bras: 'https://www2.hm.com/en_in/ladies/shop-by-product/sport-bras.html',
+        hoodies:     'https://www2.hm.com/en_in/ladies/shop-by-product/hoodies-sweatshirts.html',
+        accessories: 'https://www2.hm.com/en_in/ladies/accessories.html',
+        outerwear:   'https://www2.hm.com/en_in/ladies/shop-by-product/jackets-coats.html',
+        footwear:    'https://www2.hm.com/en_in/ladies/shop-by-product/shoes.html',
+      },
+      price: { tops:'₹799–₹2,499', bottoms:'₹1,299–₹3,299', dresses:'₹1,499–₹3,999', sports_bras:'₹699–₹1,999', hoodies:'₹1,799–₹3,999', accessories:'₹299–₹1,499', outerwear:'₹2,999–₹9,999', footwear:'₹1,999–₹6,999' },
+      sizes:[{l:'XS',b:[80,83],w:[61,64],h:[86,89]},{l:'S',b:[83,87],w:[64,68],h:[89,93]},{l:'M',b:[87,93],w:[68,74],h:[93,99]},{l:'L',b:[93,99],w:[74,80],h:[99,105]},{l:'XL',b:[99,107],w:[80,88],h:[105,113]},{l:'XXL',b:[107,115],w:[88,96],h:[113,121]}],
     },
-    price: { tops:'₹799–₹2,499', bottoms:'₹1,299–₹3,299', dresses:'₹1,499–₹3,999', sports_bras:'₹699–₹1,999', hoodies:'₹1,799–₹3,999', accessories:'₹299–₹1,499', outerwear:'₹2,999–₹9,999', footwear:'₹1,999–₹6,999' },
-    sizes:[{l:'XS',b:[80,83],w:[61,64],h:[86,89]},{l:'S',b:[83,87],w:[64,68],h:[89,93]},{l:'M',b:[87,93],w:[68,74],h:[93,99]},{l:'L',b:[93,99],w:[74,80],h:[99,105]},{l:'XL',b:[99,107],w:[80,88],h:[105,113]},{l:'XXL',b:[107,115],w:[88,96],h:[113,121]}],
+    male: {
+      url:  'https://www2.hm.com/en_in/men/shop-by-product/view-all.html',
+      cats: {
+        tops:        'https://www2.hm.com/en_in/men/shop-by-product/tshirts-tank-tops.html',
+        shirts:      'https://www2.hm.com/en_in/men/shop-by-product/shirts.html',
+        bottoms:     'https://www2.hm.com/en_in/men/shop-by-product/jeans.html',
+        hoodies:     'https://www2.hm.com/en_in/men/shop-by-product/hoodies-sweatshirts.html',
+        accessories: 'https://www2.hm.com/en_in/men/accessories.html',
+        outerwear:   'https://www2.hm.com/en_in/men/shop-by-product/jackets-coats.html',
+        footwear:    'https://www2.hm.com/en_in/men/shop-by-product/shoes.html',
+      },
+      price: { tops:'₹799–₹2,499', shirts:'₹1,299–₹2,999', bottoms:'₹1,299–₹3,299', hoodies:'₹1,799–₹3,999', accessories:'₹299–₹1,499', outerwear:'₹2,999–₹9,999', footwear:'₹1,999–₹6,999' },
+      sizes:[{l:'XS',b:[84,89],w:[71,76],h:[86,91]},{l:'S',b:[89,94],w:[76,81],h:[91,96]},{l:'M',b:[94,100],w:[81,87],h:[96,102]},{l:'L',b:[100,106],w:[87,93],h:[102,108]},{l:'XL',b:[106,112],w:[93,100],h:[108,115]},{l:'XXL',b:[112,120],w:[100,108],h:[115,123]}],
+    },
   },
   Zara: {
     logo: 'ZA',
-    url:  'https://www.zara.com/in/en/woman-clothing-l1066.html',
-    cats: {
-      tops:        'https://www.zara.com/in/en/woman-tops-l1249.html',
-      bottoms:     'https://www.zara.com/in/en/woman-trousers-l1335.html',
-      dresses:     'https://www.zara.com/in/en/woman-dresses-l1066.html',
-      sports_bras: 'https://www.zara.com/in/en/woman-sport-l1418.html',
-      hoodies:     'https://www.zara.com/in/en/woman-sweatshirts-l1371.html',
-      accessories: 'https://www.zara.com/in/en/woman-accessories-l1244.html',
-      outerwear:   'https://www.zara.com/in/en/woman-outerwear-l1108.html',
-      footwear:    'https://www.zara.com/in/en/woman-shoes-l1251.html',
+    female: {
+      url:  'https://www.zara.com/in/en/woman-clothing-l1066.html',
+      cats: {
+        tops:        'https://www.zara.com/in/en/woman-tops-l1249.html',
+        bottoms:     'https://www.zara.com/in/en/woman-trousers-l1335.html',
+        dresses:     'https://www.zara.com/in/en/woman-dresses-l1066.html',
+        sports_bras: 'https://www.zara.com/in/en/woman-sport-l1418.html',
+        hoodies:     'https://www.zara.com/in/en/woman-sweatshirts-l1371.html',
+        accessories: 'https://www.zara.com/in/en/woman-accessories-l1244.html',
+        outerwear:   'https://www.zara.com/in/en/woman-outerwear-l1108.html',
+        footwear:    'https://www.zara.com/in/en/woman-shoes-l1251.html',
+      },
+      price: { tops:'₹1,590–₹3,990', bottoms:'₹1,990–₹4,990', dresses:'₹2,290–₹5,990', sports_bras:'₹1,190–₹2,790', hoodies:'₹2,490–₹4,990', accessories:'₹790–₹2,990', outerwear:'₹3,990–₹14,990', footwear:'₹2,990–₹8,990' },
+      sizes:[{l:'XS',b:[79,83],w:[60,64],h:[86,90]},{l:'S',b:[83,87],w:[64,68],h:[90,94]},{l:'M',b:[87,93],w:[68,74],h:[94,100]},{l:'L',b:[93,99],w:[74,80],h:[100,106]},{l:'XL',b:[99,107],w:[80,88],h:[106,114]},{l:'XXL',b:[107,115],w:[88,96],h:[114,122]}],
     },
-    price: { tops:'₹1,590–₹3,990', bottoms:'₹1,990–₹4,990', dresses:'₹2,290–₹5,990', sports_bras:'₹1,190–₹2,790', hoodies:'₹2,490–₹4,990', accessories:'₹790–₹2,990', outerwear:'₹3,990–₹14,990', footwear:'₹2,990–₹8,990' },
-    sizes:[{l:'XS',b:[79,83],w:[60,64],h:[86,90]},{l:'S',b:[83,87],w:[64,68],h:[90,94]},{l:'M',b:[87,93],w:[68,74],h:[94,100]},{l:'L',b:[93,99],w:[74,80],h:[100,106]},{l:'XL',b:[99,107],w:[80,88],h:[106,114]},{l:'XXL',b:[107,115],w:[88,96],h:[114,122]}],
+    male: {
+      url:  'https://www.zara.com/in/en/man-l1.html',
+      cats: {
+        tops:        'https://www.zara.com/in/en/man-tshirts-l855.html',
+        shirts:      'https://www.zara.com/in/en/man-shirts-l737.html',
+        bottoms:     'https://www.zara.com/in/en/man-jeans-l659.html',
+        hoodies:     'https://www.zara.com/in/en/man-sweatshirts-l821.html',
+        accessories: 'https://www.zara.com/in/en/man-accessories-l537.html',
+        outerwear:   'https://www.zara.com/in/en/man-outerwear-l715.html',
+        footwear:    'https://www.zara.com/in/en/man-shoes-l769.html',
+      },
+      price: { tops:'₹1,590–₹3,990', shirts:'₹2,290–₹4,990', bottoms:'₹1,990–₹4,990', hoodies:'₹2,490–₹4,990', accessories:'₹790–₹2,990', outerwear:'₹3,990–₹14,990', footwear:'₹2,990–₹8,990' },
+      sizes:[{l:'XS',b:[84,89],w:[71,76],h:[86,91]},{l:'S',b:[89,94],w:[76,81],h:[91,96]},{l:'M',b:[94,99],w:[81,86],h:[96,101]},{l:'L',b:[99,104],w:[86,91],h:[101,106]},{l:'XL',b:[104,110],w:[91,97],h:[106,112]},{l:'XXL',b:[110,117],w:[97,104],h:[112,119]}],
+    },
   },
   "Levi's": {
     logo: 'LV',
-    url:  'https://www.levi.in/',
-    cats: {
-      tops:        'https://www.levi.in/women/tops',
-      bottoms:     'https://www.levi.in/women/jeans',
-      dresses:     'https://www.levi.in/women/dresses-skirts',
-      sports_bras: 'https://www.levi.in/women',
-      hoodies:     'https://www.levi.in/women/sweatshirts-hoodies',
-      accessories: 'https://www.levi.in/women/accessories',
-      outerwear:   'https://www.levi.in/women/jackets',
-      footwear:    'https://www.levi.in/women/footwear',
+    female: {
+      url:  'https://www.levi.in/',
+      cats: {
+        tops:        'https://www.levi.in/women/tops',
+        bottoms:     'https://www.levi.in/women/jeans',
+        dresses:     'https://www.levi.in/women/dresses-skirts',
+        sports_bras: 'https://www.levi.in/women',
+        hoodies:     'https://www.levi.in/women/sweatshirts-hoodies',
+        accessories: 'https://www.levi.in/women/accessories',
+        outerwear:   'https://www.levi.in/women/jackets',
+        footwear:    'https://www.levi.in/women/footwear',
+      },
+      price: { tops:'₹1,699–₹3,999', bottoms:'₹2,299–₹5,999', dresses:'₹2,499–₹4,999', sports_bras:'₹1,299–₹2,999', hoodies:'₹2,999–₹6,499', accessories:'₹999–₹2,999', outerwear:'₹4,499–₹13,999', footwear:'₹3,499–₹8,999' },
+      sizes:[{l:'XS',b:[81,84],w:[62,65],h:[87,90]},{l:'S',b:[84,88],w:[65,69],h:[90,94]},{l:'M',b:[88,94],w:[69,75],h:[94,100]},{l:'L',b:[94,100],w:[75,81],h:[100,106]},{l:'XL',b:[100,108],w:[81,89],h:[106,114]},{l:'XXL',b:[108,116],w:[89,97],h:[114,122]}],
     },
-    price: { tops:'₹1,699–₹3,999', bottoms:'₹2,299–₹5,999', dresses:'₹2,499–₹4,999', sports_bras:'₹1,299–₹2,999', hoodies:'₹2,999–₹6,499', accessories:'₹999–₹2,999', outerwear:'₹4,499–₹13,999', footwear:'₹3,499–₹8,999' },
-    sizes:[{l:'XS',b:[81,84],w:[62,65],h:[87,90]},{l:'S',b:[84,88],w:[65,69],h:[90,94]},{l:'M',b:[88,94],w:[69,75],h:[94,100]},{l:'L',b:[94,100],w:[75,81],h:[100,106]},{l:'XL',b:[100,108],w:[81,89],h:[106,114]},{l:'XXL',b:[108,116],w:[89,97],h:[114,122]}],
+    male: {
+      url:  'https://www.levi.in/men',
+      cats: {
+        tops:        'https://www.levi.in/men/topwear',
+        shirts:      'https://www.levi.in/men/shirts',
+        bottoms:     'https://www.levi.in/men/jeans',
+        hoodies:     'https://www.levi.in/men/sweatshirts-hoodies',
+        accessories: 'https://www.levi.in/men/accessories',
+        outerwear:   'https://www.levi.in/men/jackets',
+        footwear:    'https://www.levi.in/men/footwear',
+      },
+      price: { tops:'₹1,699–₹3,999', shirts:'₹2,499–₹4,999', bottoms:'₹2,299–₹5,999', hoodies:'₹2,999–₹6,499', accessories:'₹999–₹2,999', outerwear:'₹4,499–₹13,999', footwear:'₹3,499–₹8,999' },
+      sizes:[{l:'XS',b:[84,89],w:[71,76],h:[86,91]},{l:'S',b:[89,94],w:[76,81],h:[91,96]},{l:'M',b:[94,99],w:[81,86],h:[96,101]},{l:'L',b:[99,104],w:[86,91],h:[101,106]},{l:'XL',b:[104,110],w:[91,97],h:[106,112]},{l:'XXL',b:[110,117],w:[97,104],h:[112,119]}],
+    },
   },
 };
 
-const CATS = [
-  { id:'tops',        label:'Tops',        sym:'✦' },
-  { id:'bottoms',     label:'Bottoms',     sym:'◆' },
-  { id:'dresses',     label:'Dresses',     sym:'◇' },
-  { id:'sports_bras', label:'Sports Bras', sym:'○' },
-  { id:'hoodies',     label:'Hoodies',     sym:'▽' },
-  { id:'accessories', label:'Accessories', sym:'❋' },
-  { id:'outerwear',   label:'Outerwear',   sym:'◈' },
-  { id:'footwear',    label:'Footwear',    sym:'◎' },
+// `BRANDS` is the materialised, gender-aware view used by every render path.
+let BRANDS = {};
+function rebuildBrands() {
+  const g = (typeof wizData !== 'undefined' && wizData.gender === 'male') ? 'male' : 'female';
+  const next = {};
+  for (const [name, raw] of Object.entries(BRANDS_RAW)) {
+    const v = raw[g] || raw.female;
+    next[name] = { logo: raw.logo, ...v };
+  }
+  // Custom brands (added via admin) live outside RAW — preserve them as-is.
+  const custom = (typeof lsGet === 'function') ? lsGet(LS.CUSTOM_BRANDS, {}) : {};
+  for (const [name, b] of Object.entries(custom)) next[name] = b;
+  BRANDS = next;
+}
+
+// Master catalog of categories. The active list is filtered by gender
+// (women's gets dresses + sports bras; men's gets shirts) and also by
+// whether the active brand variant exposes a URL for that category.
+const CATS_ALL = [
+  { id:'tops',        label:'Tops',        sym:'✦', genders:['female','male'] },
+  { id:'shirts',      label:'Shirts',      sym:'▦', genders:['male']          },
+  { id:'bottoms',     label:'Bottoms',     sym:'◆', genders:['female','male'] },
+  { id:'dresses',     label:'Dresses',     sym:'◇', genders:['female']        },
+  { id:'sports_bras', label:'Sports Bras', sym:'○', genders:['female']        },
+  { id:'hoodies',     label:'Hoodies',     sym:'▽', genders:['female','male'] },
+  { id:'accessories', label:'Accessories', sym:'❋', genders:['female','male'] },
+  { id:'outerwear',   label:'Outerwear',   sym:'◈', genders:['female','male'] },
+  { id:'footwear',    label:'Footwear',    sym:'◎', genders:['female','male'] },
 ];
+function getActiveGender() {
+  return (typeof wizData !== 'undefined' && wizData.gender === 'male') ? 'male' : 'female';
+}
+let CATS = CATS_ALL.filter(c => c.genders.includes('female'));
+function rebuildCats() {
+  const g = getActiveGender();
+  CATS = CATS_ALL.filter(c => c.genders.includes(g));
+}
 
 
 // Reference median price per brand/category in INR. Kept as a fallback for
@@ -1803,9 +1928,16 @@ let wizStep = 1;
 let wizUnit = 'cm';
 let wizData = {};
 
+// Materialise BRANDS / CATS for the default (female) view at startup so any
+// admin/profile rendering before the wizard runs has a populated catalog.
+rebuildBrands();
+rebuildCats();
+
 function startWiz() {
   wizStep = 1;
   loadProfileForCurrentUser();
+  // Reset gender so each session re-asks (otherwise old gender lingers in wizData).
+  if (!wizData.gender) wizData.gender = '';
   renderWizStep();
   const fromId = document.querySelector('.screen.active')?.id || 's-splash';
   if (fromId !== 's-measure') go('s-measure', fromId);
@@ -1841,6 +1973,7 @@ async function saveCurrentProfile() {
         age: snap.age,
         body_type: snap.bodyType || 'Not specified',
         unit: snap.unit || 'cm',
+        gender: snap.gender || 'female',
       },
     });
     toast('Measurement saved to MySQL ✦', 'ok');
@@ -1869,7 +2002,7 @@ function toggleFavorite(brand) {
 }
 
 
-const OUTFIT_RECS = {
+const OUTFIT_RECS_FEMALE = {
   Hourglass: { cats: ['dresses', 'tops', 'bottoms', 'outerwear'],   note: 'Wrap dresses, fitted tops and tailored bottoms flatter your balanced proportions.' },
   Pear:      { cats: ['tops', 'dresses', 'outerwear', 'accessories'], note: 'Structured tops and A-line silhouettes balance fuller hips beautifully.' },
   Apple:     { cats: ['dresses', 'tops', 'bottoms', 'accessories'], note: 'Empire-waist dresses and straight-leg bottoms elongate your frame.' },
@@ -1877,8 +2010,19 @@ const OUTFIT_RECS = {
   Athletic:  { cats: ['tops', 'bottoms', 'sports_bras', 'hoodies'], note: 'Fitted athleticwear and tailored jeans celebrate a strong silhouette.' },
   Curvy:     { cats: ['dresses', 'tops', 'bottoms', 'outerwear'],   note: 'High-waist bottoms and wrap dresses define your curves gracefully.' },
 };
+const OUTFIT_RECS_MALE = {
+  Trapezoid:           { cats: ['tops', 'shirts', 'bottoms', 'outerwear'], note: 'Slim-fit tees, tailored shirts and straight bottoms celebrate balanced shoulders.' },
+  'Inverted Triangle': { cats: ['shirts', 'bottoms', 'outerwear', 'accessories'], note: 'Structured shirts paired with relaxed bottoms balance broader shoulders.' },
+  Rectangle:           { cats: ['tops', 'shirts', 'hoodies', 'outerwear'], note: 'Layered tees, hoodies and tailored jackets add visual depth to a lean frame.' },
+  Triangle:            { cats: ['tops', 'outerwear', 'shirts', 'accessories'], note: 'Structured outerwear and well-cut shirts broaden the upper half nicely.' },
+  Athletic:            { cats: ['tops', 'bottoms', 'shirts', 'hoodies'], note: 'Athletic-cut tees and slim bottoms celebrate a strong build.' },
+  Oval:                { cats: ['shirts', 'outerwear', 'bottoms', 'accessories'], note: 'Crisp shirts and straight-leg bottoms create a sharp, elongated line.' },
+};
 function getOutfitPicks(bodyType) {
-  return OUTFIT_RECS[bodyType] || { cats: ['tops', 'bottoms', 'dresses', 'hoodies'], note: 'A versatile mix that works across occasions.' };
+  const map = getActiveGender() === 'male' ? OUTFIT_RECS_MALE : OUTFIT_RECS_FEMALE;
+  const fallbackMen   = { cats: ['tops', 'shirts', 'bottoms', 'hoodies'],   note: 'A versatile mix that works across occasions.' };
+  const fallbackWomen = { cats: ['tops', 'bottoms', 'dresses', 'hoodies'],  note: 'A versatile mix that works across occasions.' };
+  return map[bodyType] || (getActiveGender() === 'male' ? fallbackMen : fallbackWomen);
 }
 
 
@@ -2085,24 +2229,45 @@ function makeNumField(id, label, ph, hint, unit) {
 }
 
 function renderWizStep() {
-  const EY    = ['BASIC DETAILS', 'BODY MEASUREMENTS', 'BODY TYPE'];
-  const TTL   = ['Tell us about yourself', 'Your measurements', 'Your body type'];
-  const SUB   = ['Calibrates your size profile across every brand.', 'Measure in a relaxed posture for best accuracy.', 'Optional — helps fine-tune your recommendations.'];
+  const EY    = ['WHO ARE YOU',          'BASIC DETAILS',                                 'BODY MEASUREMENTS',                          'BODY TYPE'];
+  const TTL   = ['Tell us your gender',   'Tell us about yourself',                        'Your measurements',                          'Your body type'];
+  const SUB   = ['So we show only the right brand pages and size charts.', 'Calibrates your size profile across every brand.', 'Measure in a relaxed posture for best accuracy.', 'Optional — helps fine-tune your recommendations.'];
   document.getElementById('wiz-ey').textContent  = EY[wizStep - 1];
   document.getElementById('wiz-ttl').textContent = TTL[wizStep - 1];
   document.getElementById('wiz-sub').textContent = SUB[wizStep - 1];
-  document.getElementById('step-ct').textContent = `${wizStep} / 3`;
-  document.getElementById('wiz-next').textContent = wizStep === 3 ? 'GENERATE MY SIZE PROFILE →' : 'CONTINUE →';
-  document.getElementById('wiz-skip').style.visibility = wizStep === 3 ? 'visible' : 'hidden';
-  
+  document.getElementById('step-ct').textContent = `${wizStep} / 4`;
+  document.getElementById('wiz-next').textContent = wizStep === 4 ? 'GENERATE MY SIZE PROFILE →' : 'CONTINUE →';
+  document.getElementById('wiz-skip').style.visibility = wizStep === 4 ? 'visible' : 'hidden';
+
   document.querySelectorAll('.pb-seg').forEach((s, i) => {
     s.className = 'pb-seg' + (i < wizStep - 1 ? ' done' : i === wizStep - 1 ? ' now' : '');
   });
 
   const body = document.getElementById('wiz-body');
   const u    = wizUnit;
+  const isMale = wizData.gender === 'male';
 
   if (wizStep === 1) {
+    body.innerHTML = `
+      <div style="display:flex;gap:12px;margin-bottom:14px">
+        ${[
+          {id:'female', label:'Women', sub:'Tops · Dresses · Bottoms · Sports Bras', icon:'♀'},
+          {id:'male',   label:'Men',   sub:'T-Shirts · Shirts · Jeans · Hoodies',    icon:'♂'},
+        ].map(g => `
+          <div class="bt-card ${wizData.gender === g.id ? 'sel' : ''}" data-g="${g.id}" style="flex:1;padding:18px 14px;text-align:center">
+            <div style="font-size:36px;line-height:1;margin-bottom:8px;color:${wizData.gender === g.id ? 'var(--sienna)' : 'var(--bark)'}">${g.icon}</div>
+            <div style="font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:700;color:var(--navy)">${g.label}</div>
+            <div style="font-size:10px;color:var(--muted);margin-top:4px;line-height:1.4">${g.sub}</div>
+          </div>`).join('')}
+      </div>
+      <div class="tip-box"><span class="tip-ic">✦</span> Sizing differs between men's and women's clothing — picking the right one is essential for accurate matches.</div>`;
+    document.querySelectorAll('.bt-card[data-g]').forEach(c => c.addEventListener('click', () => {
+      document.querySelectorAll('.bt-card[data-g]').forEach(x => x.classList.remove('sel'));
+      c.classList.add('sel');
+      wizData.gender = c.dataset.g;
+    }));
+
+  } else if (wizStep === 2) {
     body.innerHTML = `
       <div class="unit-row">
         <span class="unit-row-lbl">Units of measure</span>
@@ -2121,12 +2286,16 @@ function renderWizStep() {
     if (wizData.height) document.getElementById('nf-height').value = fromCm(wizData.height);
     if (wizData.weight) document.getElementById('nf-weight').value = fromKg(wizData.weight);
     if (wizData.age)    document.getElementById('nf-age').value    = wizData.age;
-    
+
     document.querySelectorAll('.u-pill').forEach(p => p.addEventListener('click', () => {
       wizUnit = p.dataset.u; renderWizStep();
     }));
 
-  } else if (wizStep === 2) {
+  } else if (wizStep === 3) {
+    const bustLabel = isMale ? 'CHEST' : 'BUST / CHEST';
+    const bustPh    = u === 'cm' ? (isMale ? '96'   : '88')  : (isMale ? '38'   : '34.5');
+    const waistPh   = u === 'cm' ? (isMale ? '82'   : '70')  : (isMale ? '32'   : '27.5');
+    const hipsPh    = u === 'cm' ? (isMale ? '98'   : '96')  : (isMale ? '38.5' : '37.5');
     body.innerHTML = `
       <div class="guide-card">
         <svg width="66" height="122" viewBox="0 0 66 122" fill="none">
@@ -2140,25 +2309,31 @@ function renderWizStep() {
           <circle cx="33" cy="79" r="2.5" fill="#0D1B2A"/>
         </svg>
         <div class="guide-leg">
-          <div class="g-it"><div class="g-dot" style="background:#C9A84C"></div><div><div class="g-name">Bust</div><div class="g-desc">Fullest part of chest</div></div></div>
+          <div class="g-it"><div class="g-dot" style="background:#C9A84C"></div><div><div class="g-name">${isMale ? 'Chest' : 'Bust'}</div><div class="g-desc">Fullest part of chest</div></div></div>
           <div class="g-it"><div class="g-dot" style="background:#1A3A5C"></div><div><div class="g-name">Waist</div><div class="g-desc">Narrowest point</div></div></div>
           <div class="g-it"><div class="g-dot" style="background:#0D1B2A"></div><div><div class="g-name">Hips</div><div class="g-desc">Widest point</div></div></div>
         </div>
       </div>
-      ${makeNumField('bust',  'BUST / CHEST', u === 'cm' ? '88' : '34.5', 'Keep tape parallel to the ground', u)}
-      ${makeNumField('waist', 'WAIST',        u === 'cm' ? '70' : '27.5', 'At the natural waistline', u)}
-      ${makeNumField('hips',  'HIPS',         u === 'cm' ? '96' : '37.5', 'Stand with feet together', u)}`;
+      ${makeNumField('bust',  bustLabel, bustPh, 'Keep tape parallel to the ground', u)}
+      ${makeNumField('waist', 'WAIST',   waistPh, 'At the natural waistline', u)}
+      ${makeNumField('hips',  'HIPS',    hipsPh, 'Stand with feet together', u)}`;
     const fromCm2 = v => v ? (wizUnit === 'in' ? +(v / 2.54).toFixed(1) : Math.round(v * 10) / 10) : '';
     if (wizData.bust)  document.getElementById('nf-bust').value  = fromCm2(wizData.bust);
     if (wizData.waist) document.getElementById('nf-waist').value = fromCm2(wizData.waist);
     if (wizData.hips)  document.getElementById('nf-hips').value  = fromCm2(wizData.hips);
 
   } else {
-    const BT = [
-      {id:'Hourglass',i:'⌛'},{id:'Pear',i:'🍐'},
-      {id:'Apple',i:'🍎'},{id:'Rectangle',i:'▭'},
-      {id:'Athletic',i:'⚡'},{id:'Curvy',i:'〜'},
-    ];
+    const BT = isMale
+      ? [
+          {id:'Trapezoid',i:'◆'},{id:'Inverted Triangle',i:'▽'},
+          {id:'Rectangle',i:'▭'},{id:'Triangle',i:'△'},
+          {id:'Athletic',i:'⚡'},{id:'Oval',i:'○'},
+        ]
+      : [
+          {id:'Hourglass',i:'⌛'},{id:'Pear',i:'🍐'},
+          {id:'Apple',i:'🍎'},{id:'Rectangle',i:'▭'},
+          {id:'Athletic',i:'⚡'},{id:'Curvy',i:'〜'},
+        ];
     body.innerHTML = `
       <div class="bt-grid">
         ${BT.map(bt => `<div class="bt-card ${wizData.bodyType === bt.id ? 'sel' : ''}" data-bt="${bt.id}">
@@ -2166,8 +2341,8 @@ function renderWizStep() {
         </div>`).join('')}
       </div>
       <div class="tip-box"><span class="tip-ic">◇</span> Your measurements alone provide accurate results. Body type fine-tunes further.</div>`;
-    document.querySelectorAll('.bt-card').forEach(c => c.addEventListener('click', () => {
-      document.querySelectorAll('.bt-card').forEach(x => x.classList.remove('sel'));
+    document.querySelectorAll('.bt-card[data-bt]').forEach(c => c.addEventListener('click', () => {
+      document.querySelectorAll('.bt-card[data-bt]').forEach(x => x.classList.remove('sel'));
       c.classList.add('sel');
       wizData.bodyType = c.dataset.bt;
     }));
@@ -2180,7 +2355,7 @@ document.getElementById('wiz-back').addEventListener('click', () => {
   else { wizStep--; renderWizStep(); }
 });
 document.getElementById('wiz-skip').addEventListener('click', async () => {
-  if (wizStep === 3) {
+  if (wizStep === 4) {
     // Body type is optional — skip it and generate results
     await saveCurrentProfile();
     document.querySelectorAll('.ld-b').forEach(el => el.classList.remove('lit'));
@@ -2204,6 +2379,11 @@ document.getElementById('wiz-next').addEventListener('click', async () => {
   const toKg = v => wizUnit === 'in' ? (parseFloat(v) || 0) * 0.453592 : (parseFloat(v) || 0);
 
   if (wizStep === 1) {
+    if (!wizData.gender) { toast('Please select Women or Men.', 'err'); return; }
+    rebuildBrands();
+    rebuildCats();
+
+  } else if (wizStep === 2) {
     const hv = document.getElementById('nf-height')?.value;
     const wv = document.getElementById('nf-weight')?.value;
     const av = document.getElementById('nf-age')?.value;
@@ -2217,7 +2397,7 @@ document.getElementById('wiz-next').addEventListener('click', async () => {
     wizData.age    = parseInt(av) || 0;
     wizData.unit   = wizUnit;
 
-  } else if (wizStep === 2) {
+  } else if (wizStep === 3) {
     const bv = document.getElementById('nf-bust')?.value;
     const wv = document.getElementById('nf-waist')?.value;
     const hv = document.getElementById('nf-hips')?.value;
@@ -2231,7 +2411,7 @@ document.getElementById('wiz-next').addEventListener('click', async () => {
     wizData.hips  = toCm(hv);
   }
 
-  if (wizStep < 3) { wizStep++; renderWizStep(); return; }
+  if (wizStep < 4) { wizStep++; renderWizStep(); return; }
 
   await saveCurrentProfile();
 
@@ -2274,9 +2454,10 @@ function updateCurrentSizes(cat = activeCat) {
 function renderSizeOverview(cat = activeCat) {
   updateCurrentSizes(cat);
   return Object.entries(currentSizes).map(([brand, size]) => {
-    const rawUrl = BRANDS[brand].cats?.[cat] || BRANDS[brand].url;
+    const data = BRANDS[brand];
+    if (!data.cats || !data.cats[cat]) return '';
     return `
-      <a class="sz-cell" href="${buildSizedUrl(brand, rawUrl, size)}" target="_blank" rel="noopener">
+      <a class="sz-cell" href="${buildSizedUrl(brand, data.cats[cat], size)}" target="_blank" rel="noopener">
         <span class="sz-br">${brand}</span>
         <span class="sz-sz">${size}</span>
       </a>`;
@@ -2302,12 +2483,13 @@ function buildResults() {
     return `<span class="outfit-chip" data-c="${cid}">${c.sym} ${c.label}</span>`;
   }).join('');
 
+  const bustWord = getActiveGender() === 'male' ? 'Chest' : 'Bust';
   scroll.innerHTML = `
     <div class="res-hero">
       <div class="res-ey">Size Profile Ready</div>
       <div class="res-ttl">Your exact<br/><em>sizes, curated.</em></div>
       <div class="meas-strip">
-        <div class="meas-chip">Bust <strong>${fmtLen(d.bust || 0)}</strong></div>
+        <div class="meas-chip">${bustWord} <strong>${fmtLen(d.bust || 0)}</strong></div>
         <div class="meas-chip">Waist <strong>${fmtLen(d.waist || 0)}</strong></div>
         <div class="meas-chip">Hips <strong>${fmtLen(d.hips || 0)}</strong></div>
         <div class="meas-chip">Type <strong>${d.bodyType || '—'}</strong></div>
@@ -2480,12 +2662,17 @@ function renderBrandCards(cat) {
     return af - bf;
   });
 
+  const genderLabel = getActiveGender() === 'male' ? "Men's" : "Women's";
+
   return brands.map(brand => {
     const data = BRANDS[brand];
+    // Skip a brand if it has no URL for this category in the active gender —
+    // we don't want to send a Men user to a Women's homepage as a fallback.
+    if (!data.cats || !data.cats[cat]) return '';
     const baseSize = getSizeForCategory(brand, d.bust || 0, d.waist || 0, d.hips || 0, cat);
     const adj  = applyFeedbackAdjustment(brand, cat, baseSize);
     const size = adj.size;
-    const rawUrl = data.cats?.[cat] || data.url;
+    const rawUrl = data.cats[cat];
     const url   = buildSizedUrl(brand, rawUrl, size);
     const price = data.price?.[cat] || '';
     const fit   = getFitExplanation(brand, d.bust || 0, d.waist || 0, d.hips || 0, cat, size);
@@ -2500,7 +2687,7 @@ function renderBrandCards(cat) {
           <div class="bc-mono">${data.logo}</div>
           <div class="bc-info">
             <div class="bc-name">${brand}${fav ? ' <span class="bc-fit-tag">Favorite</span>' : ''}</div>
-            <div class="bc-sub">Women's ${catLabel} · Official Store</div>
+            <div class="bc-sub">${genderLabel} ${catLabel} · Official Store</div>
             <div class="bc-price">${price}</div>
           </div>
           <div class="bc-badge">

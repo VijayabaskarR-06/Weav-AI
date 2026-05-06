@@ -1,4 +1,3 @@
-// src/screens/ResultsScreen.js
 import React, { useState } from 'react';
 import {
   View, Text, TouchableOpacity, StyleSheet,
@@ -7,11 +6,17 @@ import {
 import { C, radius, shadow } from '../theme';
 import { recommendAPI, feedbackAPI } from '../services/api';
 
-const CATS = [
+const CATS_FEMALE = [
   {id:'tops',label:'Tops',sym:'✦'},
   {id:'bottoms',label:'Bottoms',sym:'◆'},
   {id:'dresses',label:'Dresses',sym:'◇'},
   {id:'sports_bras',label:'Sports Bras',sym:'○'},
+  {id:'hoodies',label:'Hoodies',sym:'▽'},
+];
+const CATS_MALE = [
+  {id:'tops',label:'T-Shirts',sym:'✦'},
+  {id:'shirts',label:'Shirts',sym:'▦'},
+  {id:'bottoms',label:'Jeans & Pants',sym:'◆'},
   {id:'hoodies',label:'Hoodies',sym:'▽'},
 ];
 
@@ -19,10 +24,13 @@ const FIT_OPTIONS = ['perfect','slightly_small','too_small','slightly_large','to
 
 export default function ResultsScreen({ route, navigation }) {
   const { measurements, recommendations: initRecs } = route.params;
+  const gender = measurements?.gender === 'male' ? 'male' : 'female';
+  const CATS = gender === 'male' ? CATS_MALE : CATS_FEMALE;
+  const genderLabel = gender === 'male' ? "Men's" : "Women's";
   const [cat,   setCat]   = useState('tops');
   const [recs,  setRecs]  = useState(initRecs);
   const [catLoading, setCatLoading] = useState(false);
-  const [feedbackModal, setFeedbackModal] = useState(null); // {brand, size}
+  const [feedbackModal, setFeedbackModal] = useState(null);
   const [fit,   setFit]   = useState('');
   const [notes, setNotes] = useState('');
 
@@ -35,7 +43,7 @@ export default function ResultsScreen({ route, navigation }) {
     setCat(newCat); setCatLoading(true);
     try {
       const res = await recommendAPI.get(
-        measurements.bust, measurements.waist, measurements.hips, newCat
+        measurements.bust, measurements.waist, measurements.hips, newCat, gender
       );
       setRecs(res.data.recommendations);
     } catch (_) {
@@ -64,14 +72,14 @@ export default function ResultsScreen({ route, navigation }) {
 
   return (
     <View style={s.screen}>
-      {/* DB saved indicator */}
+      
       <View style={s.dbBar}>
         <View style={s.dbDot}/>
         <Text style={s.dbTxt}>PROFILE SAVED · MYSQL DATABASE</Text>
       </View>
 
       <ScrollView style={s.scroll} showsVerticalScrollIndicator={false}>
-        {/* Top */}
+        
         <View style={s.topBar}>
           <View style={s.logoRow}>
             <View style={s.dot}><Text style={s.dotTxt}>W</Text></View>
@@ -82,7 +90,7 @@ export default function ResultsScreen({ route, navigation }) {
           </TouchableOpacity>
         </View>
 
-        {/* Hero */}
+        
         <View style={s.hero}>
           <View style={s.eyebrowRow}>
             <View style={s.eyebrowLine}/>
@@ -105,7 +113,7 @@ export default function ResultsScreen({ route, navigation }) {
           </View>
         </View>
 
-        {/* Size overview grid */}
+        
         <View style={s.gridWrap}>
           <View style={s.gridHead}>
             <View style={s.gridDot}/>
@@ -121,7 +129,7 @@ export default function ResultsScreen({ route, navigation }) {
           </View>
         </View>
 
-        {/* Category tabs */}
+        
         <View style={s.divRow}><View style={s.divLn}/><Text style={s.divTxt}>Shop by category</Text><View style={s.divLn}/></View>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.catScroll}>
           {CATS.map(c => (
@@ -135,7 +143,7 @@ export default function ResultsScreen({ route, navigation }) {
           ))}
         </ScrollView>
 
-        {/* Brand cards */}
+        
         <View style={s.brandList}>
           {(catLoading ? initRecs : recs).map(r => (
             <View key={r.brand} style={s.brandCard}>
@@ -143,7 +151,7 @@ export default function ResultsScreen({ route, navigation }) {
                 <View style={s.bcMono}><Text style={s.bcMonoTxt}>{r.logo}</Text></View>
                 <View style={s.bcInfo}>
                   <Text style={s.bcName}>{r.brand}</Text>
-                  <Text style={s.bcSub}>Women's {CATS.find(c=>c.id===cat)?.label} · Official Store</Text>
+                  <Text style={s.bcSub}>{genderLabel} {CATS.find(c=>c.id===cat)?.label} · Official Store</Text>
                 </View>
                 <View style={s.bcBadge}>
                   <Text style={s.bcBl}>YOUR SIZE</Text>
@@ -165,7 +173,7 @@ export default function ResultsScreen({ route, navigation }) {
           ))}
         </View>
 
-        {/* Footer */}
+        
         <View style={s.foot}>
           <TouchableOpacity style={s.btnGhost} onPress={() => navigation.navigate('Measure')}>
             <Text style={s.btnGhostTxt}>← REMEASURE</Text>
@@ -176,7 +184,7 @@ export default function ResultsScreen({ route, navigation }) {
         </View>
       </ScrollView>
 
-      {/* Feedback Modal */}
+      
       <Modal visible={!!feedbackModal} transparent animationType="slide">
         <View style={s.modalOverlay}>
           <View style={s.modalCard}>
@@ -295,8 +303,6 @@ const s = StyleSheet.create({
   btnGhostTxt:{ fontSize:11, fontWeight:'700', letterSpacing:1.5, color:C.bark },
   btnDark:  { flex:2, padding:13, backgroundColor:C.espresso, borderRadius:radius.sm, alignItems:'center' },
   btnDarkTxt:{ fontSize:11, fontWeight:'700', letterSpacing:1.5, color:C.cream },
-
-  // Feedback modal
   modalOverlay:{ flex:1, backgroundColor:'rgba(30,18,10,0.5)', justifyContent:'flex-end' },
   modalCard:   { backgroundColor:C.cream, borderTopLeftRadius:24, borderTopRightRadius:24, padding:28, gap:14 },
   modalTitle:  { fontSize:22, fontWeight:'600', color:C.espresso, fontFamily:'serif' },

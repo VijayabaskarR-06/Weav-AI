@@ -1,4 +1,3 @@
-// src/screens/HomeScreen.js
 import React, { useEffect, useState } from 'react';
 import {
   View, Text, TouchableOpacity, StyleSheet,
@@ -33,7 +32,7 @@ export default function HomeScreen({ navigation }) {
   return (
     <ScrollView style={s.screen} contentContainerStyle={s.scroll} showsVerticalScrollIndicator={false}>
 
-      {/* ── Header ── */}
+      
       <View style={s.header}>
         <View style={s.logoRow}>
           <View style={s.dot}><Text style={s.dotTxt}>W</Text></View>
@@ -48,7 +47,7 @@ export default function HomeScreen({ navigation }) {
         </View>
       </View>
 
-      {/* ── Hero ── */}
+      
       <View style={s.hero}>
         <View style={s.eyebrowRow}>
           <View style={s.eyebrowLine}/>
@@ -69,7 +68,7 @@ export default function HomeScreen({ navigation }) {
         )}
       </View>
 
-      {/* ── History ── */}
+      
       {!loading && history.length > 0 && (
         <View style={s.histCard}>
           <View style={s.histHead}>
@@ -93,7 +92,7 @@ export default function HomeScreen({ navigation }) {
       )}
       {loading && <ActivityIndicator color={C.gold} style={{marginTop:20}}/>}
 
-      {/* ── Brand Pills ── */}
+      
       <View style={s.brandsSection}>
         <Text style={s.brandsLbl}>SUPPORTED BRANDS</Text>
         <View style={s.brandPills}>

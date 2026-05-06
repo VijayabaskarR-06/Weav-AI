@@ -1,8 +1,3 @@
-# ════════════════════════════════════════════════════
-#  Weav AI — FastAPI Backend
-#  Run: uvicorn main:app --reload --port 8000
-# ════════════════════════════════════════════════════
-
 from fastapi import FastAPI, Depends, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
@@ -29,7 +24,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# ─── Config ───────────────────────────────────────────
 JWT_SECRET  = os.getenv("JWT_SECRET", "weav-ai-secret-change-in-production")
 JWT_EXPIRY  = int(os.getenv("JWT_EXPIRY_HOURS", 72))
 DB_HOST     = os.getenv("DB_HOST", "localhost")
@@ -37,7 +31,6 @@ DB_USER     = os.getenv("DB_USER", "root")
 DB_PASSWORD = os.getenv("DB_PASSWORD", "")
 DB_NAME     = os.getenv("DB_NAME", "weavai")
 
-# ─── DB Connection ────────────────────────────────────
 def get_db():
     conn = mysql.connector.connect(
         host=DB_HOST, user=DB_USER,
@@ -48,7 +41,7 @@ def get_db():
     finally:
         conn.close()
 
-# ─── JWT Utils ────────────────────────────────────────
+
 security = HTTPBearer()
 
 def create_token(user_id: int, email: str) -> str:
@@ -68,7 +61,7 @@ def verify_token(credentials: HTTPAuthorizationCredentials = Depends(security)):
     except jwt.InvalidTokenError:
         raise HTTPException(status_code=401, detail="Invalid token")
 
-# ─── Pydantic Schemas ─────────────────────────────────
+
 class SignupRequest(BaseModel):
     name: str
     email: EmailStr
@@ -87,6 +80,7 @@ class MeasurementCreate(BaseModel):
     age: Optional[int] = None
     body_type: Optional[str] = None
     unit: str = "cm"
+    gender: str = "female"
 
 class FeedbackCreate(BaseModel):
     brand: str
@@ -100,7 +94,7 @@ class PricePredictRequest(BaseModel):
     sizes: Dict[str, str]
     salt: int = 0
 
-# ─── Price Prediction Config ──────────────────────────
+#pre
 BRAND_TIER = {
     "H&M": 1.00,
     "Puma": 1.30,
@@ -125,22 +119,36 @@ SIZE_PRICE_MULT = {"XS": 1.00, "S": 1.00, "M": 1.00, "L": 1.025, "XL": 1.05, "XX
 SIZE_STOCK_MULT = {"XS": 0.78, "S": 1.00, "M": 1.00, "L": 0.92, "XL": 0.74, "XXL": 0.58}
 PRICE_BUCKET_SECONDS = 6 * 60 * 60
 
-# ─── Size Matching Algorithm ──────────────────────────
-def match_size(bust: float, waist: float, hips: float, charts: list) -> str:
-    """Rule-based size matching. Prioritises waist, then bust, then hips."""
+def match_size(bust: float, waist: float, hips: float, charts: list, gender: str = "female") -> str:
+    """Score-based size matching.
+
+    For each candidate size, compute distance per dimension (0 if the value is
+    inside the band, otherwise distance to the nearest edge) and pick the size
+    with the smallest weighted total. Weights differ by gender — for women,
+    bust and hips drive fit; for men, chest and waist do.
+    """
+    if not charts:
+        return "N/A"
+
+    if gender == "male":
+        wt_bust, wt_waist, wt_hips = 1.2, 1.0, 0.6
+    else:
+        wt_bust, wt_waist, wt_hips = 1.0, 0.9, 1.0
+
+    def dist(value, lo, hi):
+        lo, hi = float(lo), float(hi)
+        if value < lo: return lo - value
+        if value > hi: return value - hi
+        return 0.0
+
+    best, best_score = charts[0]["size_label"], float("inf")
     for row in charts:
-        b_ok = row["bust_min"]  <= bust  <= row["bust_max"]
-        w_ok = row["waist_min"] <= waist <= row["waist_max"]
-        h_ok = row["hips_min"]  <= hips  <= row["hips_max"]
-        if w_ok or b_ok or h_ok:
-            return row["size_label"]
-    # Fallback — closest waist midpoint
-    best, min_diff = charts[0]["size_label"], float("inf")
-    for row in charts:
-        mid  = (row["waist_min"] + row["waist_max"]) / 2
-        diff = abs(waist - mid)
-        if diff < min_diff:
-            min_diff = diff
+        d_b = dist(bust,  row["bust_min"],  row["bust_max"])
+        d_w = dist(waist, row["waist_min"], row["waist_max"])
+        d_h = dist(hips,  row["hips_min"],  row["hips_max"])
+        score = wt_bust * d_b + wt_waist * d_w + wt_hips * d_h
+        if score < best_score:
+            best_score = score
             best = row["size_label"]
     return best
 
@@ -191,9 +199,7 @@ def predict_brand_price(brand: str, category: str, size: str, salt: int = 0) -> 
         "bucket": bucket,
     }
 
-# ════════════════════════════════════════════════════
-#  AUTH ROUTES
-# ════════════════════════════════════════════════════
+
 @app.post("/auth/signup", tags=["Auth"])
 def signup(body: SignupRequest, db=Depends(get_db)):
     cur = db.cursor(dictionary=True)
@@ -230,17 +236,16 @@ def me(payload=Depends(verify_token), db=Depends(get_db)):
         raise HTTPException(status_code=404, detail="User not found")
     return user
 
-# ════════════════════════════════════════════════════
-#  MEASUREMENTS ROUTES
-# ════════════════════════════════════════════════════
+
 @app.post("/measurements", tags=["Measurements"])
 def save_measurement(body: MeasurementCreate, payload=Depends(verify_token), db=Depends(get_db)):
+    gender = body.gender if body.gender in ("male", "female") else "female"
     cur = db.cursor(dictionary=True)
     cur.execute(
         """INSERT INTO measurements
-           (user_id, bust, waist, hips, height, weight, age, body_type, unit)
-           VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s)""",
-        (payload["sub"], body.bust, body.waist, body.hips,
+           (user_id, gender, bust, waist, hips, height, weight, age, body_type, unit)
+           VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)""",
+        (payload["sub"], gender, body.bust, body.waist, body.hips,
          body.height, body.weight, body.age, body.body_type, body.unit)
     )
     db.commit()
@@ -260,16 +265,17 @@ def get_measurements(payload=Depends(verify_token), db=Depends(get_db)):
             if r.get(k): r[k] = float(r[k])
     return rows
 
-# ════════════════════════════════════════════════════
-#  SIZE RECOMMENDATION ROUTE
-# ════════════════════════════════════════════════════
+
 @app.get("/recommend", tags=["Recommendations"])
 def recommend(
     bust: float, waist: float, hips: float,
     category: str = "tops",
+    gender: str = "female",
     payload=Depends(verify_token),
     db=Depends(get_db)
 ):
+    gender = gender if gender in ("male", "female") else "female"
+
     cur = db.cursor(dictionary=True)
     cur.execute("SELECT id, name, logo, site_url FROM brands")
     brands = cur.fetchall()
@@ -281,25 +287,27 @@ def recommend(
     for brand in brands:
         cur.execute(
             """SELECT size_label, bust_min, bust_max, waist_min, waist_max, hips_min, hips_max
-               FROM size_charts WHERE brand_id=%s
+               FROM size_charts WHERE brand_id=%s AND gender=%s
                ORDER BY sort_order ASC, bust_min ASC""",
-            (brand["id"],)
+            (brand["id"], gender)
         )
         charts = cur.fetchall()
-        if charts:
-            size = match_size(bust, waist, hips, charts)
-        else:
-            size = "N/A"
+        size = match_size(bust, waist, hips, charts, gender) if charts else "N/A"
 
-        # Get shop URL for category
         link_row = None
         if category_id:
             cur.execute(
-                "SELECT shop_url FROM brand_category_links WHERE brand_id=%s AND category_id=%s",
-                (brand["id"], category_id)
+                """SELECT shop_url FROM brand_category_links
+                   WHERE brand_id=%s AND category_id=%s AND gender=%s""",
+                (brand["id"], category_id, gender)
             )
             link_row = cur.fetchone()
         shop_url = link_row["shop_url"] if link_row else brand["site_url"]
+
+        # Skip brands that don't have this gender × category combo so we don't
+        # show generic homepage fallbacks that mix men's and women's pages.
+        if not link_row and category_id:
+            continue
 
         results.append({
             "brand":    brand["name"],
@@ -307,22 +315,22 @@ def recommend(
             "size":     size,
             "shop_url": shop_url,
             "category": category,
+            "gender":   gender,
         })
 
-    return {"recommendations": results, "measurements": {"bust":bust,"waist":waist,"hips":hips}}
+    return {
+        "recommendations": results,
+        "measurements": {"bust": bust, "waist": waist, "hips": hips, "gender": gender},
+    }
 
-# ════════════════════════════════════════════════════
-#  BRANDS ROUTE
-# ════════════════════════════════════════════════════
+
 @app.get("/brands", tags=["Brands"])
 def get_brands(db=Depends(get_db)):
     cur = db.cursor(dictionary=True)
     cur.execute("SELECT id, name, logo, site_url FROM brands")
     return cur.fetchall()
 
-# ════════════════════════════════════════════════════
-#  FEEDBACK ROUTE
-# ════════════════════════════════════════════════════
+
 @app.post("/feedback", tags=["Feedback"])
 def submit_feedback(body: FeedbackCreate, payload=Depends(verify_token), db=Depends(get_db)):
     cur = db.cursor(dictionary=True)
@@ -338,10 +346,8 @@ def submit_feedback(body: FeedbackCreate, payload=Depends(verify_token), db=Depe
     )
     db.commit()
     return {"message": "Feedback submitted. Thank you!"}
-
-# ════════════════════════════════════════════════════
 #  PRICE PREDICTION ROUTE
-# ════════════════════════════════════════════════════
+
 @app.post("/price/predict", tags=["Prices"])
 def price_predict(body: PricePredictRequest):
     category = body.category or "tops"
