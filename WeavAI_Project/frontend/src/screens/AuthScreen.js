@@ -7,6 +7,36 @@ import {
 import { C, radius, shadow } from '../theme';
 import { useAuth } from '../context/AuthContext';
 
+const Field = ({
+  label, field, placeholder, secure, keyboardType,
+  value, onChange, error, showPw, onTogglePw, onSubmit,
+}) => (
+  <View style={s.fieldGrp}>
+    <Text style={s.fieldLbl}>{label}</Text>
+    <View style={[s.fieldWrap, error && s.fieldWrapErr]}>
+      <TextInput
+        style={s.fieldInp}
+        placeholder={placeholder}
+        placeholderTextColor={C.nude}
+        value={value}
+        onChangeText={onChange}
+        secureTextEntry={secure && !showPw}
+        keyboardType={keyboardType || 'default'}
+        autoCapitalize={field === 'email' ? 'none' : 'words'}
+        autoCorrect={false}
+        returnKeyType="done"
+        onSubmitEditing={onSubmit}
+      />
+      {secure && (
+        <TouchableOpacity onPress={onTogglePw} style={s.eyeBtn}>
+          <Text style={s.eyeTxt}>{showPw ? '🙈' : '👁'}</Text>
+        </TouchableOpacity>
+      )}
+    </View>
+    {error && <Text style={s.errTxt}>⚠ {error}</Text>}
+  </View>
+);
+
 export default function AuthScreen() {
   const { login, signup } = useAuth();
   const [mode,   setMode]   = useState('login');
@@ -44,32 +74,15 @@ export default function AuthScreen() {
     }
   };
 
-  const Field = ({ label, field, placeholder, secure, keyboardType }) => (
-    <View style={s.fieldGrp}>
-      <Text style={s.fieldLbl}>{label}</Text>
-      <View style={[s.fieldWrap, errs[field] && s.fieldWrapErr]}>
-        <TextInput
-          style={s.fieldInp}
-          placeholder={placeholder}
-          placeholderTextColor={C.nude}
-          value={form[field]}
-          onChangeText={v => set(field, v)}
-          secureTextEntry={secure && !showPw}
-          keyboardType={keyboardType || 'default'}
-          autoCapitalize={field === 'email' ? 'none' : 'words'}
-          autoCorrect={false}
-          returnKeyType="done"
-          onSubmitEditing={submit}
-        />
-        {secure && (
-          <TouchableOpacity onPress={() => setShowPw(p => !p)} style={s.eyeBtn}>
-            <Text style={s.eyeTxt}>{showPw ? '🙈' : '👁'}</Text>
-          </TouchableOpacity>
-        )}
-      </View>
-      {errs[field] && <Text style={s.errTxt}>⚠ {errs[field]}</Text>}
-    </View>
-  );
+  const fieldProps = (field) => ({
+    field,
+    value: form[field],
+    onChange: (v) => set(field, v),
+    error: errs[field],
+    showPw,
+    onTogglePw: () => setShowPw(p => !p),
+    onSubmit: submit,
+  });
 
   return (
     <KeyboardAvoidingView
@@ -101,10 +114,10 @@ export default function AuthScreen() {
 
         {/* ── Form ── */}
         <View style={s.body}>
-          {mode==='signup' && <Field label="FULL NAME"  field="name"     placeholder="e.g. Ananya Kaushal"/>}
-          <Field label="EMAIL ADDRESS" field="email"    placeholder="your@email.com" keyboardType="email-address"/>
-          <Field label="PASSWORD"      field="password" placeholder="Minimum 6 characters" secure/>
-          {mode==='signup' && <Field label="CONFIRM PASSWORD" field="confirm" placeholder="Re-enter password" secure/>}
+          {mode==='signup' && <Field label="FULL NAME"  placeholder="e.g. Ananya Kaushal" {...fieldProps('name')}/>}
+          <Field label="EMAIL ADDRESS" placeholder="your@email.com" keyboardType="email-address" {...fieldProps('email')}/>
+          <Field label="PASSWORD"      placeholder="Minimum 6 characters" secure {...fieldProps('password')}/>
+          {mode==='signup' && <Field label="CONFIRM PASSWORD" placeholder="Re-enter password" secure {...fieldProps('confirm')}/>}
 
           {mode==='login' && (
             <TouchableOpacity style={s.forgotRow}>

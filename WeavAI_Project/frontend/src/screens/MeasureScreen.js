@@ -14,6 +14,33 @@ const BODY_TYPES = [
   {id:'Athletic',icon:'⚡'},  {id:'Curvy',icon:'〜'},
 ];
 
+const FI = ({
+  label, field, ph, hint, keyboardType = 'numeric',
+  value, onChange, error, unit,
+}) => (
+  <View style={s.fieldGrp}>
+    <Text style={s.fieldLbl}>{label}</Text>
+    <View style={[s.fieldWrap, error && s.fieldErr]}>
+      <TextInput
+        style={s.fieldNum}
+        placeholder={ph}
+        placeholderTextColor={C.nude}
+        value={value}
+        onChangeText={onChange}
+        keyboardType={keyboardType}
+        returnKeyType="done"
+      />
+      <View style={s.fieldUnit}>
+        <Text style={s.fieldUnitTxt}>
+          {field === 'weight' ? (unit === 'cm' ? 'kg' : 'lbs') : unit}
+        </Text>
+      </View>
+    </View>
+    {error && <Text style={s.errTxt}>⚠ {error}</Text>}
+    {hint && <Text style={s.hintTxt}>{hint}</Text>}
+  </View>
+);
+
 export default function MeasureScreen({ navigation }) {
   const [step,  setStep]  = useState(1);
   const [unit,  setUnit]  = useState('cm');
@@ -75,29 +102,13 @@ export default function MeasureScreen({ navigation }) {
     }
   };
 
-  const FI = ({ label, field, ph, hint, keyboardType='numeric' }) => (
-    <View style={s.fieldGrp}>
-      <Text style={s.fieldLbl}>{label}</Text>
-      <View style={[s.fieldWrap, errs[field] && s.fieldErr]}>
-        <TextInput
-          style={s.fieldNum}
-          placeholder={ph}
-          placeholderTextColor={C.nude}
-          value={form[field]}
-          onChangeText={v => set(field, v)}
-          keyboardType={keyboardType}
-          returnKeyType="done"
-        />
-        <View style={s.fieldUnit}>
-          <Text style={s.fieldUnitTxt}>
-            {field==='weight' ? (unit==='cm'?'kg':'lbs') : unit}
-          </Text>
-        </View>
-      </View>
-      {errs[field] && <Text style={s.errTxt}>⚠ {errs[field]}</Text>}
-      {hint && <Text style={s.hintTxt}>{hint}</Text>}
-    </View>
-  );
+  const fiProps = (field) => ({
+    field,
+    value: form[field],
+    onChange: (v) => set(field, v),
+    error: errs[field],
+    unit,
+  });
 
   return (
     <KeyboardAvoidingView style={{flex:1}} behavior={Platform.OS==='ios'?'padding':undefined}>
@@ -155,10 +166,10 @@ export default function MeasureScreen({ navigation }) {
                   </TouchableOpacity>
                 </View>
               </View>
-              <FI label="HEIGHT"  field="height" ph={unit==='cm'?'165':'65'}  hint="Standing height without shoes"/>
+              <FI label="HEIGHT"  ph={unit==='cm'?'165':'65'}  hint="Standing height without shoes" {...fiProps('height')}/>
               <View style={s.twoCol}>
-                <View style={{flex:1}}><FI label="WEIGHT" field="weight" ph={unit==='cm'?'60':'132'}/></View>
-                <View style={{flex:1}}><FI label="AGE"    field="age"    ph="26"/></View>
+                <View style={{flex:1}}><FI label="WEIGHT" ph={unit==='cm'?'60':'132'} {...fiProps('weight')}/></View>
+                <View style={{flex:1}}><FI label="AGE"    ph="26" {...fiProps('age')}/></View>
               </View>
               <View style={s.tipBox}>
                 <Text style={s.tipTxt}>✦  Your data is stored securely in our MySQL database and never shared.</Text>
@@ -186,9 +197,9 @@ export default function MeasureScreen({ navigation }) {
                   ))}
                 </View>
               </View>
-              <FI label="BUST / CHEST" field="bust"  ph={unit==='cm'?'88':'34.5'} hint="Keep tape parallel to the ground"/>
-              <FI label="WAIST"        field="waist" ph={unit==='cm'?'70':'27.5'} hint="At the natural waistline"/>
-              <FI label="HIPS"         field="hips"  ph={unit==='cm'?'96':'37.5'} hint="Stand with feet together"/>
+              <FI label="BUST / CHEST" ph={unit==='cm'?'88':'34.5'} hint="Keep tape parallel to the ground" {...fiProps('bust')}/>
+              <FI label="WAIST"        ph={unit==='cm'?'70':'27.5'} hint="At the natural waistline" {...fiProps('waist')}/>
+              <FI label="HIPS"         ph={unit==='cm'?'96':'37.5'} hint="Stand with feet together" {...fiProps('hips')}/>
             </>
           )}
 
