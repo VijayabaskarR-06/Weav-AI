@@ -37,7 +37,7 @@ html,body{height:100%;background:var(--parch);font-family:'Jost',sans-serif;colo
 .bg-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(13,27,42,0.024) 1px,transparent 1px),linear-gradient(90deg,rgba(13,27,42,0.024) 1px,transparent 1px);background-size:56px 56px}
 
 
-.phone{width:390px;height:844px;background:var(--cream);border-radius:52px;border:1.5px solid rgba(13,27,42,0.10);position:relative;overflow:hidden;box-shadow:0 0 0 1.5px rgba(255,255,255,0.65),var(--sh3),0 0 80px rgba(46,107,158,0.07)}
+.phone{width:390px;height:844px;background:var(--cream);border-radius:52px;border:1.5px solid rgba(13,27,42,0.10);position:relative;overflow:hidden;box-shadow:0 0 0 1.5px rgba(255,255,255,0.65),var(--sh3),0 0 80px rgba(46,107,158,0.07);transform:scale(var(--phone-scale,1));transform-origin:center center;will-change:transform}
 .notch{position:absolute;top:0;left:50%;transform:translateX(-50%);width:124px;height:34px;background:var(--navy);z-index:200;border-radius:0 0 22px 22px}
 
 /* ── Real phone breakpoint ─────────────────────────────────────────────────
@@ -47,7 +47,7 @@ html,body{height:100%;background:var(--parch);font-family:'Jost',sans-serif;colo
 @media (max-width: 768px){
   html,body{overflow:auto}
   .app{width:100vw;height:100vh;height:100dvh}
-  .phone{width:100vw;height:100vh;height:100dvh;max-width:none;border-radius:0;border:0;box-shadow:none}
+  .phone{width:100vw;height:100vh;height:100dvh;max-width:none;border-radius:0;border:0;box-shadow:none;transform:none}
   .notch{display:none}
   .wiz-top{padding-top:max(20px,env(safe-area-inset-top))}
   .wiz-foot{padding-bottom:max(20px,env(safe-area-inset-bottom))}
@@ -4055,6 +4055,39 @@ function updateStyleDNASplashSub() {
 
 // On load, hydrate the splash subtitle with any saved Style DNA.
 updateStyleDNASplashSub();
+
+
+// ═══════════════════════════════════════════════════════════════════════════
+// Desktop phone-fit — scale the 390x844 frame to fill the viewport on
+// desktop (>768px wide). Below 768px the existing media query takes over and
+// the phone goes full-bleed, so this no-ops via the !important transform:none.
+// ═══════════════════════════════════════════════════════════════════════════
+function fitPhoneToViewport() {
+  const root = document.documentElement;
+  const w = window.innerWidth;
+  const h = window.innerHeight;
+  // Mobile: keep scale at 1; the @media (max-width: 768px) override handles layout.
+  if (w <= 768) { root.style.setProperty('--phone-scale', '1'); return; }
+
+  // Leave a small breathing margin so the phone shadow/edges don't kiss the edge.
+  const margin = w >= 1280 ? 36 : 24;
+  const sH = (h - margin * 2) / 844;
+  const sW = (w - margin * 2) / 390;
+  // Use the limiting dimension so we never overflow either axis.
+  const scale = Math.min(sH, sW);
+  // Don't let it shrink below 1 on desktop — keeps the original look on small windows.
+  const final = Math.max(1, scale);
+  root.style.setProperty('--phone-scale', final.toFixed(3));
+}
+
+let _fitTimer = null;
+function scheduleFit() {
+  if (_fitTimer) cancelAnimationFrame(_fitTimer);
+  _fitTimer = requestAnimationFrame(fitPhoneToViewport);
+}
+window.addEventListener('resize', scheduleFit);
+window.addEventListener('orientationchange', scheduleFit);
+fitPhoneToViewport();
 </script>
 </body>
 </html>
