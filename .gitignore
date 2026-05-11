@@ -8,7 +8,6 @@ venv/
 env/
 node_modules/
 .expo/
-.claude/
 dist/
 build/
 coverage/

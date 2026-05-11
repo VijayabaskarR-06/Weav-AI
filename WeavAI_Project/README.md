@@ -318,5 +318,10 @@ http://127.0.0.1:8080
 
 ## Project Team
 
-- Vijayabaskar R - Backend, FastAPI, MySQL, JWT auth, recommendation logic
-- Ananya Kaushal - Frontend, React Native, UI design, Expo setup
+- Vijayabaskar R - Full Stack Developer (Backend, Frontend, AI Logic)
+
+## Project Goals
+
+- Provide accurate and personalized clothing size recommendations.
+- Integrate seamless shopping experience across multiple top brands.
+- Leverage AI-driven insights for better fit and style matching.

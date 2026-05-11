@@ -113,7 +113,7 @@ export default function AuthScreen() {
 
         
         <View style={s.body}>
-          {mode==='signup' && <Field label="FULL NAME"  placeholder="e.g. Ananya Kaushal" {...fieldProps('name')}/>}
+          {mode==='signup' && <Field label="FULL NAME"  placeholder="e.g. Vijayabaskar R" {...fieldProps('name')}/>}
           <Field label="EMAIL ADDRESS" placeholder="your@email.com" keyboardType="email-address" {...fieldProps('email')}/>
           <Field label="PASSWORD"      placeholder="Minimum 6 characters" secure {...fieldProps('password')}/>
           {mode==='signup' && <Field label="CONFIRM PASSWORD" placeholder="Re-enter password" secure {...fieldProps('confirm')}/>}
