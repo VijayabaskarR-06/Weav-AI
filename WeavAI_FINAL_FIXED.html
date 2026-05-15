@@ -637,6 +637,8 @@ html,body{height:100%;background:var(--parch);font-family:'Jost',sans-serif;colo
 .pf-gender-toggle{display:grid;grid-template-columns:1fr 1fr;gap:0;border:1.5px solid var(--bd3);border-radius:var(--r);overflow:hidden;margin-bottom:10px}
 .pf-gender-toggle button{padding:11px 8px;font-family:'Jost',sans-serif;font-size:11px;font-weight:700;letter-spacing:.4px;border:0;background:var(--cream);color:var(--muted);cursor:pointer;transition:all .15s}
 .pf-gender-toggle button.on{background:var(--navy);color:var(--cream)}
+.pf-cloth-toggle{grid-template-columns:repeat(3,1fr)}
+.pf-cloth-toggle button{padding:11px 4px;font-size:10px}
 .pf-input-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 @media (max-width:380px){.pf-input-grid{grid-template-columns:1fr}}
 .pf-field{display:flex;flex-direction:column;gap:6px;min-width:0}
@@ -918,6 +920,14 @@ html,body{height:100%;background:var(--parch);font-family:'Jost',sans-serif;colo
         <div class="pf-gender-toggle">
           <button type="button" data-pfg="female" class="on">Female / Hourglass</button>
           <button type="button" data-pfg="male">Male / Athletic</button>
+        </div>
+      </div>
+      <div class="pf-field" id="pf-cloth-row">
+        <label>What you're wearing <span class="pf-req">required</span></label>
+        <div class="pf-gender-toggle pf-cloth-toggle">
+          <button type="button" data-pfc="fitted">Fitted / Tight</button>
+          <button type="button" data-pfc="regular" class="on">Regular</button>
+          <button type="button" data-pfc="loose">Loose / Baggy</button>
         </div>
       </div>
       <div class="pf-input-grid">
@@ -3765,6 +3775,7 @@ const pfState = {
   heightCm: 0,
   weightKg: 0,
   gender: 'female',       // 'female' | 'male' — drives anthropometric multipliers
+  clothing: 'regular',    // 'fitted' | 'regular' | 'loose' — drives clothing-ease subtraction
   phase: 'front',         // 'front' | 'side' | 'done'
   front: null,
   side: null,
@@ -3845,6 +3856,7 @@ function openPhotoFit() {
       pfState.gender = wizData.gender;
     }
     document.querySelectorAll('#pf-overlay [data-pfg]').forEach(b => b.classList.toggle('on', b.dataset.pfg === pfState.gender));
+    document.querySelectorAll('#pf-overlay [data-pfc]').forEach(b => b.classList.toggle('on', b.dataset.pfc === pfState.clothing));
     if (wizData.height) {
       const h = u === 'in' ? +(wizData.height / 2.54).toFixed(1) : Math.round(wizData.height);
       document.getElementById('pf-height').value = h;
@@ -3991,6 +4003,21 @@ document.querySelectorAll('#pf-overlay [data-pfg]').forEach(b => {
       const side = analyzeSideView(sd.lms, sd.wLms, sd.mask, sd.w, sd.h, pfState.heightCm, pfState.front);
       if (!side.error) pfState.side = side;
     }
+    if (pfState.measurements) finalizeMeasurements();
+  });
+});
+
+// Clothing-fit toggle. The silhouette traces the OUTLINE of the clothed
+// body, so loose clothing reads larger than the body itself — and the
+// algorithm cannot tell fabric from flesh. The user knows what they wore,
+// so we ask, and subtract a clothing-ease allowance in finalizeMeasurements.
+// Changing it only re-runs finalize (raw widths/depths are unaffected).
+document.querySelectorAll('#pf-overlay [data-pfc]').forEach(b => {
+  b.addEventListener('click', () => {
+    const c = b.dataset.pfc;
+    if (c === pfState.clothing) return;
+    document.querySelectorAll('#pf-overlay [data-pfc]').forEach(x => x.classList.toggle('on', x === b));
+    pfState.clothing = c;
     if (pfState.measurements) finalizeMeasurements();
   });
 });
@@ -4826,6 +4853,22 @@ function finalizeMeasurements() {
   bust  *= SHAPE.bust;
   waist *= SHAPE.waist;
   hips  *= SHAPE.hips;
+
+  // Clothing-ease compensation. The scan traces the OUTLINE OF THE CLOTHES,
+  // not the body. Even an ordinary t-shirt or polo stands a few cm off the
+  // skin, so the raw circumference reads larger than the true body girth —
+  // which then bumps the recommended garment size one step too high (the
+  // classic "I wear L but it says XL"). Professional photo body-scanners
+  // either demand skin-tight clothing or subtract an ease allowance; we do
+  // the latter. Values are deliberately moderate: a genuinely fitted top
+  // will read a touch low, a loose one still a touch high, but both land
+  // far closer to the body than with no correction at all.
+  const EASE = isMale
+    ? { bust: 4.0, waist: 3.0, hips: 3.0 }
+    : { bust: 3.0, waist: 2.5, hips: 3.0 };
+  bust  = Math.max(0, bust  - EASE.bust);
+  waist = Math.max(0, waist - EASE.waist);
+  hips  = Math.max(0, hips  - EASE.hips);
 
   // Plausibility clamps so a bad detection doesn't produce nonsense.
   bust  = clampMeasurement(bust,  isMale ? 70 : 65,  isMale ? 145 : 140);
