@@ -4493,6 +4493,23 @@ function analyzeFrontView(lms, wLms, mask, w, h, heightCm) {
   //    Always fall back to nose-to-ankle landmark distance × 0.82 proportion.
   let cmPerImgPx, cmPerMaskPx, calibSource;
   const ext = mask ? silhouetteVerticalExtent(mask) : null;
+
+  // Hard requirement — the whole body, crown to soles, must be inside the
+  // frame. Height calibration maps the head-to-toe silhouette span to the
+  // entered height; if the head or feet are clipped, that span is too short,
+  // cm-per-pixel comes out too large, and EVERY width/depth inflates. The
+  // photo doesn't contain the data to recover from, so stop here with a clear
+  // instruction rather than return a confident-looking wrong number.
+  if (ext) {
+    if (ext.top <= 2) {
+      return { error: 'The top of your head is cut off. Step back so your whole body fits with a little space above your head, then re-shoot.' };
+    }
+    const ankleMaskY = toMaskY((lms[27].y + lms[28].y) / 2, mask);
+    if (ext.bot - ankleMaskY < mask.h * 0.015) {
+      return { error: 'Your feet are cut off. Step back so your whole body — head to feet — is in frame with a little space below your feet, then re-shoot.' };
+    }
+  }
+
   if (ext && (ext.bot - ext.top) > 20) {
     // Silhouette span covers hair-to-sole, so it represents height + hair.
     cmPerMaskPx = (heightCm + PF_CROWN_HAIR_CM) / (ext.bot - ext.top);
@@ -4500,6 +4517,11 @@ function analyzeFrontView(lms, wLms, mask, w, h, heightCm) {
     calibSource = 'silhouette';
   } else {
     const nose = lms[0];
+    const lA = lms[27], rA = lms[28];
+    const ankleVis = Math.max((lA && lA.visibility) || 0, (rA && rA.visibility) || 0);
+    if (!lA || !rA || ankleVis < 0.5) {
+      return { error: 'Your feet aren’t in the photo. Step back so your whole body — head to feet — fits in frame, then re-shoot.' };
+    }
     const ankleY = (lms[27].y + lms[28].y) / 2;
     const noseToAnkleImgPx = Math.abs(ankleY - nose.y) * h;
     if (noseToAnkleImgPx < 50) {
@@ -4627,12 +4649,29 @@ function analyzeSideView(lms, wLms, mask, w, h, heightCm, front) {
 
   let cmPerImgPx, cmPerMaskPx;
   const ext = mask ? silhouetteVerticalExtent(mask) : null;
+
+  // Same full-body-in-frame requirement as the front view (see analyzeFrontView).
+  if (ext) {
+    if (ext.top <= 2) {
+      return { error: 'The top of your head is cut off in the side photo. Step back so your whole body fits with space above your head.' };
+    }
+    const ankleMaskY = toMaskY((lms[27].y + lms[28].y) / 2, mask);
+    if (ext.bot - ankleMaskY < mask.h * 0.015) {
+      return { error: 'Your feet are cut off in the side photo. Step back so your whole body — head to feet — is in frame with space below your feet.' };
+    }
+  }
+
   if (ext && (ext.bot - ext.top) > 20) {
     // Silhouette span covers hair-to-sole, so it represents height + hair.
     cmPerMaskPx = (heightCm + PF_CROWN_HAIR_CM) / (ext.bot - ext.top);
     cmPerImgPx  = cmPerMaskPx * (mask.h / h);
   } else {
     const nose = lms[0];
+    const lA = lms[27], rA = lms[28];
+    const ankleVis = Math.max((lA && lA.visibility) || 0, (rA && rA.visibility) || 0);
+    if (!lA || !rA || ankleVis < 0.5) {
+      return { error: 'Your feet aren’t in the side photo. Step back so your whole body — head to feet — fits in frame.' };
+    }
     const ankleY = (lms[27].y + lms[28].y) / 2;
     const noseToAnkleImgPx = Math.abs(ankleY - nose.y) * h;
     if (noseToAnkleImgPx < 50) return { error: 'Could not see your full body in the side photo. Take a full-length shot.' };
