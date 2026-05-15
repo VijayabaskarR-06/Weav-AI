@@ -4878,9 +4878,33 @@ function finalizeMeasurements() {
   hips  = Math.max(0, hips  - EASE.hips);
 
   // Plausibility clamps so a bad detection doesn't produce nonsense.
-  bust  = clampMeasurement(bust,  isMale ? 70 : 65,  isMale ? 145 : 140);
-  waist = clampMeasurement(waist, isMale ? 55 : 50,  isMale ? 135 : 130);
-  hips  = clampMeasurement(hips,  isMale ? 75 : 70,  isMale ? 145 : 150);
+  // Base clamps are generous fixed bounds. When the user supplied BOTH
+  // height and weight we additionally tighten the band to the height/
+  // weight (BMI) expectation — this catches gross over-reads (a scan over
+  // a very baggy hoodie can balloon 15–20 cm, far past what the fixed
+  // clothing-ease step removes). The band is deliberately wide (±22 %):
+  // it only ever clamps a value that is already implausible for the
+  // person's build, so an accurate scan is never altered. No weight entry
+  // → the original fixed clamps apply unchanged.
+  let bLo = isMale ? 70 : 65, bHi = isMale ? 145 : 140;
+  let wLo = isMale ? 55 : 50, wHi = isMale ? 135 : 130;
+  let hLo = isMale ? 75 : 70, hHi = isMale ? 145 : 150;
+  if (pfState.weightKg > 0 && pfState.heightCm > 0) {
+    const hM = pfState.heightCm / 100;
+    const bmi = Math.max(14, Math.min(45, pfState.weightKg / (hM * hM)));
+    // Coarse population-average circumferences for this BMI (cm) — used
+    // only to size a wide plausibility band, never as an exact target.
+    const exp = isMale
+      ? { b: 2.4 * bmi + 44, w: 2.2 * bmi + 35, h: 1.9 * bmi + 50 }
+      : { b: 2.2 * bmi + 42, w: 2.0 * bmi + 32, h: 2.3 * bmi + 47 };
+    const band = (e, lo, hi) => [Math.max(lo, e * 0.78), Math.min(hi, e * 1.22)];
+    [bLo, bHi] = band(exp.b, bLo, bHi);
+    [wLo, wHi] = band(exp.w, wLo, wHi);
+    [hLo, hHi] = band(exp.h, hLo, hHi);
+  }
+  bust  = clampMeasurement(bust,  bLo, bHi);
+  waist = clampMeasurement(waist, wLo, wHi);
+  hips  = clampMeasurement(hips,  hLo, hHi);
 
   pfState.measurements = {
     bust:  Math.round(bust  * 10) / 10,
