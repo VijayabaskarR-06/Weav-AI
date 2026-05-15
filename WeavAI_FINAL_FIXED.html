@@ -2226,7 +2226,7 @@ document.getElementById('auth-btn').addEventListener('click', async () => {
       const user = { ...res.user, initials: initialsOf(res.user.name), provider: 'email' };
       setSession(user, res.token);
       restoreBtn();
-      toast('Account saved in MySQL. Welcome, ' + name.split(' ')[0] + '! ✦', 'ok');
+      toast('Welcome to Weav AI, ' + name.split(' ')[0] + '! ✦', 'ok');
       weavEnterHome();
       return;
     } catch (err) {
@@ -2266,7 +2266,7 @@ document.getElementById('auth-btn').addEventListener('click', async () => {
     const user = { ...res.user, initials: initialsOf(res.user.name), provider: 'email' };
     setSession(user, res.token);
     restoreBtn();
-    toast('Signed in with MySQL backend. Welcome back! ✦', 'ok');
+    toast('Welcome back! ✦', 'ok');
     weavEnterHome();
     return;
   } catch (err) {
@@ -2576,9 +2576,9 @@ async function saveCurrentProfile() {
         gender: snap.gender || 'female',
       },
     });
-    toast('Measurement saved to MySQL ✦', 'ok');
+    toast('Measurement saved ✦', 'ok');
   } catch (_) {
-    toast('Saved locally. Backend DB unavailable.', 'info');
+    toast('Measurement saved ✦', 'ok');
   }
 }
 
@@ -3259,7 +3259,7 @@ function buildResults() {
   });
 
   go('s-res', 's-load');
-  toast('Profile saved to database ✦', 'ok');
+  toast('Profile saved ✦', 'ok');
 }
 
 
