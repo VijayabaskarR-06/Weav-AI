@@ -3799,27 +3799,32 @@ async function loadPoseLandmarker() {
     );
     // Use the FULL model (much better landmark accuracy than the lite model)
     // and request segmentation masks so we can read true silhouette widths.
-    //
-    // delegate: 'CPU' — deliberate. The GPU delegate returns the segmentation
-    // mask as a WebGL texture, which mobile WebViews (Expo / react-native-
-    // webview) cannot reliably read back to a CPU buffer — extractMaskFloat32
-    // then returns null and PhotoFit silently degrades to the much less
-    // accurate landmark-only fallback. The CPU delegate always returns the
-    // mask as a plain Float32Array, so the accurate silhouette path runs on
-    // every device. A single IMAGE-mode detection on CPU is only a few
-    // hundred ms — a non-issue for a one-shot scan.
-    pfLandmarker = await PoseLandmarker.createFromOptions(fileset, {
+    // MPMask.getAsFloat32Array() handles GPU→CPU readback internally, so the
+    // mask is usable regardless of delegate.
+    const makeOptions = (delegate) => ({
       baseOptions: {
         modelAssetPath: 'https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_full/float16/1/pose_landmarker_full.task',
-        delegate: 'CPU'
+        delegate,
       },
       runningMode: 'IMAGE',
       numPoses: 1,
       outputSegmentationMasks: true,
-      minPoseDetectionConfidence: 0.5,
-      minPosePresenceConfidence: 0.5,
-      minTrackingConfidence: 0.5,
+      // Slightly lenient thresholds: a clear full-body photo should never be
+      // rejected over a borderline confidence score.
+      minPoseDetectionConfidence: 0.4,
+      minPosePresenceConfidence: 0.4,
+      minTrackingConfidence: 0.4,
     });
+    // GPU delegate first — fast and the proven detection path. Fall back to
+    // CPU only if GPU init fails (e.g. a WebView without a usable WebGL2
+    // context). CPU-only was tried before and broke detection on some mobile
+    // WebViews, so GPU stays primary.
+    try {
+      pfLandmarker = await PoseLandmarker.createFromOptions(fileset, makeOptions('GPU'));
+    } catch (eGpu) {
+      console.warn('[PhotoFit] GPU delegate init failed, falling back to CPU:', eGpu && eGpu.message);
+      pfLandmarker = await PoseLandmarker.createFromOptions(fileset, makeOptions('CPU'));
+    }
     return pfLandmarker;
   })();
   try { return await pfLandmarkerLoading; }
@@ -4095,8 +4100,15 @@ document.getElementById('pf-input').addEventListener('change', async (e) => {
     const lm = await loadPoseLandmarker();
     status.textContent = 'Analyzing pose…';
     await new Promise(r => setTimeout(r, 16));
-    const result = lm.detect(norm);
-    const lms = result && result.landmarks && result.landmarks[0];
+    let result = lm.detect(norm);
+    let lms = result && result.landmarks && result.landmarks[0];
+    // The first detection right after model init can occasionally return
+    // empty while the inference graph warms up — retry once before failing.
+    if (!lms || !lms.length) {
+      await new Promise(r => setTimeout(r, 80));
+      result = lm.detect(norm);
+      lms = result && result.landmarks && result.landmarks[0];
+    }
     const wLms = result && result.worldLandmarks && result.worldLandmarks[0];
     const segMask = result && result.segmentationMasks && result.segmentationMasks[0];
     console.log('[PhotoFit] detect result:', {
