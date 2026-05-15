@@ -3799,10 +3799,19 @@ async function loadPoseLandmarker() {
     );
     // Use the FULL model (much better landmark accuracy than the lite model)
     // and request segmentation masks so we can read true silhouette widths.
+    //
+    // delegate: 'CPU' — deliberate. The GPU delegate returns the segmentation
+    // mask as a WebGL texture, which mobile WebViews (Expo / react-native-
+    // webview) cannot reliably read back to a CPU buffer — extractMaskFloat32
+    // then returns null and PhotoFit silently degrades to the much less
+    // accurate landmark-only fallback. The CPU delegate always returns the
+    // mask as a plain Float32Array, so the accurate silhouette path runs on
+    // every device. A single IMAGE-mode detection on CPU is only a few
+    // hundred ms — a non-issue for a one-shot scan.
     pfLandmarker = await PoseLandmarker.createFromOptions(fileset, {
       baseOptions: {
         modelAssetPath: 'https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_full/float16/1/pose_landmarker_full.task',
-        delegate: 'GPU'
+        delegate: 'CPU'
       },
       runningMode: 'IMAGE',
       numPoses: 1,
