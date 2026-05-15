@@ -4457,7 +4457,7 @@ function poseQualityFront(lms, mask, w, h) {
     conf -= 0.05;
   }
   conf = Math.max(0.10, Math.min(1, conf));
-  return { tips, confidence: conf, visibility: minVis };
+  return { tips, confidence: conf, visibility: minVis, armsOut };
 }
 
 function poseQualitySide(lms, mask) {
@@ -4618,9 +4618,16 @@ function analyzeFrontView(lms, wLms, mask, w, h, heightCm) {
     if (maskCm > lmCm * capRatio) return { cm: lmCm, fromMask: false };
     return { cm: maskCm, fromMask: true };
   }
-  const bustR  = resolveWidth(bustWpx_mask,  bustWpx_lm,  1.35);
-  const waistR = resolveWidth(waistWpx_mask, waistWpx_lm, 1.50);
-  const hipsR  = resolveWidth(hipsWpx_mask,  hipsWpx_lm,  1.32);
+  // When the pose check says the arms are NOT held clear of the torso, the
+  // silhouette runs at the bust/waist/hip rows are merged with the arms and
+  // read too wide. We can't un-merge them, but we know the silhouette is
+  // unreliable — so the contamination guard's cap tightens sharply and the
+  // arm-immune landmark width wins unless the silhouette is nearly identical
+  // to it. With arms properly out, the original (looser) caps apply unchanged.
+  const armsClear = q.armsOut !== false;
+  const bustR  = resolveWidth(bustWpx_mask,  bustWpx_lm,  armsClear ? 1.35 : 1.12);
+  const waistR = resolveWidth(waistWpx_mask, waistWpx_lm, armsClear ? 1.50 : 1.25);
+  const hipsR  = resolveWidth(hipsWpx_mask,  hipsWpx_lm,  armsClear ? 1.32 : 1.18);
   const bustWcm = bustR.cm, waistWcm = waistR.cm, hipsWcm = hipsR.cm;
 
   // Confidence: mask-based widths score higher than landmark-fallback widths.
