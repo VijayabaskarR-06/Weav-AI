@@ -3990,6 +3990,51 @@ document.querySelectorAll('#pf-overlay [data-pfg]').forEach(b => {
   });
 });
 
+// Decode a picked image File into an upright, WebView-sized canvas.
+//
+// Phone cameras almost always store a photo with an EXIF orientation flag
+// instead of rotating the pixel buffer. The <img> preview is auto-rotated for
+// display (CSS image-orientation), but MediaPipe reads the *raw* buffer — so a
+// portrait photo arrives rotated 90°, the pose model sees a sideways body and
+// returns zero landmarks ("no body detected") on a perfectly framed shot.
+//
+// This bakes the orientation into the pixels (createImageBitmap with
+// imageOrientation:'from-image') and downscales multi-megapixel camera files —
+// extra resolution does not help pose detection and can exhaust WebView memory.
+async function pfPrepareImage(file) {
+  const MAX_DIM = 1920;
+  let src, sw, sh, bmp = null, objUrl = null;
+  try {
+    bmp = await createImageBitmap(file, { imageOrientation: 'from-image' });
+    src = bmp; sw = bmp.width; sh = bmp.height;
+  } catch (_) {
+    // Fallback for engines without the imageOrientation option: a plain <img>
+    // is EXIF-corrected by the browser, and modern canvas drawImage honours it.
+    const im = new Image();
+    objUrl = URL.createObjectURL(file);
+    im.src = objUrl;
+    try { await im.decode(); }
+    catch (_) { await new Promise((res, rej) => { im.onload = res; im.onerror = rej; }); }
+    src = im; sw = im.naturalWidth; sh = im.naturalHeight;
+  }
+  if (!sw || !sh) {
+    if (objUrl) URL.revokeObjectURL(objUrl);
+    throw new Error('Could not read that photo. Please try another image.');
+  }
+  const scale = Math.min(1, MAX_DIM / Math.max(sw, sh));
+  const cw = Math.max(1, Math.round(sw * scale));
+  const ch = Math.max(1, Math.round(sh * scale));
+  const cnv = document.createElement('canvas');
+  cnv.width = cw; cnv.height = ch;
+  const cx = cnv.getContext('2d');
+  cx.imageSmoothingEnabled = true;
+  cx.imageSmoothingQuality = 'high';
+  cx.drawImage(src, 0, 0, cw, ch);
+  if (bmp && bmp.close) bmp.close();
+  if (objUrl) URL.revokeObjectURL(objUrl);
+  return cnv;
+}
+
 document.getElementById('pf-input').addEventListener('change', async (e) => {
   const f = e.target.files && e.target.files[0];
   if (!f) return;
@@ -4026,26 +4071,31 @@ document.getElementById('pf-input').addEventListener('change', async (e) => {
     pfState.weightKg = 0;
   }
 
-  const url = URL.createObjectURL(f);
   const img = document.getElementById('pf-img');
-  img.src = url;
   document.getElementById('pf-preview').style.display = 'flex';
   document.getElementById('pf-drop').style.display = 'none';
   document.getElementById('pf-pose-tips').style.display = 'none';
-
-  await new Promise(r => img.complete ? r() : img.addEventListener('load', r, { once: true }));
 
   const status = document.getElementById('pf-status');
   status.style.display = 'flex';
   status.className = 'pf-status busy';
   status.style.color = '';
-  status.textContent = 'Loading AI model…';
+  status.textContent = 'Preparing photo…';
 
   try {
+    // Normalize orientation + size BEFORE detection (see pfPrepareImage).
+    // `norm` is an upright canvas; detection, the mask and the overlay all
+    // work from it, so MediaPipe never sees a sideways body. The preview
+    // <img> is set to the same normalized pixels, so the overlay aligns.
+    const norm = await pfPrepareImage(f);
+    img.src = norm.toDataURL('image/jpeg', 0.92);
+    await new Promise(r => img.complete ? r() : img.addEventListener('load', r, { once: true }));
+
+    status.textContent = 'Loading AI model…';
     const lm = await loadPoseLandmarker();
     status.textContent = 'Analyzing pose…';
     await new Promise(r => setTimeout(r, 16));
-    const result = lm.detect(img);
+    const result = lm.detect(norm);
     const lms = result && result.landmarks && result.landmarks[0];
     const wLms = result && result.worldLandmarks && result.worldLandmarks[0];
     const segMask = result && result.segmentationMasks && result.segmentationMasks[0];
@@ -4061,12 +4111,12 @@ document.getElementById('pf-input').addEventListener('change', async (e) => {
 
     // Snapshot the mask immediately (the wasm-backed buffer is freed soon
     // after detect returns).
-    const mask = extractMaskFloat32(segMask, img.naturalWidth, img.naturalHeight);
+    const mask = extractMaskFloat32(segMask, norm.width, norm.height);
     console.log('[PhotoFit] mask extracted:', mask ? { w: mask.w, h: mask.h, len: mask.data.length } : 'null');
 
     if (pfState.phase === 'front') {
-      pfState.frontRaw = { lms, wLms, mask, w: img.naturalWidth, h: img.naturalHeight };
-      const front = analyzeFrontView(lms, wLms, mask, img.naturalWidth, img.naturalHeight, pfState.heightCm);
+      pfState.frontRaw = { lms, wLms, mask, w: norm.width, h: norm.height };
+      const front = analyzeFrontView(lms, wLms, mask, norm.width, norm.height, pfState.heightCm);
       if (front.error) throw new Error(front.error);
       pfState.front = front;
       drawMeasureOverlay(img, lms, mask, front, 'front');
@@ -4076,8 +4126,8 @@ document.getElementById('pf-input').addEventListener('change', async (e) => {
       document.getElementById('pf-mid-actions').style.display = 'flex';
       document.getElementById('pf-skip-side').style.display = 'flex';
     } else {
-      pfState.sideRaw = { lms, wLms, mask, w: img.naturalWidth, h: img.naturalHeight };
-      const side = analyzeSideView(lms, wLms, mask, img.naturalWidth, img.naturalHeight, pfState.heightCm, pfState.front);
+      pfState.sideRaw = { lms, wLms, mask, w: norm.width, h: norm.height };
+      const side = analyzeSideView(lms, wLms, mask, norm.width, norm.height, pfState.heightCm, pfState.front);
       if (side.error) throw new Error(side.error);
       pfState.side = side;
       drawMeasureOverlay(img, lms, mask, side, 'side');
