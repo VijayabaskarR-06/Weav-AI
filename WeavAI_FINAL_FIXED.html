@@ -2576,9 +2576,8 @@ async function saveCurrentProfile() {
         gender: snap.gender || 'female',
       },
     });
-    toast('Measurement saved ✦', 'ok');
   } catch (_) {
-    toast('Measurement saved ✦', 'ok');
+    // Measurement is already persisted locally; backend sync is best-effort.
   }
 }
 
