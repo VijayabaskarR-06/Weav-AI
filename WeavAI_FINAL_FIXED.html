@@ -910,7 +910,7 @@ html,body{height:100%;background:var(--parch);font-family:'Jost',sans-serif;colo
     <button class="wai-x" type="button" aria-label="Close" onclick="closePhotoFit()">×</button>
     <div class="wai-ey">PhotoFit · AI-Powered</div>
     <div class="wai-ttl" id="pf-title">Snap two photos, get accurate <em>measurements</em>.</div>
-    <div class="wai-sub" id="pf-sub">A precise body scan using AI silhouette analysis. We need a <strong>front view</strong> and a <strong>side view</strong> to compute real circumferences. For the most accurate result: stand <strong>barefoot</strong> against a plain wall in tight or fitted clothing, arms slightly out from your body, and have the camera held at <strong>waist height about 2.5&nbsp;m away</strong> so your whole body fits the frame with no zoom. Your photos never leave this device.</div>
+    <div class="wai-sub" id="pf-sub">A precise body scan using AI silhouette analysis. We need a <strong>front view</strong> and a <strong>side view</strong> to compute real circumferences. For the most accurate result: stand <strong>barefoot</strong> against a plain wall in tight or fitted clothing, arms held well away from your sides (about 30° — leave a clear gap at your waist and hips), and have the camera held at <strong>waist height about 2.5&nbsp;m away</strong> so your whole body fits the frame with no zoom. Your photos never leave this device.</div>
 
     <div class="pf-stage" id="pf-stage">
       <div class="pf-field" id="pf-gender-row">
@@ -948,7 +948,7 @@ html,body{height:100%;background:var(--parch);font-family:'Jost',sans-serif;colo
           <div class="pf-step-num">1</div>
           <div class="pf-step-info">
             <div class="pf-step-ttl">Front view</div>
-            <div class="pf-step-sub" id="pf-front-sub">Face the camera, feet shoulder-width apart, arms slightly out</div>
+            <div class="pf-step-sub" id="pf-front-sub">Face the camera, feet shoulder-width apart, fitted clothing, arms well out (clear gap at waist &amp; hips)</div>
           </div>
           <div class="pf-step-status" id="pf-front-status">pending</div>
         </div>
@@ -965,7 +965,7 @@ html,body{height:100%;background:var(--parch);font-family:'Jost',sans-serif;colo
       <div class="pf-drop" id="pf-drop" tabindex="0">
         <div class="pf-drop-ic">📸</div>
         <div class="pf-drop-lbl" id="pf-drop-lbl">Tap to take front photo</div>
-        <div class="pf-drop-sub" id="pf-drop-sub">Barefoot · full body in frame · camera at waist height ~2.5m back · no zoom</div>
+        <div class="pf-drop-sub" id="pf-drop-sub">Barefoot · fitted clothing · arms well out · full body in frame · camera at waist height ~2.5m back</div>
         <input type="file" accept="image/*" capture="environment" id="pf-input" class="pf-input" />
       </div>
 
@@ -3891,7 +3891,7 @@ function pfUpdateStepUI() {
   const dropSub = document.getElementById('pf-drop-sub');
   if (pfState.phase === 'front') {
     dropLbl.textContent = 'Tap to take front photo';
-    dropSub.textContent = 'Barefoot · face the camera · arms slightly out · camera at waist height ~2.5m back · no zoom';
+    dropSub.textContent = 'Barefoot · fitted clothing · arms well out (clear gap at waist) · camera at waist height ~2.5m back · no zoom';
   } else if (pfState.phase === 'side') {
     dropLbl.textContent = 'Tap to take side photo';
     dropSub.textContent = 'Barefoot · turn 90° · hands flat against your thighs · camera at waist height ~2.5m back · no zoom';
@@ -4370,7 +4370,7 @@ function poseQualityFront(lms, mask, w, h) {
     ? ((lW.x > lms[11].x + 0.015 || lE.x > lms[11].x + 0.015) &&
        (rW.x < lms[12].x - 0.015 || rE.x < lms[12].x - 0.015))
     : false;
-  if (!armsOut) { tips.push('Hold your arms slightly out from your body so the waist silhouette is visible.'); conf -= 0.08; }
+  if (!armsOut) { tips.push('Hold your arms well away from your sides (≈30°) so the bust, waist and hip silhouette aren’t merged with your arms.'); conf -= 0.08; }
 
   if (mask) {
     const ext = silhouetteVerticalExtent(mask);
@@ -4503,12 +4503,30 @@ function analyzeFrontView(lms, wLms, mask, w, h, heightCm) {
 
   // Pick mask widths if available, otherwise landmark widths. Convert each
   // measurement separately so a partial mask still helps.
-  const bustWcm  = (bustWpx_mask  != null) ? bustWpx_mask  * cmPerMaskPx : bustWpx_lm  * cmPerImgPx;
-  const waistWcm = (waistWpx_mask != null) ? waistWpx_mask * cmPerMaskPx : waistWpx_lm * cmPerImgPx;
-  const hipsWcm  = (hipsWpx_mask  != null) ? hipsWpx_mask  * cmPerMaskPx : hipsWpx_lm  * cmPerImgPx;
+  //
+  // Arm-contamination guard: when the arms aren't held clear of the torso the
+  // silhouette run at the bust/hip row merges with the arm, so the measured
+  // width balloons — and findWidest() actively locks onto exactly those
+  // inflated rows. The landmark width (shoulder/hip joint span × tissue
+  // factor) is immune to arm overlap. When a mask width is implausibly larger
+  // than its landmark estimate, treat that row as arm-contaminated and fall
+  // back to the landmark width — this removes the systematic "reads too big"
+  // bias without hurting clean photos (the guard simply never fires then).
+  function resolveWidth(maskPx, lmPx, capRatio) {
+    const lmCm = lmPx * cmPerImgPx;
+    if (maskPx == null) return { cm: lmCm, fromMask: false };
+    const maskCm = maskPx * cmPerMaskPx;
+    if (maskCm > lmCm * capRatio) return { cm: lmCm, fromMask: false };
+    return { cm: maskCm, fromMask: true };
+  }
+  const bustR  = resolveWidth(bustWpx_mask,  bustWpx_lm,  1.35);
+  const waistR = resolveWidth(waistWpx_mask, waistWpx_lm, 1.50);
+  const hipsR  = resolveWidth(hipsWpx_mask,  hipsWpx_lm,  1.32);
+  const bustWcm = bustR.cm, waistWcm = waistR.cm, hipsWcm = hipsR.cm;
 
   // Confidence: mask-based widths score higher than landmark-fallback widths.
-  const maskHits = (bustWpx_mask != null ? 1 : 0) + (waistWpx_mask != null ? 1 : 0) + (hipsWpx_mask != null ? 1 : 0);
+  // A row that failed the contamination guard counts as a landmark fallback.
+  const maskHits = (bustR.fromMask ? 1 : 0) + (waistR.fromMask ? 1 : 0) + (hipsR.fromMask ? 1 : 0);
   let widthConf = 0.55 + 0.15 * maskHits;  // 0.55 (none) → 1.00 (all three)
   const overallConf = Math.max(0.10, Math.min(1, q.confidence * widthConf));
 
