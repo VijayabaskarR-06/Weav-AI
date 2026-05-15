@@ -6,18 +6,29 @@
     "orientation": "portrait",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
+    "backgroundColor": "#FAF6EE",
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.weavai.app"
+      "bundleIdentifier": "com.weavai.app",
+      "infoPlist": {
+        "NSCameraUsageDescription": "Weav AI uses your camera for PhotoFit — an AI body scan that estimates your bust, waist, and hip measurements from a single full-body photo.",
+        "NSPhotoLibraryUsageDescription": "Weav AI lets you import an existing full-body photo for the PhotoFit body scanner instead of using the live camera.",
+        "NSMicrophoneUsageDescription": "Optional — not required by Weav AI. Listed because some WebView implementations request it alongside camera."
+      }
     },
     "android": {
-      "package": "com.weavai.app"
+      "package": "com.weavai.app",
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.INTERNET",
+        "android.permission.ACCESS_NETWORK_STATE"
+      ]
     },
     "web": {
       "bundler": "metro"
     },
     "extra": {
-      "apiBaseUrl": "http://10.20.17.10:8000"
+      "apiBaseUrl": "https://backend-api-production-243d.up.railway.app"
     }
   }
 }

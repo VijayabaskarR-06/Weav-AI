@@ -49,15 +49,8 @@ html,body{height:100%;background:var(--parch);font-family:'Jost',sans-serif;colo
   .app{width:100vw;height:100vh;height:100dvh}
   .phone{width:100vw;height:100vh;height:100dvh;max-width:none;border-radius:0;border:0;box-shadow:none;transform:none}
   .notch{display:none}
-  .wiz-top{padding-top:max(14px,env(safe-area-inset-top))}
+  .wiz-top{padding-top:max(20px,env(safe-area-inset-top))}
   .wiz-foot{padding-bottom:max(20px,env(safe-area-inset-bottom))}
-  /* Mobile / native WebView: sit the top header just under the status bar /
-     notch instead of 46–50 px down. Matches the spacing of professional
-     iOS apps (Settings, Mail, App Store) where the title bar starts ~8 px
-     below the status bar. */
-  .sp-header{padding-top:max(8px,env(safe-area-inset-top))}
-  .res-top{padding-top:max(6px,env(safe-area-inset-top));padding-bottom:10px}
-  .ld-logo-wrap{margin-top:env(safe-area-inset-top)}
   .auth-hero{padding:32px 22px 24px}
   .auth-wordmark{font-size:34px;letter-spacing:3px}
   .auth-spin-ring{width:72px;height:72px}
@@ -600,10 +593,7 @@ html,body{height:100%;background:var(--parch);font-family:'Jost',sans-serif;colo
 @keyframes toastPop{from{opacity:0;transform:scale(.9) translateY(-8px)}to{opacity:1;transform:scale(1) translateY(0)}}
 
 /* ── PhotoFit, Fit Heat Map, Style DNA ─────────────────────────────────── */
-/* position:absolute (not fixed) + JS reparenting into `.phone` keep these
-   modals inside the 390px device frame on desktop, instead of spilling
-   across the whole browser window. */
-.wai-overlay{position:absolute;inset:0;background:rgba(13,27,42,0.55);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);z-index:1000;display:none;align-items:flex-start;justify-content:center;padding:24px 16px;overflow-y:auto}
+.wai-overlay{position:fixed;inset:0;background:rgba(13,27,42,0.55);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);z-index:1000;display:none;align-items:flex-start;justify-content:center;padding:24px 16px;overflow-y:auto}
 .wai-overlay.on{display:flex;animation:waiFade .22s ease}
 @keyframes waiFade{from{opacity:0}to{opacity:1}}
 .wai-modal{width:100%;max-width:420px;background:var(--cream);border-radius:24px;border:1px solid var(--bd2);box-shadow:var(--sh3);padding:24px 22px;position:relative;animation:waiPop .28s cubic-bezier(.34,1.56,.64,1)}
@@ -639,14 +629,14 @@ html,body{height:100%;background:var(--parch);font-family:'Jost',sans-serif;colo
 .pf-gender-toggle button.on{background:var(--navy);color:var(--cream)}
 .pf-input-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 @media (max-width:380px){.pf-input-grid{grid-template-columns:1fr}}
-.pf-field{display:flex;flex-direction:column;gap:6px;min-width:0}
+.pf-field{display:flex;flex-direction:column;gap:6px}
 .pf-field label{font-size:10px;letter-spacing:1.4px;text-transform:uppercase;color:var(--muted);font-weight:700;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
 .pf-req{font-size:8px;background:var(--gold3);color:var(--cream);padding:1px 6px;border-radius:6px;letter-spacing:.6px}
 .pf-opt{font-size:8px;background:var(--bd2);color:var(--navy3);padding:1px 6px;border-radius:6px;letter-spacing:.5px;text-transform:none;font-weight:600;font-style:italic}
 .pf-height-input{display:flex;gap:8px;align-items:stretch}
-.pf-height-input input{flex:1;min-width:0;width:0;padding:12px 14px;border-radius:var(--r);border:1.5px solid var(--bd3);background:var(--cream);font-family:'Jost',sans-serif;font-size:15px;color:var(--navy);font-weight:600;outline:none;transition:border-color .2s}
+.pf-height-input input{flex:1;padding:12px 14px;border-radius:var(--r);border:1.5px solid var(--bd3);background:var(--cream);font-family:'Jost',sans-serif;font-size:15px;color:var(--navy);font-weight:600;outline:none;transition:border-color .2s}
 .pf-height-input input:focus{border-color:var(--gold)}
-.pf-unit-toggle{display:flex;gap:0;border:1.5px solid var(--bd3);border-radius:var(--r);overflow:hidden;flex-shrink:0}
+.pf-unit-toggle{display:flex;gap:0;border:1.5px solid var(--bd3);border-radius:var(--r);overflow:hidden}
 .pf-unit-toggle button{padding:0 12px;font-size:11px;font-family:'Jost',sans-serif;font-weight:700;border:0;background:var(--cream);color:var(--muted);cursor:pointer;transition:all .15s}
 .pf-unit-toggle button.on{background:var(--navy);color:var(--cream)}
 .pf-results{background:var(--warm);border:1px solid var(--bd2);border-radius:var(--r2);padding:14px;display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
@@ -724,65 +714,23 @@ html,body{height:100%;background:var(--parch);font-family:'Jost',sans-serif;colo
 .sd-actions .sd-next{background:var(--navy);color:var(--cream);border-color:var(--navy)}
 .sd-actions .sd-next:disabled{opacity:.4;cursor:not-allowed}
 
-/* ── Style DNA result — archetype hero ─────────────────────────────────── */
-.sd-result-archetype{background:radial-gradient(140% 100% at 50% 0%,#1A3A5C 0%,#0D1B2A 65%);border-radius:var(--r2);padding:26px 20px 22px;text-align:center;color:var(--cream);margin-bottom:14px;position:relative;overflow:hidden;box-shadow:0 14px 40px rgba(13,27,42,0.18),inset 0 1px 0 rgba(201,168,76,0.18)}
-.sd-result-archetype::before{content:'';position:absolute;top:-40%;right:-20%;width:240px;height:240px;background:radial-gradient(circle,rgba(201,168,76,0.28) 0%,transparent 70%);pointer-events:none}
-/* Subtle constellation: layered radial gradients fake a starfield without
-   needing an image asset. */
-.sd-r-stars{position:absolute;inset:0;pointer-events:none;opacity:.55;
-  background:
-    radial-gradient(1.2px 1.2px at 18% 28%, #fff 99%, transparent 100%),
-    radial-gradient(1px 1px at 32% 14%, #C9A84C 99%, transparent 100%),
-    radial-gradient(1.5px 1.5px at 64% 22%, #fff 99%, transparent 100%),
-    radial-gradient(1px 1px at 82% 36%, #E8C97D 99%, transparent 100%),
-    radial-gradient(1.2px 1.2px at 14% 62%, #fff 99%, transparent 100%),
-    radial-gradient(1px 1px at 50% 78%, #C9A84C 99%, transparent 100%),
-    radial-gradient(1.4px 1.4px at 88% 70%, #fff 99%, transparent 100%);
-  background-repeat:no-repeat}
-.sd-r-ey{font-size:9px;letter-spacing:3px;text-transform:uppercase;color:var(--gold2);font-weight:700;margin-bottom:8px;position:relative}
-.sd-r-name{font-family:'Cormorant Garamond',serif;font-size:34px;font-weight:700;line-height:1.05;margin-bottom:8px;position:relative;letter-spacing:-.5px}
+.sd-result-archetype{background:linear-gradient(135deg,var(--navy) 0%,var(--navy2) 100%);border-radius:var(--r2);padding:22px 18px;text-align:center;color:var(--cream);margin-bottom:14px;position:relative;overflow:hidden}
+.sd-result-archetype::before{content:'';position:absolute;top:-40%;right:-20%;width:200px;height:200px;background:radial-gradient(circle,rgba(201,168,76,0.20) 0%,transparent 70%);pointer-events:none}
+.sd-r-ey{font-size:9px;letter-spacing:2.4px;text-transform:uppercase;color:var(--gold2);font-weight:700;margin-bottom:6px;position:relative}
+.sd-r-name{font-family:'Cormorant Garamond',serif;font-size:30px;font-weight:700;line-height:1.1;margin-bottom:6px;position:relative}
 .sd-r-name em{color:var(--gold2);font-style:italic}
-.sd-r-desc{font-size:12px;color:rgba(250,246,238,0.82);line-height:1.6;position:relative;max-width:300px;margin:0 auto}
-.sd-r-tagline{margin-top:12px;font-family:'Cormorant Garamond',serif;font-style:italic;font-size:15px;color:var(--gold2);position:relative;line-height:1.3}
-.sd-r-strength{margin-top:14px;display:inline-flex;align-items:center;gap:8px;padding:6px 14px;background:rgba(201,168,76,0.12);border:1px solid rgba(201,168,76,0.32);border-radius:100px;position:relative}
-.sd-r-strength-lbl{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--gold2);font-weight:700}
-.sd-r-strength-val{font-family:'Cormorant Garamond',serif;font-size:16px;font-weight:700;color:var(--cream);line-height:1}
-
-/* Generic Style-DNA "card" wrapper — used for the radar, palette and
-   brand-affinity sections. Keeps the result page rhythmic. */
-.sd-card{background:var(--cream);border:1px solid var(--bd2);border-radius:var(--r2);padding:14px 16px 16px;margin-bottom:14px;box-shadow:0 1px 0 rgba(13,27,42,0.02)}
-.sd-card-head{display:flex;align-items:center;gap:8px;font-family:'Cormorant Garamond',serif;font-size:16px;font-weight:700;color:var(--navy);margin-bottom:10px}
-.sd-card-ic{color:var(--gold3);font-size:14px;line-height:1}
-.sd-card-foot{font-size:10px;color:var(--muted);text-align:center;margin-top:8px;letter-spacing:.2px;line-height:1.4}
-
-/* Radar chart container — SVG is responsive (viewBox + width:100%) so it
-   scales nicely between iPhone widths and the 390 px phone frame. */
-.sd-radar-wrap{display:flex;align-items:center;justify-content:center;padding:6px 0 4px;position:relative}
-.sd-radar-svg{display:block;max-width:280px;width:100%}
-.sd-radar-poly{transform-origin:50% 50%;animation:sdRadarPop .9s cubic-bezier(.34,1.56,.64,1) both}
-@keyframes sdRadarPop{
-  from{transform:scale(0.3);opacity:0}
-  to{transform:scale(1);opacity:1}
-}
-
-/* Signature palette — colour swatches with a tactile hover/tap feel. */
-.sd-palette{display:flex;gap:8px;justify-content:space-between;padding:2px 0}
-.sd-swatch{flex:1;aspect-ratio:1/1;border-radius:14px;cursor:pointer;border:2px solid rgba(13,27,42,0.06);box-shadow:0 2px 8px rgba(13,27,42,0.08),inset 0 0 0 1px rgba(255,255,255,0.4);transition:transform .2s cubic-bezier(.34,1.56,.64,1),box-shadow .2s}
-.sd-swatch:hover,.sd-swatch:active{transform:translateY(-2px) scale(1.04);box-shadow:0 6px 16px rgba(13,27,42,0.14),inset 0 0 0 1px rgba(255,255,255,0.5)}
-
-/* Brand affinity — top match gets the gold badge + a richer bar gradient. */
-.sd-brand-matches{margin-top:2px;display:flex;flex-direction:column;gap:8px}
-.sd-bm-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 12px;background:var(--warm);border:1px solid var(--bd);border-radius:var(--r);font-size:12px;transition:all .2s}
-.sd-bm-row.top{background:linear-gradient(135deg,#FFF8E5 0%,#FAEBC8 100%);border-color:var(--gold);box-shadow:0 4px 14px rgba(201,168,76,0.18)}
-.sd-bm-left{display:flex;align-items:center;gap:7px;min-width:0}
-.sd-bm-row strong{color:var(--navy);font-weight:700;font-family:'Jost',sans-serif;font-size:13px}
-.sd-bm-badge{display:inline-flex;align-items:center;gap:3px;padding:2px 7px;background:var(--navy);color:var(--gold2);border-radius:100px;font-size:8.5px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;flex-shrink:0}
-.sd-bm-right{display:flex;align-items:center;gap:8px;flex-shrink:0}
-.sd-bm-track{width:54px;height:5px;background:rgba(13,27,42,0.10);border-radius:100px;overflow:hidden}
-.sd-bm-fill{height:100%;background:linear-gradient(90deg,var(--gold2) 0%,var(--gold3) 100%);border-radius:100px;transition:width 1.1s cubic-bezier(.34,1.56,.64,1)}
-.sd-bm-row.top .sd-bm-track{background:rgba(13,27,42,0.18)}
-.sd-bm-pct{font-family:'Jost',sans-serif;font-size:11px;color:var(--gold3);font-weight:700;min-width:30px;text-align:right}
-.sd-bm-row.top .sd-bm-pct{color:var(--navy)}
+.sd-r-desc{font-size:11px;color:rgba(250,246,238,0.78);line-height:1.55;position:relative}
+.sd-traits{display:flex;flex-direction:column;gap:8px;margin-bottom:14px}
+.sd-trait{display:flex;align-items:center;gap:10px}
+.sd-trait-lbl{font-size:10px;letter-spacing:1.2px;text-transform:uppercase;color:var(--muted);font-weight:700;width:78px;flex-shrink:0}
+.sd-trait-bar{flex:1;height:6px;background:var(--bd);border-radius:3px;overflow:hidden}
+.sd-trait-fill{height:100%;background:linear-gradient(90deg,var(--gold) 0%,var(--gold3) 100%);border-radius:3px;transition:width .9s cubic-bezier(.34,1.56,.64,1)}
+.sd-trait-pct{font-size:11px;color:var(--navy);font-weight:700;width:32px;text-align:right}
+.sd-brand-matches{margin-top:8px}
+.sd-bm-head{font-size:10px;letter-spacing:1.6px;text-transform:uppercase;color:var(--muted);font-weight:700;margin-bottom:6px}
+.sd-bm-row{display:flex;justify-content:space-between;align-items:center;padding:7px 10px;background:var(--warm);border-radius:8px;margin-bottom:4px;font-size:11px}
+.sd-bm-row strong{color:var(--navy);font-weight:700}
+.sd-bm-pct{color:var(--gold3);font-weight:700}
 
 .sd-match-pill{display:inline-flex;align-items:center;gap:4px;padding:3px 8px;background:linear-gradient(135deg,#FFF7E5 0%,#FAEBC8 100%);border:1px solid var(--gold);border-radius:100px;font-size:9px;font-weight:700;color:var(--gold3);letter-spacing:.5px;margin-left:6px}
 .sd-match-pill.high{background:linear-gradient(135deg,#FAEBC8 0%,#E8C97D 100%);color:var(--navy)}
@@ -799,100 +747,6 @@ html,body{height:100%;background:var(--parch);font-family:'Jost',sans-serif;colo
 .sp-feat-tag{font-size:8px;background:var(--gold3);color:var(--cream);padding:1px 6px;border-radius:6px;letter-spacing:.6px}
 .sp-feat-sub{font-size:10px;color:var(--muted);margin-top:2px;line-height:1.3}
 .sp-feat-arr{color:var(--gold3);font-size:14px;flex-shrink:0}
-
-/* ── Weav AI welcome intro — the original brief logo reveal ─────────────
-   Plays after login: a soft gold aura blooms, the diamond logo draws
-   itself in stroke by stroke, "WEAV AI" rises letter by letter, the
-   tagline settles, then it fades into Home. Clean, ~2.7 s. The overlay
-   lives INSIDE `.phone`, positioned absolutely, so on a laptop it stays
-   within the device frame. Scoped under `#weav-intro.on` so it re-triggers
-   cleanly on every login. */
-#weav-intro{position:absolute;inset:0;z-index:99999;display:none;
-  align-items:center;justify-content:center;overflow:hidden;
-  background:radial-gradient(135% 105% at 50% 36%,#1E4163 0%,#0D1B2A 58%,#060D15 100%)}
-#weav-intro.on{display:flex;animation:wiFadeIn .38s ease both}
-#weav-intro.out{animation:wiFadeOut .55s ease both}
-@keyframes wiFadeIn{from{opacity:0}to{opacity:1}}
-@keyframes wiFadeOut{from{opacity:1}to{opacity:0}}
-
-/* Soft gold aura behind the mark. */
-.wi-aura{position:absolute;width:360px;height:360px;border-radius:50%;
-  background:radial-gradient(circle,rgba(201,168,76,0.34) 0%,rgba(201,168,76,0.08) 45%,transparent 70%);
-  filter:blur(6px);opacity:0}
-#weav-intro.on .wi-aura{animation:wiAura 2.6s ease-in-out both}
-@keyframes wiAura{
-  0%{transform:scale(.35);opacity:0}
-  38%{opacity:1}
-  72%{transform:scale(1.06);opacity:.9}
-  100%{transform:scale(1.3);opacity:.45}
-}
-
-/* Two faint expanding rings — a soft "signal" pulse behind the mark. */
-.wi-rings span{position:absolute;top:50%;left:50%;width:140px;height:140px;
-  margin:-70px 0 0 -70px;border-radius:50%;border:1px solid rgba(201,168,76,0.42);opacity:0}
-#weav-intro.on .wi-rings span{animation:wiRing 2.4s cubic-bezier(.2,.6,.2,1) both}
-#weav-intro.on .wi-rings span:nth-child(2){animation-delay:.5s}
-@keyframes wiRing{
-  0%{transform:scale(.5);opacity:0}
-  22%{opacity:.7}
-  100%{transform:scale(2.6);opacity:0}
-}
-
-.wi-stage{position:relative;display:flex;flex-direction:column;align-items:center}
-#weav-intro.on .wi-stage{animation:wiStage 2.7s cubic-bezier(.2,.7,.2,1) both}
-@keyframes wiStage{
-  0%{transform:scale(.9)}
-  44%{transform:scale(1)}
-  100%{transform:scale(1.03)}
-}
-
-.wi-logo{filter:drop-shadow(0 8px 26px rgba(201,168,76,0.5))}
-.wi-logo svg{display:block}
-
-/* Diamond + W draw themselves in via stroke-dashoffset. */
-.wi-dia {stroke-dasharray:252;stroke-dashoffset:252}
-.wi-dia2{stroke-dasharray:188;stroke-dashoffset:188;opacity:.3}
-.wi-w   {stroke-dasharray:118;stroke-dashoffset:118}
-.wi-dot {opacity:0}
-#weav-intro.on .wi-dia {animation:wiDraw 1s ease .12s forwards}
-#weav-intro.on .wi-dia2{animation:wiDraw2 1s ease .42s forwards}
-#weav-intro.on .wi-w   {animation:wiDraw3 .85s ease .52s forwards}
-#weav-intro.on .wi-dot {animation:wiDot .5s ease 1.15s forwards}
-@keyframes wiDraw {to{stroke-dashoffset:0}}
-@keyframes wiDraw2{to{stroke-dashoffset:0;opacity:.32}}
-@keyframes wiDraw3{to{stroke-dashoffset:0}}
-@keyframes wiDot  {to{opacity:.85}}
-
-/* WORDMARK — each letter rises and fades up, one by one. */
-.wi-word{margin-top:22px;display:flex;align-items:center;
-  font-family:'Cormorant Garamond',serif;font-weight:700;font-size:44px;
-  letter-spacing:7px;color:#FAF6EE;line-height:1}
-.wi-word span{display:inline-block;opacity:0;transform:translateY(16px)}
-.wi-word .wi-accent{color:#E8C97D;font-style:italic}
-.wi-word .wi-gap{width:13px;opacity:1}
-#weav-intro.on .wi-word span{animation:wiLetter .55s cubic-bezier(.2,.85,.25,1) forwards;
-  animation-delay:calc(1s + var(--i,0) * .085s)}
-@keyframes wiLetter{to{opacity:1;transform:translateY(0)}}
-
-.wi-tag{margin-top:11px;font-family:'Jost',sans-serif;font-size:9px;
-  font-weight:600;letter-spacing:3px;color:rgba(232,201,125,0.78);opacity:0}
-#weav-intro.on .wi-tag{animation:wiTag .8s ease 1.8s forwards}
-@keyframes wiTag{
-  from{opacity:0;letter-spacing:8px}
-  to{opacity:1;letter-spacing:3px}
-}
-
-/* ── Home arrival — a one-time cascade as the intro portal opens ──────── */
-#s-splash.splash-in .sp-header{animation:spArrive .7s cubic-bezier(.2,.8,.2,1) 0s both}
-#s-splash.splash-in .sp-hero > *{animation:spArrive .68s cubic-bezier(.2,.8,.2,1) both}
-#s-splash.splash-in .sp-hero > *:nth-child(1){animation-delay:.12s}
-#s-splash.splash-in .sp-hero > *:nth-child(2){animation-delay:.20s}
-#s-splash.splash-in .sp-hero > *:nth-child(3){animation-delay:.28s}
-#s-splash.splash-in .sp-hero > *:nth-child(4){animation-delay:.36s}
-#s-splash.splash-in .sp-hero > *:nth-child(5){animation-delay:.44s}
-#s-splash.splash-in .sp-hero > *:nth-child(6){animation-delay:.52s}
-#s-splash.splash-in .sp-brands{animation:spArrive .68s cubic-bezier(.2,.8,.2,1) .58s both}
-@keyframes spArrive{from{opacity:0;transform:translateY(34px)}to{opacity:1;transform:none}}
 </style>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
@@ -902,15 +756,13 @@ html,body{height:100%;background:var(--parch);font-family:'Jost',sans-serif;colo
 <div class="toasts" id="toasts"></div>
 
 
-
-
 <!-- ── PhotoFit Modal — AI selfie-based body measurement ─────────────── -->
 <div class="wai-overlay" id="pf-overlay" role="dialog" aria-labelledby="pf-title" aria-modal="true">
   <div class="wai-modal">
     <button class="wai-x" type="button" aria-label="Close" onclick="closePhotoFit()">×</button>
     <div class="wai-ey">PhotoFit · AI-Powered</div>
     <div class="wai-ttl" id="pf-title">Snap two photos, get accurate <em>measurements</em>.</div>
-    <div class="wai-sub" id="pf-sub">A precise body scan using AI silhouette analysis. We need a <strong>front view</strong> and a <strong>side view</strong> to compute real circumferences. For the most accurate result: stand <strong>barefoot</strong> against a plain wall in tight or fitted clothing, arms slightly out from your body, and have the camera held at <strong>waist height about 2.5&nbsp;m away</strong> so your whole body fits the frame with no zoom. Your photos never leave this device.</div>
+    <div class="wai-sub" id="pf-sub">A precise body scan using AI silhouette analysis. We need a <strong>front view</strong> and a <strong>side view</strong> to compute real circumferences. Stand straight, arms slightly out from your body, tight or fitted clothing, plain background. Your photos never leave this device.</div>
 
     <div class="pf-stage" id="pf-stage">
       <div class="pf-field" id="pf-gender-row">
@@ -956,7 +808,7 @@ html,body{height:100%;background:var(--parch);font-family:'Jost',sans-serif;colo
           <div class="pf-step-num">2</div>
           <div class="pf-step-info">
             <div class="pf-step-ttl">Side view <span class="pf-step-tag">recommended</span></div>
-            <div class="pf-step-sub" id="pf-side-sub">Turn 90°, arms straight down with hands flat against your thighs, look ahead</div>
+            <div class="pf-step-sub" id="pf-side-sub">Turn 90°, arms relaxed at your sides, look straight ahead</div>
           </div>
           <div class="pf-step-status" id="pf-side-status">pending</div>
         </div>
@@ -965,7 +817,7 @@ html,body{height:100%;background:var(--parch);font-family:'Jost',sans-serif;colo
       <div class="pf-drop" id="pf-drop" tabindex="0">
         <div class="pf-drop-ic">📸</div>
         <div class="pf-drop-lbl" id="pf-drop-lbl">Tap to take front photo</div>
-        <div class="pf-drop-sub" id="pf-drop-sub">Barefoot · full body in frame · camera at waist height ~2.5m back · no zoom</div>
+        <div class="pf-drop-sub" id="pf-drop-sub">Full body in frame · plain background works best</div>
         <input type="file" accept="image/*" capture="environment" id="pf-input" class="pf-input" />
       </div>
 
@@ -1068,43 +920,7 @@ html,body{height:100%;background:var(--parch);font-family:'Jost',sans-serif;colo
   <div class="phone">
     <div class="notch"></div>
 
-    <!-- ── Weav AI welcome intro — a brief (~2.7 s) logo reveal that plays
-            after a successful login / signup, masking the cross-fade into
-            Home. The diamond logo draws itself in, "WEAV AI" rises, the
-            tagline settles, then it fades to Home. Lives INSIDE .phone
-            (position:absolute) so on a laptop it stays within the device
-            frame. weavEnterHome() drives it. -->
-    <div id="weav-intro" aria-hidden="true">
-      <div class="wi-aura"></div>
-      <div class="wi-rings"><span></span><span></span></div>
-      <div class="wi-stage">
-        <div class="wi-logo">
-          <svg viewBox="0 0 100 100" width="124" height="124" fill="none" aria-hidden="true">
-            <defs>
-              <linearGradient id="wi-grad" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stop-color="#F6E2A6"/>
-                <stop offset="55%" stop-color="#C9A84C"/>
-                <stop offset="100%" stop-color="#A8842A"/>
-              </linearGradient>
-            </defs>
-            <polygon class="wi-dia"  points="50,4 93,50 50,90 7,50"  fill="rgba(201,168,76,0.06)" stroke="url(#wi-grad)" stroke-width="2.6" stroke-linejoin="round"/>
-            <polygon class="wi-dia2" points="50,16 81,50 50,78 19,50" fill="none" stroke="url(#wi-grad)" stroke-width="0.9" stroke-linejoin="round"/>
-            <path    class="wi-w"    d="M29 38 L38 65 L50 40 L62 65 L71 38" stroke="url(#wi-grad)" stroke-width="6.6" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-            <circle class="wi-dot" cx="42" cy="80" r="2.1" fill="url(#wi-grad)"/>
-            <circle class="wi-dot" cx="50" cy="84" r="2.1" fill="url(#wi-grad)"/>
-            <circle class="wi-dot" cx="58" cy="80" r="2.1" fill="url(#wi-grad)"/>
-          </svg>
-        </div>
-        <div class="wi-word">
-          <span style="--i:0">W</span><span style="--i:1">E</span><span style="--i:2">A</span><span style="--i:3">V</span>
-          <span class="wi-gap"></span>
-          <span class="wi-accent" style="--i:4">A</span><span class="wi-accent" style="--i:5">I</span>
-        </div>
-        <div class="wi-tag">AI-POWERED FIT INTELLIGENCE</div>
-      </div>
-    </div>
-
-
+    
     <div class="screen active" id="s-auth">
 
       
@@ -2126,54 +1942,6 @@ function toggleMode() {
 document.getElementById('sw-link').addEventListener('click', toggleMode);
 
 
-/* ── Weav AI welcome intro — sound intentionally disabled ────────────────
-   The login reveal plays silently. This is a no-op kept so the existing
-   call site in weavEnterHome() stays valid; restore audio here if ever
-   wanted again. */
-function playWeavChime() { /* no sound by design */ }
-
-/* Plays the brief (~2.7 s) branded intro overlay, then reveals Home. The
-   overlay masks the underlying s-auth→s-splash cross-fade so there is no
-   flash of either screen. Safe to call from any login / signup path. */
-let _weavIntroBusy = false;
-function weavEnterHome() {
-  const ov = document.getElementById('weav-intro');
-  if (!ov || _weavIntroBusy) { try { go('s-splash', 's-auth'); } catch (e) {} return; }
-  _weavIntroBusy = true;
-  ov.classList.remove('out');
-  ov.classList.add('on');           // display:flex + re-triggers every keyframe
-  void ov.offsetWidth;              // force reflow so a replay restarts cleanly
-  playWeavChime();
-  const splash = document.getElementById('s-splash');
-  // swap the screen underneath while the overlay still fully covers it
-  setTimeout(() => { try { go('s-splash', 's-auth'); } catch (e) {} }, 200);
-  // cascade Home's content in just before the curtain lifts
-  setTimeout(() => { if (splash) splash.classList.add('splash-in'); }, 2000);
-  // fade the overlay away to reveal Home
-  setTimeout(() => { ov.classList.add('out'); }, 2480);
-  setTimeout(() => {
-    ov.classList.remove('on', 'out');
-    if (splash) splash.classList.remove('splash-in');
-    _weavIntroBusy = false;
-  }, 3120);
-}
-
-/* Keep the full-screen modals (PhotoFit, Fit-Heatmap, Style DNA) inside the
-   phone frame. On desktop the app is a 390px mock device; a body-level
-   overlay would spill across the whole window. Reparenting them into
-   `.phone` — paired with `position:absolute` in the CSS — confines them to
-   the device frame, exactly like the welcome intro. */
-(function () {
-  try {
-    const phone = document.querySelector('.phone');
-    if (!phone) return;
-    document.querySelectorAll('.wai-overlay').forEach(m => {
-      if (m.parentElement !== phone) phone.appendChild(m);
-    });
-  } catch (e) { /* non-fatal — modals still work, just full-window on desktop */ }
-})();
-
-
 document.getElementById('pw-eye').addEventListener('click', () => {
   showPw = !showPw;
   document.getElementById('i-pw').type = showPw ? 'text' : 'password';
@@ -2227,7 +1995,7 @@ document.getElementById('auth-btn').addEventListener('click', async () => {
       setSession(user, res.token);
       restoreBtn();
       toast('Account saved in MySQL. Welcome, ' + name.split(' ')[0] + '! ✦', 'ok');
-      weavEnterHome();
+      go('s-splash', 's-auth');
       return;
     } catch (err) {
       if (err.status) {
@@ -2256,7 +2024,7 @@ document.getElementById('auth-btn').addEventListener('click', async () => {
     setSession(user);
     restoreBtn();
     toast('Welcome to Weav AI, ' + name.split(' ')[0] + '! ✦', 'ok');
-    weavEnterHome();
+    go('s-splash', 's-auth');
     return;
   }
 
@@ -2267,7 +2035,7 @@ document.getElementById('auth-btn').addEventListener('click', async () => {
     setSession(user, res.token);
     restoreBtn();
     toast('Signed in with MySQL backend. Welcome back! ✦', 'ok');
-    weavEnterHome();
+    go('s-splash', 's-auth');
     return;
   } catch (err) {
     if (err.status) {
@@ -2296,7 +2064,7 @@ document.getElementById('auth-btn').addEventListener('click', async () => {
   setSession(existing);
   restoreBtn();
   toast('Welcome back, ' + (existing.name || email).split(' ')[0] + '! ✦', 'ok');
-  weavEnterHome();
+  go('s-splash', 's-auth');
 });
 
 
@@ -2417,7 +2185,7 @@ function gpFinishSignIn(name, email) {
   }
   setSession(user);
   toast('Signed in as ' + (name || email) + ' ✦', 'ok');
-  weavEnterHome();
+  go('s-splash', 's-auth');
 }
 
 document.getElementById('gp-modal').addEventListener('click', e => {
@@ -3771,21 +3539,8 @@ const pfState = {
   side: null,
   measurements: null,
   measurementConfidence: 0,
-  frontRaw: null,        // cached raw detection (lms/mask/dims) for re-analysis
-  sideRaw: null,
 };
 function pfIsMale() { return pfState.gender === 'male'; }
-
-// The body silhouette spans from the top of the hair to the soles, but the
-// height the user enters is the standard barefoot crown-to-floor figure,
-// which excludes hair. Mapping the raw silhouette pixel span to exactly
-// `heightCm` therefore makes cm-per-pixel a touch too small, so every width
-// and depth reads systematically low. Adding a small crown allowance maps the
-// span to (height + hair) and removes that bias. 1.5cm is conservative — it
-// fully corrects typical short/medium hair and still under-corrects (rather
-// than over-corrects) for thick hair or shoes, so it never inflates results.
-const PF_CROWN_HAIR_CM = 1.5;
-
 let pfLandmarker = null;
 let pfLandmarkerLoading = null;
 
@@ -3854,8 +3609,6 @@ function resetPhotoFit() {
   pfState.phase = 'front';
   pfState.front = null;
   pfState.side  = null;
-  pfState.frontRaw = null;
-  pfState.sideRaw = null;
   pfState.measurements = null;
   pfState.measurementConfidence = 0;
   document.getElementById('pf-preview').style.display = 'none';
@@ -3883,10 +3636,10 @@ function pfUpdateStepUI() {
   const dropSub = document.getElementById('pf-drop-sub');
   if (pfState.phase === 'front') {
     dropLbl.textContent = 'Tap to take front photo';
-    dropSub.textContent = 'Barefoot · face the camera · arms slightly out · camera at waist height ~2.5m back · no zoom';
+    dropSub.textContent = 'Face the camera · full body in frame · arms slightly out';
   } else if (pfState.phase === 'side') {
     dropLbl.textContent = 'Tap to take side photo';
-    dropSub.textContent = 'Barefoot · turn 90° · hands flat against your thighs · camera at waist height ~2.5m back · no zoom';
+    dropSub.textContent = 'Turn 90° · arms relaxed at sides · look straight ahead';
   }
 }
 
@@ -3894,12 +3647,9 @@ function pfRetake(which) {
   if (which === 'front') {
     pfState.front = null;
     pfState.side  = null;
-    pfState.frontRaw = null;
-    pfState.sideRaw = null;
     pfState.phase = 'front';
   } else {
     pfState.side = null;
-    pfState.sideRaw = null;
     pfState.phase = 'side';
   }
   document.getElementById('pf-preview').style.display = 'none';
@@ -3964,31 +3714,18 @@ document.querySelectorAll('#pf-overlay [data-pfg]').forEach(b => {
     if (g === pfState.gender) return;
     document.querySelectorAll('#pf-overlay [data-pfg]').forEach(x => x.classList.toggle('on', x === b));
     pfState.gender = g;
-    document.getElementById('pf-bust-lbl').textContent = pfIsMale() ? 'Chest' : 'Bust';
-    // Gender drives the landmark-fallback width multipliers and the depth
-    // model. Widths already captured were baked with the previous gender, so
-    // re-derive each view from its cached raw detection before re-finalizing.
-    if (pfState.frontRaw) {
-      const fr = pfState.frontRaw;
-      const front = analyzeFrontView(fr.lms, fr.wLms, fr.mask, fr.w, fr.h, pfState.heightCm);
-      if (!front.error) pfState.front = front;
+    // If a measurement is already shown, re-finalize with the new gender so
+    // the user sees the change live without re-shooting.
+    if (pfState.front) {
+      document.getElementById('pf-bust-lbl').textContent = pfIsMale() ? 'Chest' : 'Bust';
+      if (pfState.measurements) finalizeMeasurements();
     }
-    if (pfState.sideRaw && pfState.front) {
-      const sd = pfState.sideRaw;
-      const side = analyzeSideView(sd.lms, sd.wLms, sd.mask, sd.w, sd.h, pfState.heightCm, pfState.front);
-      if (!side.error) pfState.side = side;
-    }
-    if (pfState.measurements) finalizeMeasurements();
   });
 });
 
 document.getElementById('pf-input').addEventListener('change', async (e) => {
   const f = e.target.files && e.target.files[0];
   if (!f) return;
-  // Clear the input now that the File is captured. Otherwise re-picking the
-  // SAME photo (after a validation error or a failed scan) fires no `change`
-  // event and the scan silently does nothing.
-  e.target.value = '';
 
   const heightVal = parseFloat(document.getElementById('pf-height').value);
   if (!heightVal || heightVal <= 0) {
@@ -4057,7 +3794,6 @@ document.getElementById('pf-input').addEventListener('change', async (e) => {
     console.log('[PhotoFit] mask extracted:', mask ? { w: mask.w, h: mask.h, len: mask.data.length } : 'null');
 
     if (pfState.phase === 'front') {
-      pfState.frontRaw = { lms, wLms, mask, w: img.naturalWidth, h: img.naturalHeight };
       const front = analyzeFrontView(lms, wLms, mask, img.naturalWidth, img.naturalHeight, pfState.heightCm);
       if (front.error) throw new Error(front.error);
       pfState.front = front;
@@ -4068,7 +3804,6 @@ document.getElementById('pf-input').addEventListener('change', async (e) => {
       document.getElementById('pf-mid-actions').style.display = 'flex';
       document.getElementById('pf-skip-side').style.display = 'flex';
     } else {
-      pfState.sideRaw = { lms, wLms, mask, w: img.naturalWidth, h: img.naturalHeight };
       const side = analyzeSideView(lms, wLms, mask, img.naturalWidth, img.naturalHeight, pfState.heightCm, pfState.front);
       if (side.error) throw new Error(side.error);
       pfState.side = side;
@@ -4217,106 +3952,57 @@ function silhouetteRowSpan(mask, yi, thr = 0.5, minRun = 4, centerX = null) {
   return runs.reduce((a, b) => (b[1] - b[0] > a[1] - a[0] ? b : a));
 }
 
-// Sub-pixel silhouette width on a single row. Picks the same run that
-// silhouetteRowSpan would (the torso run containing centerX), then linearly
-// interpolates each edge at the exact thr-crossing instead of snapping to a
-// whole pixel. MediaPipe's segmentation mask is low-resolution (~256 px tall
-// for a full body), so whole-pixel snapping alone costs roughly 0.5–1 cm per
-// edge; interpolation recovers most of that precision.
-function silhouetteRowWidthSub(mask, yi, thr = 0.5, minRun = 4, centerX = null) {
-  const span = silhouetteRowSpan(mask, yi, thr, minRun, centerX);
-  if (!span) return null;
-  const row = yi * mask.w;
-  const L = span[0], R = span[1];
-  // Left edge: interpolate between pixel L-1 (outside) and L (inside).
-  let leftX = L;
-  if (L > 0) {
-    const vOut = mask.data[row + L - 1], vIn = mask.data[row + L];
-    if (vIn > vOut) leftX = (L - 1) + (thr - vOut) / (vIn - vOut);
-  }
-  // Right edge: interpolate between pixel R (inside) and R+1 (outside).
-  let rightX = R;
-  if (R < mask.w - 1) {
-    const vIn = mask.data[row + R], vOut = mask.data[row + R + 1];
-    if (vIn > vOut) rightX = R + (vIn - thr) / (vIn - vOut);
-  }
-  const wdt = rightX - leftX;
-  return wdt > 0 ? wdt : (R - L + 1);
-}
-
-// Width over a vertical band [yi - band, yi + band] (mask pixels), measured
-// with sub-pixel edges. `mode`: 'median' (default), 'min' (narrowest-point
-// measurements — waist), 'max' (widest-point measurements — bust, hips). For
-// min/max we average the 3 most-extreme rows rather than trusting one row, so
-// a single noisy edge pixel cannot skew the result.
+// Average width over a vertical band [yi - band, yi + band] (mask pixels).
+// `mode`: 'median' (default), 'min' (best for narrowest-point measurements),
+// 'max' (best for widest-point measurements).
 function silhouetteWidthBand(mask, yi, bandPx, mode = 'median', centerX = null) {
   if (!mask) return null;
   const widths = [];
   const lo = Math.max(0, yi - bandPx);
   const hi = Math.min(mask.h - 1, yi + bandPx);
   for (let y = lo; y <= hi; y++) {
-    const w = silhouetteRowWidthSub(mask, y, 0.5, 4, centerX);
-    if (w != null) widths.push(w);
+    const span = silhouetteRowSpan(mask, y, 0.5, 4, centerX);
+    if (span) widths.push(span[1] - span[0] + 1);
   }
   if (!widths.length) return null;
+  if (mode === 'min') return Math.min(...widths);
+  if (mode === 'max') return Math.max(...widths);
   widths.sort((a, b) => a - b);
-  const avgOf = arr => arr.reduce((s, v) => s + v, 0) / arr.length;
-  if (mode === 'min') return avgOf(widths.slice(0, Math.min(3, widths.length)));
-  if (mode === 'max') return avgOf(widths.slice(-Math.min(3, widths.length)));
   return widths[Math.floor(widths.length / 2)];
 }
 
-// Sub-pixel width profile over rows [yFromI, yToI], smoothed with a 5-tap
-// moving average. The mask is low-resolution and its edges are noisy, so one
-// row's width can spike or dip by a pixel for no anatomical reason. Smoothing
-// first — and measuring with the same sub-pixel edges the final width uses —
-// means findNarrowest / findWidest lock onto the true anatomical extremum
-// instead of a single-row mask artifact (the old code compared whole-pixel
-// spans, which could shift the chosen row by ~1cm).
-function smoothedWidthProfile(mask, yFromI, yToI, centerX) {
-  const lo = Math.max(0, Math.min(yFromI, yToI));
-  const hi = Math.min(mask.h - 1, Math.max(yFromI, yToI));
-  const raw = [];
-  for (let y = lo; y <= hi; y++) {
-    raw.push(silhouetteRowWidthSub(mask, y, 0.5, 4, centerX));
-  }
-  const smooth = raw.map((_, i) => {
-    let s = 0, n = 0;
-    for (let k = -2; k <= 2; k++) {
-      const v = raw[i + k];
-      if (v != null) { s += v; n++; }
-    }
-    return n ? s / n : null;
-  });
-  return { lo, raw, smooth };
-}
-
-// Scan rows from `yFromI` to `yToI` (mask pixel rows). Returns the row at which
-// the smoothed silhouette width is minimum (the natural narrow point — waist).
+// Scan rows yi from `yFromI` to `yToI` (mask pixel rows). Returns the row
+// at which the silhouette width is minimum (the natural narrow point — waist).
 function findNarrowest(mask, yFromI, yToI, centerX = null) {
   if (!mask) return null;
-  const p = smoothedWidthProfile(mask, yFromI, yToI, centerX);
-  let bestI = -1, bestW = Infinity;
-  for (let i = 0; i < p.smooth.length; i++) {
-    const w = p.smooth[i];
-    if (w != null && w < bestW) { bestW = w; bestI = i; }
+  const lo = Math.max(0, Math.min(yFromI, yToI));
+  const hi = Math.min(mask.h - 1, Math.max(yFromI, yToI));
+  let bestY = -1, bestW = Infinity;
+  for (let y = lo; y <= hi; y++) {
+    const span = silhouetteRowSpan(mask, y, 0.5, 4, centerX);
+    if (!span) continue;
+    const w = span[1] - span[0] + 1;
+    if (w < bestW) { bestW = w; bestY = y; }
   }
-  if (bestI < 0) return null;
-  return { y: p.lo + bestI, width: bestW };
+  if (bestY < 0) return null;
+  return { y: bestY, width: bestW };
 }
 
-// Symmetric of findNarrowest — the row at which the smoothed silhouette width
-// is maximum (hips, bust crest).
+// Symmetric of findNarrowest — the row at which the silhouette width is
+// maximum (hips, bust crest).
 function findWidest(mask, yFromI, yToI, centerX = null) {
   if (!mask) return null;
-  const p = smoothedWidthProfile(mask, yFromI, yToI, centerX);
-  let bestI = -1, bestW = -Infinity;
-  for (let i = 0; i < p.smooth.length; i++) {
-    const w = p.smooth[i];
-    if (w != null && w > bestW) { bestW = w; bestI = i; }
+  const lo = Math.max(0, Math.min(yFromI, yToI));
+  const hi = Math.min(mask.h - 1, Math.max(yFromI, yToI));
+  let bestY = -1, bestW = -Infinity;
+  for (let y = lo; y <= hi; y++) {
+    const span = silhouetteRowSpan(mask, y, 0.5, 4, centerX);
+    if (!span) continue;
+    const w = span[1] - span[0] + 1;
+    if (w > bestW) { bestW = w; bestY = y; }
   }
-  if (bestI < 0) return null;
-  return { y: p.lo + bestI, width: bestW };
+  if (bestY < 0) return null;
+  return { y: bestY, width: bestW };
 }
 
 // Top-most and bottom-most silhouette rows give true head-to-floor extent.
@@ -4424,8 +4110,7 @@ function analyzeFrontView(lms, wLms, mask, w, h, heightCm) {
   let cmPerImgPx, cmPerMaskPx, calibSource;
   const ext = mask ? silhouetteVerticalExtent(mask) : null;
   if (ext && (ext.bot - ext.top) > 20) {
-    // Silhouette span covers hair-to-sole, so it represents height + hair.
-    cmPerMaskPx = (heightCm + PF_CROWN_HAIR_CM) / (ext.bot - ext.top);
+    cmPerMaskPx = heightCm / (ext.bot - ext.top);
     cmPerImgPx  = cmPerMaskPx * (mask.h / h);
     calibSource = 'silhouette';
   } else {
@@ -4504,16 +4189,6 @@ function analyzeFrontView(lms, wLms, mask, w, h, heightCm) {
   let widthConf = 0.55 + 0.15 * maskHits;  // 0.55 (none) → 1.00 (all three)
   const overallConf = Math.max(0.10, Math.min(1, q.confidence * widthConf));
 
-  // Anatomical levels as a fraction of torso length (shoulder→hip). Unlike a
-  // raw normalized image Y, this is invariant to how the photo is framed, so
-  // the side view can re-anchor onto its own torso span and still sample the
-  // exact same body level.
-  const frac = {
-    bust:  Math.max(0.02, Math.min(0.98, (bustYN  - shoulderN) / torsoN)),
-    waist: Math.max(0.02, Math.min(1.00, (waistYN - shoulderN) / torsoN)),
-    hips:  Math.max(0.02, Math.min(1.40, (hipsYN  - shoulderN) / torsoN)),
-  };
-
   return {
     cmPerImgPx,
     cmPerMaskPx,
@@ -4522,7 +4197,6 @@ function analyzeFrontView(lms, wLms, mask, w, h, heightCm) {
     centerXMask,
     widths: { bust: bustWcm, waist: waistWcm, hips: hipsWcm },
     ys:     { bust: bustYN,  waist: waistYN,  hips: hipsYN },  // normalized
-    frac,                                                      // torso fractions
     confidence: overallConf,
     tips: q.tips,
   };
@@ -4540,8 +4214,7 @@ function analyzeSideView(lms, wLms, mask, w, h, heightCm, front) {
   let cmPerImgPx, cmPerMaskPx;
   const ext = mask ? silhouetteVerticalExtent(mask) : null;
   if (ext && (ext.bot - ext.top) > 20) {
-    // Silhouette span covers hair-to-sole, so it represents height + hair.
-    cmPerMaskPx = (heightCm + PF_CROWN_HAIR_CM) / (ext.bot - ext.top);
+    cmPerMaskPx = heightCm / (ext.bot - ext.top);
     cmPerImgPx  = cmPerMaskPx * (mask.h / h);
   } else {
     const nose = lms[0];
@@ -4557,14 +4230,11 @@ function analyzeSideView(lms, wLms, mask, w, h, heightCm, front) {
   const torsoN    = hipN - shoulderN;
   if (torsoN < 0.05) return { error: 'Side pose unclear — your torso looks too short. Re-shoot standing up straight.' };
 
-  // Re-anchor the front view's anatomical levels onto THIS photo's own torso
-  // span. front.frac stores each level as a fraction of torso length, which is
-  // framing-invariant — borrowing front's raw normalized Y here would sample
-  // the wrong row whenever the two photos are cropped or zoomed differently,
-  // pairing a width with a depth from a different body level.
-  const bustYN  = (front && front.frac) ? (shoulderN + torsoN * front.frac.bust)  : (shoulderN + torsoN * 0.22);
-  const waistYN = (front && front.frac) ? (shoulderN + torsoN * front.frac.waist) : (shoulderN + torsoN * 0.65);
-  const hipsYN  = (front && front.frac) ? (shoulderN + torsoN * front.frac.hips)  : (hipN + torsoN * 0.10);
+  // Align side-view Ys with the front-view's normalized Ys so depth pairs
+  // with the matching width. Falls back to nominal proportions if no front.
+  const bustYN  = (front && front.ys) ? front.ys.bust  : (shoulderN + torsoN * 0.22);
+  const waistYN = (front && front.ys) ? front.ys.waist : (shoulderN + torsoN * 0.65);
+  const hipsYN  = (front && front.ys) ? front.ys.hips  : (hipN + torsoN * 0.10);
 
   // ── Path A: read depths from the side silhouette mask ───────────────────
   let bustDpx_mask, waistDpx_mask, hipsDpx_mask;
@@ -4661,18 +4331,6 @@ function finalizeMeasurements() {
   } else {
     return;
   }
-
-  // Shape correction. An ellipse perimeter from silhouette width + depth
-  // slightly under-reads true tape girth: a real torso cross-section is fuller
-  // than a pure ellipse — most of all at the waist, least at the bust/chest.
-  // These factors nudge the geometric estimate toward tape-measure ground
-  // truth (calibrated from 3D body-scan vs. tape validation studies).
-  const SHAPE = isMale
-    ? { bust: 1.02, waist: 1.035, hips: 1.02 }
-    : { bust: 1.03, waist: 1.045, hips: 1.02 };
-  bust  *= SHAPE.bust;
-  waist *= SHAPE.waist;
-  hips  *= SHAPE.hips;
 
   // Plausibility clamps so a bad detection doesn't produce nonsense.
   bust  = clampMeasurement(bust,  isMale ? 70 : 65,  isMale ? 145 : 140);
@@ -4836,9 +4494,6 @@ function acceptPhotoFit() {
   if (typeof wizUnit !== 'undefined') {
     if (pfState.unit !== wizUnit) wizUnit = pfState.unit;
   }
-  // Keep wizData.unit in sync too, so any view that reads it directly
-  // (e.g. the Fit Heat Map) formats these measurements in the right unit.
-  wizData.unit = pfState.unit;
 
   closePhotoFit();
   const pct = Math.round((pfState.measurementConfidence || 0) * 100);
@@ -5006,99 +4661,20 @@ const SD_BRAND_PROFILES = {
 
 const SD_ARCHETYPES = [
   { name: 'Minimalist Polish',  match: v => v.polish > 0.65 && v.bold < 0.55 && v.structure > 0.6,
-    desc: 'Clean lines, calm palettes, structure done right. You read a room before you dress for it.',
-    tagline: 'Quiet luxury, calibrated.',
-    palette: ['#F4EAE0', '#E5D6C2', '#0D1B2A', '#C9A84C', '#8A96A8'] },
+    desc: 'Clean lines, calm palettes, structure done right. You read a room before you dress for it.' },
   { name: 'Bold Statement',     match: v => v.bold > 0.7,
-    desc: 'You wear opinions, not outfits. Color, contrast, and an arrival energy others remember.',
-    tagline: 'Front-row energy, every day.',
-    palette: ['#0D1B2A', '#C9A84C', '#C0392B', '#E8C97D', '#FAF6EE'] },
+    desc: 'You wear opinions, not outfits. Color, contrast, and an arrival energy others remember.' },
   { name: 'Athleisure Edit',    match: v => v.athletic > 0.7 && v.polish < 0.6,
-    desc: 'Performance fabrics, easy silhouettes — but always considered. Comfort with intention.',
-    tagline: 'Built for motion. Cut for now.',
-    palette: ['#1A3A5C', '#FAF6EE', '#2E6B9E', '#A8842A', '#DEC9AE'] },
+    desc: 'Performance fabrics, easy silhouettes — but always considered. Comfort with intention.' },
   { name: 'Sport Luxe',         match: v => v.athletic > 0.6 && v.polish > 0.55,
-    desc: 'Trainers with tailoring. The school where Nike meets a Zara blazer and somehow wins.',
-    tagline: 'Trainers + tailoring. Both. Always.',
-    palette: ['#0D1B2A', '#C9A84C', '#FAF6EE', '#2E6B9E', '#C2A07A'] },
+    desc: 'Trainers with tailoring. The school where Nike meets a Zara blazer and somehow wins.' },
   { name: 'Romantic Flow',      match: v => v.soft > 0.65 && v.structure < 0.5,
-    desc: 'Drape, ease, and movement. You dress like you live — softly, on your own terms.',
-    tagline: 'Soft power, drape forward.',
-    palette: ['#F5EDE0', '#DEC9AE', '#C2A07A', '#E8C97D', '#A8842A'] },
+    desc: 'Drape, ease, and movement. You dress like you live — softly, on your own terms.' },
   { name: 'Tailored Edge',      match: v => v.structure > 0.65 && v.bold > 0.55,
-    desc: 'Sharp shoulders, loud accents. You take a room as a stage and the cut as your script.',
-    tagline: 'Sharp shoulders, sharper opinions.',
-    palette: ['#0D1B2A', '#C0392B', '#C9A84C', '#EDE0CE', '#1A3A5C'] },
+    desc: 'Sharp shoulders, loud accents. You take a room as a stage and the cut as your script.' },
   { name: 'Modern Classic',     match: () => true,
-    desc: 'Quietly confident. You rotate a curated capsule and let the right fit do the talking.',
-    tagline: 'A capsule, perfected.',
-    palette: ['#FAF6EE', '#EDE0CE', '#0D1B2A', '#C9A84C', '#8A96A8'] },
+    desc: 'Quietly confident. You rotate a curated capsule and let the right fit do the talking.' },
 ];
-
-// SVG radar chart for the 5 style dimensions — the visual centrepiece of
-// the Style DNA result. Pentagon grid, gold-filled user polygon, animated
-// stroke-dash on render. Pure SVG, no chart library.
-function styleDNARadarSVG(vec) {
-  const traits = [
-    { k: 'polish',    label: 'Polish' },
-    { k: 'bold',      label: 'Bold' },
-    { k: 'structure', label: 'Structure' },
-    { k: 'athletic',  label: 'Athletic' },
-    { k: 'soft',      label: 'Soft' },
-  ];
-  const size = 260;
-  const cx = size / 2, cy = size / 2 + 6;
-  const rMax = 92;
-  const N = traits.length;
-  const ringPct = [0.25, 0.5, 0.75, 1];
-
-  const pointOn = (i, r) => {
-    const a = -Math.PI / 2 + (i / N) * 2 * Math.PI;
-    return { x: cx + Math.cos(a) * r, y: cy + Math.sin(a) * r, a };
-  };
-  const polyPath = r =>
-    traits.map((_, i) => {
-      const p = pointOn(i, r);
-      return (i === 0 ? 'M' : 'L') + p.x.toFixed(1) + ',' + p.y.toFixed(1);
-    }).join('') + 'Z';
-
-  const userPolygon = traits.map((t, i) => {
-    const v = Math.max(0.06, Math.min(1, vec[t.k] || 0));
-    const p = pointOn(i, rMax * v);
-    return (i === 0 ? 'M' : 'L') + p.x.toFixed(1) + ',' + p.y.toFixed(1);
-  }).join('') + 'Z';
-
-  const gridRings = ringPct.map(p => `<path d="${polyPath(rMax * p)}" fill="none" stroke="rgba(13,27,42,0.10)" stroke-width="1"/>`).join('');
-  const axes = traits.map((_, i) => {
-    const p = pointOn(i, rMax);
-    return `<line x1="${cx}" y1="${cy}" x2="${p.x.toFixed(1)}" y2="${p.y.toFixed(1)}" stroke="rgba(13,27,42,0.08)" stroke-width="1"/>`;
-  }).join('');
-  const labels = traits.map((t, i) => {
-    const p = pointOn(i, rMax + 18);
-    const anchor = Math.abs(Math.cos(p.a)) < 0.2 ? 'middle' : (p.a > -Math.PI/2 && p.a < Math.PI/2 ? 'start' : 'end');
-    return `<text x="${p.x.toFixed(1)}" y="${(p.y + 4).toFixed(1)}" text-anchor="${anchor}" font-family="Jost, sans-serif" font-size="11" font-weight="700" fill="#0D1B2A" letter-spacing="0.6">${t.label.toUpperCase()}</text>`;
-  }).join('');
-  const dots = traits.map((t, i) => {
-    const v = Math.max(0.06, Math.min(1, vec[t.k] || 0));
-    const p = pointOn(i, rMax * v);
-    return `<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="3.5" fill="#C9A84C" stroke="#FAF6EE" stroke-width="1.5"/>`;
-  }).join('');
-
-  return `
-    <svg viewBox="0 0 ${size} ${size + 24}" width="100%" preserveAspectRatio="xMidYMid meet" class="sd-radar-svg" aria-label="Your style radar">
-      <defs>
-        <radialGradient id="sd-fill" cx="50%" cy="50%" r="70%">
-          <stop offset="0%" stop-color="#E8C97D" stop-opacity="0.55"/>
-          <stop offset="100%" stop-color="#C9A84C" stop-opacity="0.20"/>
-        </radialGradient>
-      </defs>
-      ${gridRings}
-      ${axes}
-      <path d="${userPolygon}" fill="url(#sd-fill)" stroke="#C9A84C" stroke-width="2.2" stroke-linejoin="round" class="sd-radar-poly"/>
-      ${dots}
-      ${labels}
-    </svg>`;
-}
 
 let sdState = { step: 0, answers: [] };
 
@@ -5247,116 +4823,52 @@ function renderStyleDNAResult() {
   const arc = archetypeFor(vec);
   saveStyleDNA({ answers: sdState.answers, vec, archetype: arc.name, savedAt: Date.now() });
 
-  // Brand affinity ranking — sorted, with the leader getting a special badge
-  // that visually crowns it as the user's #1 match.
+  const traits = [
+    { lbl: 'Polish',    v: vec.polish },
+    { lbl: 'Bold',      v: vec.bold },
+    { lbl: 'Structure', v: vec.structure },
+    { lbl: 'Athletic',  v: vec.athletic },
+    { lbl: 'Softness',  v: vec.soft },
+  ];
+
+  // Brand affinity ranking
   const brandRanks = Object.keys(SD_BRAND_PROFILES)
     .map(b => ({ b, p: brandStyleMatch(b) }))
     .sort((x, y) => y.p - x.p);
-  const topMatch = brandRanks[0] || null;
-
-  // "Style strength" = average of the two strongest traits. Reads as how
-  // pronounced / decisive the user's style signal is. Range stretched to
-  // a friendly 62–98% so even mixed answers land in a confident-sounding
-  // zone (because everyone has a style — some are just louder than others).
-  const sorted = Object.values(vec).sort((a, b) => b - a);
-  const strength = Math.round(Math.max(0, Math.min(1, ((sorted[0] + sorted[1]) / 2 - 0.35) / 0.55)) * 36 + 62);
-
-  const palette = (arc.palette || ['#FAF6EE','#0D1B2A','#C9A84C']).slice(0, 5);
-  const radarSVG = styleDNARadarSVG(vec);
 
   const stage = document.getElementById('sd-stage');
   stage.innerHTML = `
     <div class="sd-result-archetype">
-      <div class="sd-r-stars" aria-hidden="true"></div>
-      <div class="sd-r-ey">Your Style Archetype</div>
+      <div class="sd-r-ey">Your Archetype</div>
       <div class="sd-r-name">${arc.name.replace(/(\w+)$/, '<em>$1</em>')}</div>
       <div class="sd-r-desc">${arc.desc}</div>
-      <div class="sd-r-tagline">“${arc.tagline}”</div>
-      <div class="sd-r-strength">
-        <span class="sd-r-strength-lbl">Style strength</span>
-        <span class="sd-r-strength-val" data-target="${strength}">0%</span>
-      </div>
     </div>
-
-    <div class="sd-card">
-      <div class="sd-card-head">
-        <span class="sd-card-ic">✦</span>
-        <span>Your style radar</span>
-      </div>
-      <div class="sd-radar-wrap">${radarSVG}</div>
-      <div class="sd-card-foot">The five dimensions of your taste — at a glance.</div>
+    <div class="sd-traits">
+      ${traits.map(t => `
+        <div class="sd-trait">
+          <div class="sd-trait-lbl">${t.lbl}</div>
+          <div class="sd-trait-bar"><div class="sd-trait-fill" style="width:0%" data-w="${Math.round(t.v * 100)}"></div></div>
+          <div class="sd-trait-pct">${Math.round(t.v * 100)}</div>
+        </div>
+      `).join('')}
     </div>
-
-    <div class="sd-card">
-      <div class="sd-card-head">
-        <span class="sd-card-ic">◐</span>
-        <span>Signature palette</span>
-      </div>
-      <div class="sd-palette">${palette.map(c => `
-        <div class="sd-swatch" data-hex="${c}" title="${c}" style="background:${c}"></div>
-      `).join('')}</div>
-      <div class="sd-card-foot">Mix these colours for an instantly cohesive look.</div>
+    <div class="sd-brand-matches">
+      <div class="sd-bm-head">Brand Matches</div>
+      ${brandRanks.map(r => `
+        <div class="sd-bm-row"><strong>${r.b}</strong><span class="sd-bm-pct">${r.p}% match</span></div>
+      `).join('')}
     </div>
-
-    <div class="sd-card">
-      <div class="sd-card-head">
-        <span class="sd-card-ic">◈</span>
-        <span>Brand affinity</span>
-      </div>
-      <div class="sd-brand-matches">
-        ${brandRanks.map((r, i) => `
-          <div class="sd-bm-row ${i === 0 ? 'top' : ''}">
-            <div class="sd-bm-left">
-              ${i === 0 ? '<span class="sd-bm-badge">★ Top match</span>' : ''}
-              <strong>${r.b}</strong>
-            </div>
-            <div class="sd-bm-right">
-              <div class="sd-bm-track"><div class="sd-bm-fill" style="width:0%" data-w="${r.p}"></div></div>
-              <span class="sd-bm-pct">${r.p}%</span>
-            </div>
-          </div>
-        `).join('')}
-      </div>
-    </div>
-
     <div class="sd-actions">
       <button type="button" class="sd-back" onclick="retakeStyleDNA()">↺ Retake</button>
       <button type="button" class="sd-next" onclick="closeStyleDNA(); maybeRefreshResults();">Apply to my brands →</button>
     </div>
   `;
-
-  // Animate: radar polygon scales up from centre; brand bars fill; strength
-  // number counts up. requestAnimationFrame ensures the initial render lands
-  // before we mutate, so the transition actually plays.
+  // Animate trait bars after layout
   requestAnimationFrame(() => {
-    stage.querySelectorAll('.sd-bm-fill').forEach(el => { el.style.width = el.dataset.w + '%'; });
-    const strengthEl = stage.querySelector('.sd-r-strength-val');
-    if (strengthEl) {
-      const target = parseInt(strengthEl.dataset.target, 10) || 0;
-      let cur = 0;
-      const start = performance.now();
-      const tick = (now) => {
-        const t = Math.min(1, (now - start) / 900);
-        const eased = 1 - Math.pow(1 - t, 3);
-        cur = Math.round(target * eased);
-        strengthEl.textContent = cur + '%';
-        if (t < 1) requestAnimationFrame(tick);
-      };
-      requestAnimationFrame(tick);
-    }
-  });
-
-  // Tap a swatch to copy its hex (silent UX win — invites engagement).
-  stage.querySelectorAll('.sd-swatch').forEach(el => {
-    el.addEventListener('click', () => {
-      const hex = el.dataset.hex;
-      try {
-        navigator.clipboard.writeText(hex);
-        toast(`${hex} copied to clipboard`);
-      } catch { /* clipboard not allowed; silently no-op */ }
+    stage.querySelectorAll('.sd-trait-fill').forEach(el => {
+      el.style.width = el.dataset.w + '%';
     });
   });
-
   updateStyleDNASplashSub();
 }
 
