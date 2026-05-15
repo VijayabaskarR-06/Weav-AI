@@ -4863,9 +4863,16 @@ function finalizeMeasurements() {
   // the latter. Values are deliberately moderate: a genuinely fitted top
   // will read a touch low, a loose one still a touch high, but both land
   // far closer to the body than with no correction at all.
-  const EASE = isMale
-    ? { bust: 4.0, waist: 3.0, hips: 3.0 }
-    : { bust: 3.0, waist: 2.5, hips: 3.0 };
+  // Keyed to the "What you're wearing" toggle — the user knows how loose
+  // their clothes were, and that is the one thing the silhouette cannot
+  // reveal. Skin-tight wear barely lifts the outline; a regular tee/polo
+  // adds a few cm at the chest; a loose/oversized top adds a lot.
+  const EASE_BY_FIT = {
+    fitted:  isMale ? { bust: 1.0, waist: 1.0, hips: 1.0 } : { bust: 0.5, waist: 1.0, hips: 1.0 },
+    regular: isMale ? { bust: 5.5, waist: 3.0, hips: 3.0 } : { bust: 3.5, waist: 2.5, hips: 3.0 },
+    loose:   isMale ? { bust: 11.0, waist: 8.0, hips: 8.0 } : { bust: 9.0, waist: 7.0, hips: 7.0 },
+  };
+  const EASE = EASE_BY_FIT[pfState.clothing] || EASE_BY_FIT.regular;
   bust  = Math.max(0, bust  - EASE.bust);
   waist = Math.max(0, waist - EASE.waist);
   hips  = Math.max(0, hips  - EASE.hips);
