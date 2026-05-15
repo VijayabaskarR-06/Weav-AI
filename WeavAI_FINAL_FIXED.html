@@ -4165,16 +4165,34 @@ document.getElementById('pf-input').addEventListener('change', async (e) => {
 // builds and even between IMAGE / VIDEO running modes.
 function extractMaskFloat32(mask, imgW, imgH) {
   if (!mask) return null;
-  const mw = mask.width || imgW;
-  const mh = mask.height || imgH;
-  const expectedLen = mw * mh;
 
-  // Path A — Float32 buffer.
+  // Resolve the mask's pixel dimensions. MediaPipe normally fills in
+  // mask.width/height, but some Tasks Vision builds leave them 0/undefined.
+  // The previous code multiplied those into an `expectedLen` and required
+  // the raw buffer to be at least that long — when the dimensions were
+  // missing it used the full image size, so the check always failed and the
+  // mask was silently dropped (forcing the inaccurate landmark fallback).
+  // Now we take the buffer first and derive the dimensions from its length.
+  const resolveDims = (len) => {
+    const mw0 = mask.width | 0, mh0 = mask.height | 0;
+    if (mw0 > 0 && mh0 > 0 && mw0 * mh0 === len) return { w: mw0, h: mh0 };
+    // Derive, assuming the mask keeps the input image's aspect ratio.
+    const aspect = (imgW > 0 && imgH > 0) ? imgW / imgH : 1;
+    const mh = Math.round(Math.sqrt(len / aspect));
+    const mw = mh > 0 ? Math.round(len / mh) : 0;
+    if (mw > 0 && mh > 0 && mw * mh === len) return { w: mw, h: mh };
+    const s = Math.round(Math.sqrt(len));            // last resort: square
+    return (s > 0 && s * s === len) ? { w: s, h: s } : null;
+  };
+
+  // Path A — Float32 buffer. Current Tasks Vision builds do the GPU→CPU
+  // readback inside getAsFloat32Array(), so this works on either delegate.
   try {
     if (typeof mask.getAsFloat32Array === 'function') {
       const arr = mask.getAsFloat32Array();
-      if (arr && arr.length >= expectedLen) {
-        return { data: new Float32Array(arr.buffer.slice(arr.byteOffset, arr.byteOffset + expectedLen * 4)), w: mw, h: mh };
+      if (arr && arr.length) {
+        const d = resolveDims(arr.length);
+        if (d) return { data: new Float32Array(arr), w: d.w, h: d.h };
       }
     }
   } catch (e) { console.warn('[PhotoFit] getAsFloat32Array failed:', e && e.message); }
@@ -4183,41 +4201,32 @@ function extractMaskFloat32(mask, imgW, imgH) {
   try {
     if (typeof mask.getAsUint8Array === 'function') {
       const u = mask.getAsUint8Array();
-      if (u && u.length >= expectedLen) {
-        const out = new Float32Array(expectedLen);
-        for (let i = 0; i < expectedLen; i++) out[i] = u[i] / 255;
-        return { data: out, w: mw, h: mh };
+      if (u && u.length) {
+        const d = resolveDims(u.length);
+        if (d) {
+          const out = new Float32Array(u.length);
+          for (let i = 0; i < u.length; i++) out[i] = u[i] / 255;
+          return { data: out, w: d.w, h: d.h };
+        }
       }
     }
   } catch (e) { console.warn('[PhotoFit] getAsUint8Array failed:', e && e.message); }
 
-  // Path C — WebGL texture. Render to an offscreen 2D canvas and readPixels.
-  try {
-    if (typeof mask.getAsWebGLTexture === 'function') {
-      const tex = mask.getAsWebGLTexture();
-      if (tex) {
-        // The Tasks Vision lib bundles its own GL context; rather than fight
-        // it, try `.canvas` if exposed (newer builds expose it).
-        // Falls through to Path D below.
-      }
-    }
-  } catch (e) { console.warn('[PhotoFit] getAsWebGLTexture failed:', e && e.message); }
-
-  // Path D — A canvas attached to the mask (newer builds).
+  // Path C — a canvas attached to the mask (newer builds expose one).
   try {
     const cnv = mask.canvas || (mask._canvas) || null;
     if (cnv && cnv.width && cnv.height) {
       const tmp = document.createElement('canvas');
       tmp.width = cnv.width; tmp.height = cnv.height;
-      tmp.getContext('2d').drawImage(cnv, 0, 0);
-      const id = tmp.getContext('2d').getImageData(0, 0, cnv.width, cnv.height);
+      const tctx = tmp.getContext('2d');
+      tctx.drawImage(cnv, 0, 0);
+      const id = tctx.getImageData(0, 0, cnv.width, cnv.height);
       const out = new Float32Array(cnv.width * cnv.height);
       // Mask is usually grayscale; use the red channel (or alpha if R is empty).
       let rSum = 0;
       for (let i = 0, p = 0; p < id.data.length; i++, p += 4) {
-        const r = id.data[p];
-        rSum += r;
-        out[i] = r / 255;
+        rSum += id.data[p];
+        out[i] = id.data[p] / 255;
       }
       if (rSum === 0) {
         for (let i = 0, p = 0; p < id.data.length; i++, p += 4) out[i] = id.data[p + 3] / 255;
@@ -4518,11 +4527,17 @@ function analyzeFrontView(lms, wLms, mask, w, h, heightCm) {
   } else {
     const nose = lms[0];
     const lA = lms[27], rA = lms[28];
-    const ankleVis = Math.max((lA && lA.visibility) || 0, (rA && rA.visibility) || 0);
-    if (!lA || !rA || ankleVis < 0.5) {
-      return { error: 'Your feet aren’t in the photo. Step back so your whole body — head to feet — fits in frame, then re-shoot.' };
+    if (!lA || !rA) {
+      return { error: 'Could not find your legs in the photo. Stand fully in frame and re-shoot.' };
     }
-    const ankleY = (lms[27].y + lms[28].y) / 2;
+    const ankleY = (lA.y + rA.y) / 2;
+    // A body part below the frame is extrapolated past y = 1. We test the
+    // ankle position directly rather than MediaPipe's `visibility` score —
+    // in this Tasks Vision build `visibility` is frequently 0 even for
+    // joints in plain view, which was rejecting valid full-body photos.
+    if (ankleY > 1.03) {
+      return { error: 'Your legs run past the bottom of the photo. Step back so your whole body — head to feet — fits in frame, then re-shoot.' };
+    }
     const noseToAnkleImgPx = Math.abs(ankleY - nose.y) * h;
     if (noseToAnkleImgPx < 50) {
       return { error: 'Could not see your full body. Take a photo with head, torso, and feet all in frame.' };
@@ -4668,11 +4683,15 @@ function analyzeSideView(lms, wLms, mask, w, h, heightCm, front) {
   } else {
     const nose = lms[0];
     const lA = lms[27], rA = lms[28];
-    const ankleVis = Math.max((lA && lA.visibility) || 0, (rA && rA.visibility) || 0);
-    if (!lA || !rA || ankleVis < 0.5) {
-      return { error: 'Your feet aren’t in the side photo. Step back so your whole body — head to feet — fits in frame.' };
+    if (!lA || !rA) {
+      return { error: 'Could not find your legs in the side photo. Stand fully in frame and re-shoot.' };
     }
-    const ankleY = (lms[27].y + lms[28].y) / 2;
+    const ankleY = (lA.y + rA.y) / 2;
+    // Geometry check, not MediaPipe's unreliable `visibility` score (see
+    // the front view for the rationale).
+    if (ankleY > 1.03) {
+      return { error: 'Your legs run past the bottom of the side photo. Step back so your whole body fits in frame.' };
+    }
     const noseToAnkleImgPx = Math.abs(ankleY - nose.y) * h;
     if (noseToAnkleImgPx < 50) return { error: 'Could not see your full body in the side photo. Take a full-length shot.' };
     cmPerImgPx  = heightCm / (noseToAnkleImgPx / 0.82);
